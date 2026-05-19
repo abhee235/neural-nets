@@ -1,30 +1,44 @@
 # Chapter 22: Self-Attention
 
 > **Part 5 of 6 — Attention Mechanism**
-> `src/ch-22-self-attention/`
+> Source: [`src/nn/attention.ts`](../../src/nn/attention.ts)
+> Tests: [`src/nn/attention.test.ts`](../../src/nn/attention.test.ts)
+> Exercise: [`exercises/ch-22-self-attention.ts`](../../exercises/ch-22-self-attention.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-Scaled dot-product self-attention: the core mechanism of the transformer. Given a sequence
-of token vectors, each token learns to "attend to" other tokens in the sequence and pull in
-relevant information. Implements Q, K, V projections, the attention score formula, and
-optional causal masking.
+By the end of this chapter you can:
 
-Before this chapter, complete Ch 21. Attention masking is simple only when binary masks,
-additive masks, padding masks, and causal masks have precise shapes and meanings.
+- Project the input to Q, K, V with three learned linear layers.
+- Compute scaled dot-product attention: `softmax(QKᵀ / √d_k) V`.
+- Apply a mask before the softmax to forbid certain positions.
+- Explain *why* we divide by `√d_k` (gradient flow through softmax).
+- Predict the output shape: same as the input `[batch, seq, d_model]`.
 
 ---
 
-## Why This Matters
+## Intuition First
 
-This is the most important chapter in the entire course. Attention is *why* transformers
-outperform all previous architectures: it lets every token directly attend to every other
-token in the sequence, capturing long-range dependencies in a single operation.
+Self-attention lets every token decide which other tokens are relevant. Each token publishes a **query** ("what am I looking for?"), a **key** ("what do I match?"), and a **value** ("if you match me, here's what I provide"). Compare every query to every key, turn the scores into weights with softmax, and average the values weighted by those weights. The token then becomes a context-aware mix of its neighbours.
 
-Without attention, a language model only sees a fixed context window (RNNs have this problem).
-With attention, a token at position 512 can directly attend to token at position 0.
+---
+
+## Mental Model
+
+```text
+  x : [batch, seq, d_model]
+      │
+      ├── @ W_Q ──► Q : [batch, seq, d_k]
+      ├── @ W_K ──► K : [batch, seq, d_k]
+      └── @ W_V ──► V : [batch, seq, d_v]
+
+  scores  = Q @ Kᵀ / √d_k          shape: [batch, seq_q, seq_k]
+  scores += additive_mask
+  weights = softmax(scores, axis=-1)
+  output  = weights @ V             shape: [batch, seq, d_v]
+```
 
 ---
 
@@ -174,6 +188,29 @@ export function scaledDotProductAttention(
 
 ---
 
+## Common Pitfalls
+
+- Forgetting the `/√d_k` scaling — softmax saturates and gradients vanish.
+- Applying the mask *after* the softmax — too late, the weights have already normalised.
+- Using one linear layer for QKV concatenated, then forgetting to split correctly.
+- Mixing up `d_k` (per-head key dim) with `d_model` when there is only one head.
+- Returning `weights` (the attention map) when the caller asked for the *output*.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/nn/attention.test.ts
+```
+```bash
+bun run exercises/ch-22-self-attention.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. For a sequence of length 4, write out the causal mask matrix.
@@ -189,7 +226,15 @@ export function scaledDotProductAttention(
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 23: Multi-Head Attention** — run H attention heads in parallel and combine them,
-allowing the model to attend to different relationships simultaneously.
+- [Vaswani et al. — Attention Is All You Need (2017)](https://arxiv.org/abs/1706.03762) — the original transformer paper; every formula in Parts 5–6 comes from it.
+- [Jay Alammar — The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/) — the canonical visual explainer.
+- [Karpathy — Let's build GPT (video)](https://www.youtube.com/watch?v=kCc8FmEb1nY) — live build of self-attention from scratch in PyTorch.
+- [Lilian Weng — The Transformer Family](https://lilianweng.github.io/posts/2020-04-07-the-transformer-family/) — comprehensive survey with all the variants.
+
+---
+
+## Next Chapter
+
+**[Multi-Head Attention](ch-23-multi-head-attention.md)** — run several attention heads in parallel and concatenate their outputs.

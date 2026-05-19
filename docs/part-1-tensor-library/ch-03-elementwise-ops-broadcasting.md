@@ -1,26 +1,45 @@
-# Chapter 03: Element-wise Ops & Broadcasting
+# Chapter 03: Elementwise Ops & Broadcasting
 
-> **Part 1 of 6 — Tensor Library (NumPy-like Foundation)**
-> `src/ch-03-elementwise-ops/`
-
----
-
-## What You're Building
-
-Element-wise arithmetic (`add`, `sub`, `mul`, `div`) between tensors, plus NumPy-style
-**broadcasting** — the rules that let you add a vector to every row of a matrix without
-manually looping. These operations underlie residual connections, attention masking, and
-normalization throughout the transformer.
+> **Part 1 of 6 — Tensor Library**
+> Source: [`src/tensor/ops.ts`](../../src/tensor/ops.ts)
+> Tests: [`src/tensor/ops.test.ts`](../../src/tensor/ops.test.ts)
+> Exercise: [`exercises/ch-03-elementwise-ops.ts`](../../exercises/ch-03-elementwise-ops.ts)
 
 ---
 
-## Why This Matters
+## Learning Goals
 
-In the transformer's encoder block (Ch 26), after the attention output you add it back to
-the input: `output = attention_out + residual`. Both are `[batch, seq, d_model]` — same shape,
-simple add. But in LayerNorm (Ch 20), you subtract a mean of shape `[batch, seq, 1]` from
-a tensor of shape `[batch, seq, d_model]` — that's broadcasting. Without it, you'd need to
-manually repeat the mean across 512 columns every single time.
+By the end of this chapter you can:
+
+- State and apply the two broadcasting rules from memory.
+- Compute the broadcast result shape of any two shapes (or detect that they are incompatible).
+- Implement `add`, `sub`, `mul`, `div`, `neg` for any two broadcast-compatible tensors.
+- Recognise where broadcasting will appear in a transformer (bias, mask, scaling).
+- Avoid silent shape errors by validating shapes at every entry point.
+
+---
+
+## Intuition First
+
+Broadcasting is a way of pretending a small tensor is a big one without copying any memory. If you add a `[d]` bias to a `[batch, seq, d]` activation, broadcasting stretches the bias along the first two axes — conceptually — so the shapes match.
+
+The two rules:
+
+1. Line up the shapes from the **right**. Missing axes on the left are treated as size `1`.
+2. At each axis, the two sizes must be **equal** or **one of them must be `1`**. The `1` stretches to match the other size.
+
+---
+
+## Mental Model
+
+```text
+  A.shape:        [8, 1, 64]
+  B.shape:           [12, 64]
+  ----------------------------- align right, pad with 1s
+  A.shape:        [8,  1, 64]
+  B.shape:        [1, 12, 64]
+  result shape:   [8, 12, 64]   ← each axis = max
+```
 
 ---
 
@@ -162,6 +181,29 @@ function broadcastShapes(shapeA: number[], shapeB: number[]): number[] {
 
 ---
 
+## Common Pitfalls
+
+- Aligning shapes from the *left* — broadcasting always aligns from the **right**.
+- Allowing two axes of size 2 and 3 to broadcast — they must be equal or one must be 1.
+- Forgetting that broadcasting may produce a result *larger than either input*.
+- Materialising the broadcast result for a tiny op when an in-place loop would do.
+- Letting NaN/Infinity slip through `div` when the denominator broadcasts to zero.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/tensor/ops.test.ts
+```
+```bash
+bun run exercises/ch-03-elementwise-ops.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. Can you broadcast `[5, 3]` with `[3]`? What is the output shape?
@@ -174,7 +216,15 @@ function broadcastShapes(shapeA: number[], shapeB: number[]): number[] {
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 04: Matrix Operations** — `matMul`, `transpose`, `reshape`, `flatten`, `concat`, `stack`.
-These are the higher-level operations built on top of element-wise ops.
+- [NumPy broadcasting](https://numpy.org/doc/stable/user/basics.broadcasting.html) — the canonical rules our tensor ops follow.
+- [PyTorch — Broadcasting semantics](https://pytorch.org/docs/stable/notes/broadcasting.html) — same rules, slightly different wording.
+- [Jake VanderPlas — Python Data Science Handbook (broadcasting chapter)](https://jakevdp.github.io/PythonDataScienceHandbook/02.05-computation-on-arrays-broadcasting.html) — the clearest visual treatment of the rules.
+- [3Blue1Brown — Essence of Linear Algebra](https://www.3blue1brown.com/topics/linear-algebra) — geometric intuition for vectors, matrices, and linear maps.
+
+---
+
+## Next Chapter
+
+**[Matrix Ops](ch-04-matrix-ops.md)** — once add/mul broadcast correctly, we need matmul and transpose for linear layers.

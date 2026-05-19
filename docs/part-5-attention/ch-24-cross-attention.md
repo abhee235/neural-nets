@@ -1,30 +1,41 @@
 # Chapter 24: Cross-Attention
 
 > **Part 5 of 6 — Attention Mechanism**
-> `src/ch-24-cross-attention/`
+> Source: [`src/nn/attention.ts`](../../src/nn/attention.ts)
+> Tests: [`src/nn/attention.test.ts`](../../src/nn/attention.test.ts)
+> Exercise: [`exercises/ch-24-cross-attention.ts`](../../exercises/ch-24-cross-attention.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-Cross-attention: a variant of multi-head attention where the Queries come from one sequence
-(the decoder) and the Keys/Values come from a different sequence (the encoder output).
-This is how the decoder "reads" the encoder's understanding of the input when generating output.
+By the end of this chapter you can:
+
+- Implement cross-attention: Q from one sequence, K and V from another.
+- Distinguish self-attention (Q, K, V same source) from cross-attention.
+- Recognise that cross-attention does **not** use a causal mask — the decoder may see the entire source.
+- Pass the encoder's *final* output as K, V to every decoder block.
+- Predict the output shape: `[batch, seq_q, d_model]` (length follows the queries).
 
 ---
 
-## Why This Matters
+## Intuition First
 
-In a sequence-to-sequence (seq2seq) model — translation, summarization, question answering
-— you have two sequences: source (e.g., French sentence) and target (e.g., English translation).
+Self-attention answers "how should this sequence look at itself?". Cross-attention answers "how should sequence A look at sequence B?". In a translation model, the decoder (sequence A, partial target) uses cross-attention to query the encoder (sequence B, full source) — "I've written so far; which source words do I need next?"
 
-The encoder processes the full source. The decoder generates the target one token at a time.
-At each decoder step, the decoder needs to ask: "what part of the source is most relevant
-to what I'm generating right now?" That's exactly what cross-attention does.
+---
 
-Without cross-attention, the decoder has no way to look at the source — it can only look
-at what it has already generated (via self-attention). Cross-attention is the bridge between
-encoder and decoder.
+## Mental Model
+
+```text
+  decoder state    ──► W_Q ──► Q : [batch, seq_dec, d_model]
+  encoder output   ──► W_K ──► K : [batch, seq_enc, d_model]
+  encoder output   ──► W_V ──► V : [batch, seq_enc, d_model]
+
+  scores  = Q @ Kᵀ / √d_head        shape: [batch, H, seq_dec, seq_enc]
+  scores += encoder_padding_mask    (no causal mask!)
+  output  = softmax(scores) @ V     shape: [batch, seq_dec, d_model]
+```
 
 ---
 
@@ -173,6 +184,29 @@ export class CrossAttention {
 
 ---
 
+## Common Pitfalls
+
+- Passing a causal mask to cross-attention — the decoder *should* see all of the source.
+- Re-running the encoder on every decoder step instead of caching its output.
+- Mixing up which sequence's padding mask applies; cross-attention uses the **encoder** mask.
+- Letting decoder and encoder have different `d_model` and forgetting the projection.
+- Returning attention weights to the caller and forgetting which axis is the source.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/nn/attention.test.ts
+```
+```bash
+bun run exercises/ch-24-cross-attention.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. Cross-attention scores have shape `[batch, H, tgt_len, src_len]`. What does entry
@@ -196,7 +230,15 @@ The full attention mechanism is now in place:
 
 ---
 
-## → Next Part
+## Further Reading
 
-**Part 6 — Transformer (Ch 25–30):** assemble encoder and decoder blocks, build the full
-encoder-decoder transformer, then build a GPT-style decoder-only model.
+- [Vaswani et al. — Attention Is All You Need (2017)](https://arxiv.org/abs/1706.03762) — the original transformer paper; every formula in Parts 5–6 comes from it.
+- [Bahdanau, Cho, Bengio — Neural Machine Translation by Jointly Learning to Align and Translate (2014)](https://arxiv.org/abs/1409.0473) — the paper that introduced attention; cross-attention's direct ancestor.
+- [Jay Alammar — The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/) — the encoder-decoder attention diagrams.
+- [Karpathy — Let's build GPT (video)](https://www.youtube.com/watch?v=kCc8FmEb1nY) — decoder-only, but the contrast with cross-attention is useful.
+
+---
+
+## Next Chapter
+
+**[Feed-Forward Block](../part-6-transformer/ch-25-feedforward-block.md)** — the per-token MLP that follows every attention layer.

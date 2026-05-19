@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="380" viewBox="0 0 920 380">
+<defs><marker id="arr_teal"  markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#0f766e"/></marker><marker id="arr_amber" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#b45309"/></marker></defs>
+<rect x="0" y="0" width="920" height="380" rx="0" fill="#faf7f0" stroke="#faf7f0" stroke-width="0"/>
+<text x="460.0" y="32" text-anchor="middle" font-family="Georgia, 'Iowan Old Style', serif" font-size="16" font-weight="bold" fill="#1d1d1b">Same data — two ways to see it</text>
+<text x="460.0" y="54" text-anchor="middle" font-family="Georgia, 'Iowan Old Style', serif" font-size="11" font-weight="normal" fill="#64748b">The Float64Array never changes. Only the shape label changes.</text>
+<text x="201.0" y="80" text-anchor="middle" font-family="Georgia, 'Iowan Old Style', serif" font-size="13" font-weight="bold" fill="#0f766e">Logical view</text>
+<text x="201.0" y="96" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="normal" fill="#0f766e">shape [2, 3]</text>
+<line x1="90" y1="118" x2="312" y2="118" stroke="#0f766e" stroke-width="1.4" marker-end="url(#arr_teal)"/>
+<text x="320" y="122" text-anchor="start" font-family="Georgia, 'Iowan Old Style', serif" font-size="10" font-weight="normal" fill="#0f766e">col</text>
+<line x1="68" y1="140" x2="68" y2="258" stroke="#0f766e" stroke-width="1.4" marker-end="url(#arr_teal)"/>
+<text x="62" y="199.0" text-anchor="middle" font-family="Georgia, 'Iowan Old Style', serif" font-size="10" font-weight="normal" fill="#0f766e" transform="rotate(-90, 62, 199.0)">row</text>
+<rect x="90" y="140" width="70" height="56" rx="10" fill="#d8f0eb" stroke="#0f766e" stroke-width="1.4"/>
+<text x="125.0" y="166.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="bold" fill="#0f766e">10</text>
+<text x="125.0" y="186.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.5" font-weight="normal" fill="#64748b">[0,0]</text>
+<rect x="166" y="140" width="70" height="56" rx="10" fill="#d8f0eb" stroke="#0f766e" stroke-width="1.4"/>
+<text x="201.0" y="166.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="bold" fill="#0f766e">20</text>
+<text x="201.0" y="186.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.5" font-weight="normal" fill="#64748b">[0,1]</text>
+<rect x="242" y="140" width="70" height="56" rx="10" fill="#d8f0eb" stroke="#0f766e" stroke-width="1.4"/>
+<text x="277.0" y="166.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="bold" fill="#0f766e">30</text>
+<text x="277.0" y="186.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.5" font-weight="normal" fill="#64748b">[0,2]</text>
+<rect x="90" y="202" width="70" height="56" rx="10" fill="#d8f0eb" stroke="#0f766e" stroke-width="1.4"/>
+<text x="125.0" y="228.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="bold" fill="#0f766e">40</text>
+<text x="125.0" y="248.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.5" font-weight="normal" fill="#64748b">[1,0]</text>
+<rect x="166" y="202" width="70" height="56" rx="10" fill="#d8f0eb" stroke="#0f766e" stroke-width="1.4"/>
+<text x="201.0" y="228.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="bold" fill="#0f766e">50</text>
+<text x="201.0" y="248.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.5" font-weight="normal" fill="#64748b">[1,1]</text>
+<rect x="242" y="202" width="70" height="56" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+<text x="277.0" y="228.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="bold" fill="#b45309">60</text>
+<text x="277.0" y="248.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.5" font-weight="normal" fill="#64748b">[1,2]</text>
+<text x="201.0" y="284" text-anchor="middle" font-family="Georgia, 'Iowan Old Style', serif" font-size="10.5" font-weight="normal" fill="#64748b">2 rows × 3 cols = 6 elements</text>
+<text x="363.0" y="161.0" text-anchor="middle" font-family="Georgia, 'Iowan Old Style', serif" font-size="12" font-weight="bold" fill="#b45309">row-major</text>
+<text x="363.0" y="177.0" text-anchor="middle" font-family="Georgia, 'Iowan Old Style', serif" font-size="10" font-weight="normal" fill="#b45309">order</text>
+<path d="M328,199.0 C353,191.0 373,207.0 398,199.0" stroke="#b45309" stroke-width="2" fill="none" marker-end="url(#arr_amber)"/>
+<text x="604.5" y="80" text-anchor="middle" font-family="Georgia, 'Iowan Old Style', serif" font-size="13" font-weight="bold" fill="#b45309">Physical memory</text>
+<text x="604.5" y="96" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="normal" fill="#b45309">Float64Array(6)</text>
+<line x1="418" y1="118" x2="791" y2="118" stroke="#b45309" stroke-width="1.4" marker-end="url(#arr_amber)"/>
+<text x="799" y="122" text-anchor="start" font-family="Georgia, 'Iowan Old Style', serif" font-size="10" font-weight="normal" fill="#b45309">offset</text>
+<rect x="418" y="144" width="58" height="50" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+<text x="447.0" y="167.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="bold" fill="#b45309">10</text>
+<text x="447.0" y="187.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.5" font-weight="normal" fill="#64748b">[0]</text>
+<rect x="481" y="144" width="58" height="50" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+<text x="510.0" y="167.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="bold" fill="#b45309">20</text>
+<text x="510.0" y="187.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.5" font-weight="normal" fill="#64748b">[1]</text>
+<rect x="544" y="144" width="58" height="50" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+<text x="573.0" y="167.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="bold" fill="#b45309">30</text>
+<text x="573.0" y="187.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.5" font-weight="normal" fill="#64748b">[2]</text>
+<rect x="607" y="144" width="58" height="50" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+<text x="636.0" y="167.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="bold" fill="#b45309">40</text>
+<text x="636.0" y="187.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.5" font-weight="normal" fill="#64748b">[3]</text>
+<rect x="670" y="144" width="58" height="50" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+<text x="699.0" y="167.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="bold" fill="#b45309">50</text>
+<text x="699.0" y="187.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.5" font-weight="normal" fill="#64748b">[4]</text>
+<rect x="733" y="144" width="58" height="50" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+<text x="762.0" y="167.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="bold" fill="#b45309">60</text>
+<text x="762.0" y="187.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.5" font-weight="normal" fill="#64748b">[5]</text>
+<rect x="729" y="140" width="66" height="58" rx="12" fill="none" stroke="#1d1d1b" stroke-width="2.2" stroke-dasharray="4 3"/>
+<rect x="60" y="290" width="800" height="60" rx="14" fill="rgba(180,83,9,0.06)" stroke="#b45309" stroke-width="1.3" stroke-dasharray="6 4"/>
+<text x="82" y="314" text-anchor="start" font-family="Georgia, 'Iowan Old Style', serif" font-size="11" font-weight="bold" fill="#b45309">Worked example</text>
+<text x="460.0" y="314" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="bold" fill="#b45309">data[ row × cols + col ]</text>
+<text x="460.0" y="336" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="normal" fill="#1d1d1b">for [row=1, col=2]:   1 × 3 + 2 = 5   →   data[5] = 60</text>
+</svg>

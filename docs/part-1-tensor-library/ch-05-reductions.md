@@ -1,28 +1,37 @@
-# Chapter 05: Reduction & Stat Ops
+# Chapter 05: Reductions
 
-> **Part 1 of 6 — Tensor Library (NumPy-like Foundation)**
-> `src/ch-05-reductions/`
-
----
-
-## What You're Building
-
-Functions that **reduce** a tensor along one or more axes: `sum`, `mean`, `max`, `min`,
-`argmax`, `variance`, and `std`. These support the `axis` and `keepDims` parameters,
-mirroring NumPy/PyTorch semantics.
+> **Part 1 of 6 — Tensor Library**
+> Source: [`src/tensor/reduce.ts`](../../src/tensor/reduce.ts)
+> Tests: [`src/tensor/reduce.test.ts`](../../src/tensor/reduce.test.ts)
+> Exercise: [`exercises/ch-05-reductions.ts`](../../exercises/ch-05-reductions.ts)
 
 ---
 
-## Why This Matters
+## Learning Goals
 
-Reductions are everywhere in the transformer:
+By the end of this chapter you can:
 
-- **Softmax** (Ch 11): subtract the `max` for numerical stability, then `sum` to normalize.
-- **LayerNorm** (Ch 20): compute `mean` and `variance` across the feature dimension.
-- **Cross-entropy loss** (Ch 12): `sum` or `mean` over all token predictions.
-- **Attention** (Ch 22): `softmax` over the last axis of a `[batch, heads, seq, seq]` tensor.
+- Implement `sum`, `mean`, `max`, `min`, `argmax`, and `var` with an `axis` and `keepDims` option.
+- Choose between collapsing an axis (`keepDims=false`) and keeping it as size 1.
+- Compute mean/variance in a single pass that is numerically stable.
+- Use reductions to compute losses (mean of per-sample errors) and normalisation statistics.
+- Predict which reductions appear inside softmax, LayerNorm, and cross-entropy.
 
-Without axis-aware reductions, none of these can be written cleanly.
+---
+
+## Intuition First
+
+A reduction collapses one or more axes into a single value per leftover position. Mean of a `[batch, features]` tensor along axis `1` gives `[batch]`, the average feature value per sample. Reductions are how we get from millions of activations down to a single scalar loss that gradient descent can minimise.
+
+---
+
+## Mental Model
+
+```text
+  x.shape: [2, 3]            sum(axis=1)
+  [[1, 2, 3],                ──────────►   [6, 15]    keepDims=false → [2]
+   [4, 5, 6]]                              [[6], [15]] keepDims=true  → [2, 1]
+```
 
 ---
 
@@ -150,6 +159,29 @@ function variance(t: Tensor, axis?: number, keepDims = false): Tensor {
 
 ---
 
+## Common Pitfalls
+
+- Computing variance as `mean(x²) - mean(x)²` instead of `mean((x - mean(x))²)`; the first is faster but loses precision.
+- Reducing over the wrong axis because you forgot what shape the input has — print shapes.
+- Returning a 0-d tensor when the caller wanted a JS `number`; pick one convention and stick to it.
+- Forgetting `keepDims=true` and breaking a broadcast that comes later (LayerNorm and softmax need it).
+- Iterating in C-order when the reduced axis is not the inner axis; you'll thrash the cache.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/tensor/reduce.test.ts
+```
+```bash
+bun run exercises/ch-05-reductions.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. `sum([[1,2],[3,4]], axis=0)` — what is the result and shape?
@@ -160,7 +192,15 @@ function variance(t: Tensor, axis?: number, keepDims = false): Tensor {
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 06: Math Primitives** — `sqrt`, `exp`, `log`, `pow`, `abs`, `clip`, `sign` as element-wise
-tensor operations. These are the scalar math functions needed to implement activations and losses.
+- [NumPy — Reduction operations](https://numpy.org/doc/stable/reference/routines.math.html) — list of standard reductions and their `axis`/`keepdims` semantics.
+- [Welford's algorithm for variance](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm) — a streaming, numerically-stable variance; useful for very large batches.
+- [PyTorch — `torch.Tensor.sum`](https://pytorch.org/docs/stable/generated/torch.Tensor.sum.html) — exact semantics for `dim` and `keepdim` we will roughly mirror.
+- [Goodfellow, Bengio, Courville — Deep Learning](https://www.deeplearningbook.org/) — the standard graduate textbook; chapters map cleanly to this course.
+
+---
+
+## Next Chapter
+
+**[Math Primitives](ch-06-math-primitives.md)** — combine reductions with elementwise math to get softmax, LayerNorm, and friends.

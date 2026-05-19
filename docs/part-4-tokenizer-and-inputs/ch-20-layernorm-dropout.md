@@ -1,26 +1,47 @@
 # Chapter 20: LayerNorm & Dropout
 
-> **Part 4 of 6 — Language Model Inputs**
-> `src/ch-20-layernorm-dropout/`
+> **Part 4 of 6 — Tokenizer & Inputs**
+> Source: [`src/nn/layernorm.ts`](../../src/nn/layernorm.ts) · [`src/nn/dropout.ts`](../../src/nn/dropout.ts)
+> Tests: [`src/nn/transformer.test.ts`](../../src/nn/transformer.test.ts)
+> Exercise: [`exercises/ch-20-layernorm-dropout.ts`](../../exercises/ch-20-layernorm-dropout.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-Two components used in every transformer block: **Layer Normalization** (stabilizes training
-by normalizing activations) and **Dropout** (regularization by randomly zeroing activations).
-Both appear inside every encoder and decoder block in Ch 26–25.
+By the end of this chapter you can:
+
+- Implement LayerNorm: per-token mean/variance with learnable `γ`, `β`.
+- Implement inverted Dropout: zero a fraction `p` and scale the rest by `1/(1−p)`.
+- Switch Dropout between training (active) and evaluation (no-op).
+- Place LayerNorm in pre-norm position inside a transformer block.
+- Identify which axes LayerNorm reduces over (the last one) versus BatchNorm.
 
 ---
 
-## Why This Matters
+## Intuition First
 
-Without LayerNorm, transformer training is extremely unstable — activations can grow or
-shrink exponentially through 24+ layers of operations. LayerNorm is what makes deep
-transformers trainable at all.
+Activations inside a deep network drift in scale over training; LayerNorm forces every token's feature vector back to mean 0 and variance 1, then lets the network re-stretch with learnable `γ`/`β`. It is the thermostat of the network.
 
-Without Dropout, transformers overfit, especially on smaller datasets. In every transformer
-block, dropout is applied after attention and after the FFN.
+Dropout is the opposite: it deliberately injects noise during training by zeroing random units. The network learns redundant pathways; at evaluation time we use the full network and trust the redundancy.
+
+---
+
+## Mental Model
+
+```text
+  LayerNorm (per token):
+      μ = mean(x, axis=-1)
+      σ² = var(x, axis=-1)
+      x̂ = (x − μ) / √(σ² + ε)
+      y  = γ · x̂ + β
+
+  Dropout (inverted, training):
+      mask = bernoulli(1 − p)
+      y    = (x · mask) / (1 − p)
+  Dropout (eval):
+      y    = x
+```
 
 ---
 
@@ -178,6 +199,29 @@ export class Dropout {
 
 ---
 
+## Common Pitfalls
+
+- Normalising over the batch axis (that's BatchNorm) instead of the feature axis.
+- Forgetting `ε` inside `√` — variance can be exactly 0 for a constant token.
+- Scaling dropout output by `(1 − p)` instead of dividing — back-to-front; inverted dropout *divides*.
+- Leaving dropout active during validation; loss looks much worse than it really is.
+- Skipping `γ`/`β` parameters; the network needs to be able to undo the normalisation.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/nn/transformer.test.ts
+```
+```bash
+bun run exercises/ch-20-layernorm-dropout.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. LayerNorm on `x = [1, 3, 5, 7]` (single token, `dModel=4`): compute $\mu$, $\sigma^2$,
@@ -206,7 +250,15 @@ future tokens.
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 21: Attention Mask Cookbook** — convert tokenizer masks and causal masks into the
-additive masks consumed by attention.
+- [Ba, Kiros, Hinton — Layer Normalization (2016)](https://arxiv.org/abs/1607.06450) — the LayerNorm paper.
+- [Srivastava et al. — Dropout: A Simple Way to Prevent Overfitting](https://jmlr.org/papers/v15/srivastava14a.html) — the Dropout paper.
+- [Xiong et al. — On Layer Normalization in the Transformer Architecture](https://arxiv.org/abs/2002.04745) — pre-norm vs. post-norm; the analysis behind modern transformers.
+- [Distill — Norm matters](https://distill.pub/2019/visualizing-memorization/) — visualisations of how normalisation shapes training dynamics.
+
+---
+
+## Next Chapter
+
+**[Masks](ch-21-mask-cookbook.md)** — express "don't look at padding" and "don't peek at the future" with a single tensor primitive.

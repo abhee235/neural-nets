@@ -1,29 +1,45 @@
-# Chapter 21: Attention Mask Cookbook
+# Chapter 21: Mask Cookbook
 
-> **Part 4 of 6 — Language Model Inputs**
-> `src/ch-21-mask-cookbook/`
-
----
-
-## What You're Building
-
-A small mask utility layer that converts tokenizer padding masks and causal decoder masks into the additive masks consumed by attention.
-
-This chapter exists because masking bugs are silent. The model may run, the shapes may look correct, and the loss may still refuse to improve because the model is attending to padding or future tokens.
+> **Part 4 of 6 — Tokenizer & Inputs**
+> Source: [`src/tokenizer/masks.ts`](../../src/tokenizer/masks.ts)
+> Tests: [`src/tokenizer/masks.test.ts`](../../src/tokenizer/masks.test.ts)
+> Exercise: [`exercises/ch-21-masks.ts`](../../exercises/ch-21-masks.ts)
 
 ---
 
-## Why This Matters
+## Learning Goals
 
-Transformers use masks in three different places:
+By the end of this chapter you can:
 
-- Source padding mask: encoder and cross-attention should ignore `<pad>` tokens in the source.
-- Target padding mask: decoder should ignore `<pad>` tokens in the target.
-- Causal mask: decoder self-attention must not look at future target tokens.
+- Distinguish binary masks (`1` allowed, `0` blocked) from additive masks (`0` allowed, `-∞` blocked).
+- Convert a binary mask to an additive mask with `(1 − mask) * −∞`.
+- Build a causal (lower-triangular) mask of shape `[seq, seq]`.
+- Expand a padding mask of shape `[batch, seq]` to `[batch, 1, 1, seq]` for multi-head attention.
+- Combine padding mask + causal mask with element-wise min (or sum, in additive form).
 
-These masks start as simple binary arrays from the tokenizer, but attention wants additive masks: `0` for allowed positions and `-Infinity` for blocked positions.
+---
 
-The conversion must be explicit and tested.
+## Intuition First
+
+Attention computes a softmax over scores. To **forbid** a position, set its score to `-∞` before the softmax — `exp(-∞) = 0`. Masks are the language we use to express "please don't look here". Two reasons to mask:
+
+- **Padding**: positions filled with `<pad>` carry no real information.
+- **Causality**: when generating, position `t` must not see positions `> t`.
+
+---
+
+## Mental Model
+
+```text
+  binary mask                       additive mask
+  ─────────────                     ─────────────
+  1 = allowed                       0    = allowed
+  0 = blocked                       −∞   = blocked
+
+  scores = QKᵀ / √d_k
+  scores = scores + additive_mask
+  weights = softmax(scores)      ← blocked positions contribute 0
+```
 
 ---
 
@@ -164,24 +180,26 @@ export function causalMask(queryLen: number, keyLen = queryLen): Tensor {
 
 ---
 
-## Required Tests
+## Common Pitfalls
 
-- Padding IDs become `0` in the binary mask.
-- Binary mask `[1, 0, 1]` becomes additive mask `[0, MASK_VALUE, 0]`.
-- Padding mask expansion produces `[batch, 1, 1, keyLen]`.
-- Causal mask for length 4 blocks only future positions.
-- Combined decoder mask blocks both future tokens and pad tokens.
-- After softmax, masked attention probabilities are exactly 0 or numerically near 0.
+- Multiplying scores by a binary mask — the softmax then renormalises and the blocked positions still get weight.
+- Using `−∞` literally; use a large negative finite number (`-1e9`) to avoid `NaN` from `0 * ∞`.
+- Forgetting to expand the padding mask to `[batch, 1, 1, seq]` so it broadcasts over heads and query positions.
+- Building the causal mask once per step inside the loop; build it once per max sequence length.
+- Combining binary and additive masks without converting one to the other first.
 
 ---
 
-## Common Pitfalls
+## How to Verify
 
-- Treating binary `0/1` masks as if they can be added directly to attention scores.
-- Masking query positions when you meant to mask key positions.
-- Forgetting the head dimension in `[batch, heads, queryLen, keyLen]`.
-- Creating a target causal mask but forgetting target padding.
-- Applying a causal mask to cross-attention, which should see the whole source.
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/tokenizer/masks.test.ts
+```
+```bash
+bun run exercises/ch-21-masks.ts
+```
 
 ---
 
@@ -195,6 +213,15 @@ export function causalMask(queryLen: number, keyLen = queryLen): Tensor {
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 22: Self-Attention** — now the attention layer can consume masks with clear, tested semantics.
+- [Vaswani et al. — Attention Is All You Need (2017)](https://arxiv.org/abs/1706.03762) — the original transformer paper; every formula in Parts 5–6 comes from it.
+- [Jay Alammar — The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/) — diagrams of where masks plug into attention.
+- [Andrej Karpathy — Let's build GPT (video)](https://www.youtube.com/watch?v=kCc8FmEb1nY) — live-codes the causal mask and explains the additive trick.
+- [PyTorch — `nn.Transformer` source](https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html) — reference for how the same masks are wired in production.
+
+---
+
+## Next Chapter
+
+**[Self-Attention](../part-5-attention/ch-22-self-attention.md)** — combine Q, K, V, scaling, and masks into the heart of the transformer.

@@ -1,28 +1,44 @@
-# Chapter 07: Calculus for ML
+# Chapter 07: Calculus for Machine Learning
 
 > **Part 2 of 6 — Autodiff Engine**
-> `src/ch-07-calculus-for-ml/`
+> Source: [`src/autograd/engine.ts`](../../src/autograd/engine.ts)
+> Tests: [`src/autograd/value.test.ts`](../../src/autograd/value.test.ts)
+> Exercise: [`exercises/ch-07-calculus-for-ml.ts`](../../exercises/ch-07-calculus-for-ml.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-A small utility module for calculus concepts used in training: numerical gradient checking
-and gradient utilities. More importantly, this chapter is the **conceptual foundation** for
-Ch 08 (autograd). You will implement `numericalGradient` — a function that estimates
-derivatives numerically — which you will then use to **verify** your autograd engine.
+By the end of this chapter you can:
+
+- Define a derivative as the limit of a difference quotient and as a slope.
+- Approximate a derivative with the centred-difference formula and bound its error.
+- Apply the chain rule to a small composition of functions, by hand.
+- Extend partial derivatives to the gradient of a multi-variable function.
+- Connect the gradient to the parameter-update rule `θ ← θ − η ∇L`.
 
 ---
 
-## Why This Matters
+## Intuition First
 
-Neural network training is gradient descent: repeatedly compute "how much does the loss
-change if I nudge each weight?" and move the weights in the direction that decreases the loss.
-This "how much" is the **gradient**. Without gradients, training is impossible.
+A derivative measures "if I nudge the input by a tiny amount, how much does the output change?". That single idea drives **every** parameter update in the course. We do not need calculus tricks; we need three things:
 
-Autograd (Ch 08–09) computes gradients analytically and automatically. But how do you know
-your autograd is correct? You compare it to a numerical approximation — the finite difference
-estimate from this chapter. Every ML framework uses this as a test.
+- A reliable way to compute a derivative numerically (centred differences).
+- The chain rule, to compose derivatives through a network of operations.
+- The gradient as the multi-input generalisation of the derivative.
+
+---
+
+## Mental Model
+
+```text
+        f(x + h)
+          /
+         /  ← slope ≈ (f(x+h) − f(x−h)) / (2h)
+        /
+  f(x−h)
+       └────────── x − h     x     x + h
+```
 
 ---
 
@@ -141,6 +157,26 @@ function numericalGradient(
 
 ---
 
+## Common Pitfalls
+
+- Using forward differences `(f(x+h)-f(x))/h` when centred differences are nearly free and twice as accurate.
+- Picking `h` too small (round-off blows up) or too large (truncation error dominates); `1e-5` is a safe default.
+- Forgetting the chain rule's *multiplication*: `dy/dx = (dy/du)(du/dx)`, not addition.
+- Treating the gradient as a scalar; it is a *vector* with one entry per input.
+- Comparing two derivatives with absolute error when the values themselves are large — use **relative** error.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun run exercises/ch-07-calculus-for-ml.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. Compute the numerical gradient of $f(x) = x^3$ at $x = 2$ using $h = 0.001$.
@@ -153,7 +189,15 @@ function numericalGradient(
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 08a: Autograd — Forward Pass** — build the computation graph that records every
-operation on a Value, enabling automatic gradient computation in Ch 08b.
+- [3Blue1Brown — Essence of Calculus](https://www.3blue1brown.com/topics/calculus) — the visual intuition we lean on throughout autograd.
+- [Stanford CS231n — Backpropagation notes](https://cs231n.github.io/optimization-2/) — best short write-up of chain-rule-as-computational-graph.
+- [Khan Academy — Multivariable derivatives](https://www.khanacademy.org/math/multivariable-calculus/multivariable-derivatives) — partials and gradients at undergrad pace.
+- [Karpathy — Neural Networks: Zero to Hero](https://karpathy.ai/zero-to-hero.html) — video series that builds micrograd and nanoGPT from scratch.
+
+---
+
+## Next Chapter
+
+**[Autograd Foundations](ch-08a-autograd-forward.md)** — turn the chain rule into a small graph data structure we can actually code.

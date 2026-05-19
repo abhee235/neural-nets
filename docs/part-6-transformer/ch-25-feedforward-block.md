@@ -1,27 +1,39 @@
 # Chapter 25: Feed-Forward Block
 
 > **Part 6 of 6 — Transformer**
-> `src/ch-25-feedforward-block/`
+> Source: [`src/nn/feedforward.ts`](../../src/nn/feedforward.ts)
+> Tests: [`src/nn/transformer.test.ts`](../../src/nn/transformer.test.ts)
+> Exercise: [`exercises/ch-25-feedforward-block.ts`](../../exercises/ch-25-feedforward-block.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-The position-wise feed-forward network (FFN) used inside every transformer block.
-Two linear layers with GELU activation and a 4× expansion in the middle:
-`dModel → 4×dModel → dModel`.
+By the end of this chapter you can:
+
+- Implement FFN: `W₂ · GELU(W₁ x + b₁) + b₂`.
+- Use the 4× expansion factor: `d_ff = 4 · d_model` by default.
+- Confirm the FFN is *position-wise* — it does not mix tokens, only features.
+- Count parameters: `d_model · d_ff + d_ff + d_ff · d_model + d_model ≈ 8 · d_model²`.
+- Explain why GELU (not ReLU) became the standard activation here.
 
 ---
 
-## Why This Matters
+## Intuition First
 
-Every transformer block has two sub-layers: attention and FFN. You've just built attention.
-The FFN is the other half — and it accounts for roughly two-thirds of a transformer's
-total parameters.
+Attention mixes tokens. The FFN mixes **features within each token**. After attention, every token has a context-aware vector; the FFN gives the network space to compute something nonlinear with that vector — "if this combination of features is present, emit this other combination". The FFN runs the same MLP on every position independently.
 
-While attention is about *where* to look (routing information between positions),
-the FFN is about *what to do with* the information once it arrives. It applies the same
-transformation independently at each position — like a per-token expert.
+---
+
+## Mental Model
+
+```text
+  x : [batch, seq, d_model]
+       │
+       ├── @ W_1 + b_1 ──► [batch, seq, d_ff]       (d_ff = 4 · d_model)
+       ├── GELU
+       └── @ W_2 + b_2 ──► [batch, seq, d_model]
+```
 
 ---
 
@@ -101,6 +113,29 @@ export class FFN {
 
 ---
 
+## Common Pitfalls
+
+- Skipping the 4× expansion; with `d_ff = d_model` the FFN has almost no capacity.
+- Using ReLU in transformer FFNs — GELU is the convention and the gradients are smoother.
+- Forgetting the biases (some implementations skip them; ours keeps them for clarity).
+- Sharing FFN weights across blocks — every block has its own.
+- Letting the FFN mix tokens by accident (e.g., applying it on the wrong axis).
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/nn/transformer.test.ts
+```
+```bash
+bun run exercises/ch-25-feedforward-block.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. For `dModel=512`, `dFf=2048`: how many parameters does the FFN have?
@@ -116,7 +151,15 @@ export class FFN {
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 26: Encoder Block** — combine LayerNorm, MultiHeadAttention, FFN, and residual
-connections into a complete transformer encoder block.
+- [Vaswani et al. — Attention Is All You Need (2017)](https://arxiv.org/abs/1706.03762) — the original transformer paper; every formula in Parts 5–6 comes from it.
+- [Hendrycks & Gimpel — GELU paper](https://arxiv.org/abs/1606.08415) — why the FFN uses GELU specifically.
+- [Shazeer — GLU Variants Improve Transformer (2020)](https://arxiv.org/abs/2002.05202) — modern FFN variants (SwiGLU, GeGLU) — used in LLaMA and PaLM.
+- [Anthropic — A Mathematical Framework for Transformer Circuits](https://transformer-circuits.pub/2021/framework/index.html) — treats attention + FFN as the two basic primitives.
+
+---
+
+## Next Chapter
+
+**[Encoder Block](ch-26-encoder-block.md)** — wrap attention + FFN with LayerNorm and residual connections.

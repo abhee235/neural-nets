@@ -1,28 +1,42 @@
 # Chapter 06: Math Primitives
 
-> **Part 1 of 6 — Tensor Library (NumPy-like Foundation)**
-> `src/ch-06-math-primitives/`
+> **Part 1 of 6 — Tensor Library**
+> Source: [`src/tensor/math.ts`](../../src/tensor/math.ts)
+> Tests: [`src/tensor/math.test.ts`](../../src/tensor/math.test.ts)
+> Exercise: [`exercises/ch-06-math-primitives.ts`](../../exercises/ch-06-math-primitives.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-Element-wise scalar math functions lifted to work on tensors: `sqrt`, `exp`, `log`, `pow`,
-`abs`, `clip`, `sign`, and `tanh`. These are the primitives that activation functions (Ch 11)
-and loss functions (Ch 12) are built from.
+By the end of this chapter you can:
+
+- Implement elementwise `exp`, `log`, `sqrt`, `tanh`, `pow`, and `abs` on tensors.
+- Identify the three classic numerical-stability traps: `log(0)`, `exp(big)`, and `sqrt(x + ε)`.
+- Write a reusable `applyElementwise(fn)` helper so each primitive is one line.
+- Verify each primitive against finite differences before depending on it.
+- Know which math primitive shows up where in the transformer (softmax, LayerNorm, GELU).
 
 ---
 
-## Why This Matters
+## Intuition First
 
-Every activation function is a composition of these primitives:
-- ReLU: `max(0, x)` — uses `clip`
-- Sigmoid: `1 / (1 + exp(-x))` — uses `exp`
-- Softmax: `exp(x) / sum(exp(x))` — uses `exp` and `sum` (Ch 05)
-- Cross-entropy loss: `-sum(target * log(prediction))` — uses `log`
-- GELU (used in transformers): involves `tanh`
+Math primitives are tiny scalar functions stamped onto every cell of a tensor. The interesting work is not the math (JavaScript already has `Math.exp`); the interesting work is **numerical hygiene**. A naive softmax with a single large logit can produce `Infinity / Infinity = NaN` and silently poison your entire training run. We learn the stable forms once and re-use them everywhere.
 
-Once these primitives exist and are correct, activation functions write themselves in one line.
+---
+
+## Mental Model
+
+```text
+  applyElementwise(fn):
+      for i in 0 .. data.length-1:
+          out[i] = fn(data[i])
+
+  guard rails to remember:
+      log(x)        →  log(max(x, ε))
+      exp(x)        →  exp(x - max(x))   (in softmax)
+      sqrt(x)       →  sqrt(x + ε)        (in LayerNorm)
+```
 
 ---
 
@@ -136,6 +150,29 @@ export const maximum = (a: Tensor, b: Tensor): Tensor =>
 
 ---
 
+## Common Pitfalls
+
+- Calling `Math.log` on a probability that has rounded to 0; clip with a tiny `eps`.
+- Computing `exp(x)` for `x` of size 1000+; subtract the max first whenever you can.
+- Using `**` for integer powers but forgetting it works for floats too (it is `Math.pow`).
+- Allocating a new output tensor inside a hot loop; pre-allocate and write in place.
+- Trusting your op without finite-difference checks — they catch sign bugs early.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/tensor/math.test.ts
+```
+```bash
+bun run exercises/ch-06-math-primitives.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. What is `exp(log(x))` for any `x > 0`? Why? (This is an identity you'll use for softmax.)
@@ -162,7 +199,15 @@ This is everything PyTorch's tensor module provides — and you built it from sc
 
 ---
 
-## → Next Part
+## Further Reading
 
-**Part 2 — Autodiff Engine (Ch 07–10):** build the automatic differentiation engine that
-computes gradients automatically. This turns your tensor library into a learning system.
+- [Goldberg — What Every Computer Scientist Should Know About Floating-Point](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html) — the classic; explains why `(a + b) + c ≠ a + (b + c)` for floats.
+- [Nicholas Higham — Accuracy and Stability of Numerical Algorithms](https://epubs.siam.org/doi/book/10.1137/1.9780898718027) — deeper treatment if you want to design stable kernels.
+- [Wikipedia — LogSumExp](https://en.wikipedia.org/wiki/LogSumExp) — the trick behind stable softmax and stable cross-entropy.
+- [Goodfellow, Bengio, Courville — Deep Learning](https://www.deeplearningbook.org/) — the standard graduate textbook; chapters map cleanly to this course.
+
+---
+
+## Next Chapter
+
+**[Calculus for ML](../part-2-autodiff/ch-07-calculus-for-ml.md)** — equipped with `exp`, `log`, and `sqrt`, we can move on to derivatives and the autograd engine.

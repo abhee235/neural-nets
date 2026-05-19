@@ -1,26 +1,39 @@
 # Chapter 11: Activation Functions
 
 > **Part 3 of 6 — Neural Net Primitives**
-> `src/ch-11-activation-functions/`
+> Source: [`src/nn/activations.ts`](../../src/nn/activations.ts)
+> Tests: [`src/nn/activations.test.ts`](../../src/nn/activations.test.ts)
+> Exercise: [`exercises/ch-11-activations.ts`](../../exercises/ch-11-activations.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-The standard activation functions used in neural networks: `relu`, `sigmoid`, `tanh`, `softmax`,
-and `gelu`. Each is implemented using the tensor primitives from Part 1, with autograd-compatible
-backward passes. These are the non-linearities that give neural networks their power.
+By the end of this chapter you can:
+
+- Implement ReLU, sigmoid, tanh, softmax (numerically stable), and GELU.
+- Sketch each activation by hand and identify its saturation regions.
+- Derive each activation's gradient and verify with finite differences.
+- Explain why softmax needs `x - max(x)` before `exp`.
+- Pick the right activation for the right job (hidden vs. output, regression vs. classification).
 
 ---
 
-## Why This Matters
+## Intuition First
 
-Without activation functions, a stack of linear layers collapses into a single linear function —
-no matter how many layers you add, the model can only learn linear relationships. Activations
-introduce non-linearity, allowing the network to learn curves, XOR, language, and everything else.
+Without nonlinearities, every stack of linear layers collapses into a single linear layer — you cannot model curves with straight lines composed of straight lines. Activations bend the signal between layers. ReLU is the workhorse; sigmoid and tanh are historic but still useful at output heads; softmax turns logits into a probability distribution; GELU is the smooth ReLU used inside transformers.
 
-In the transformer, GELU is used inside the Feed-Forward Block (Ch 25). Softmax is the
-final step of attention (Ch 22) and of the language model head (Ch 29).
+---
+
+## Mental Model
+
+```text
+  ReLU:     y = max(0, x)               (kinks at 0)
+  sigmoid:  y = 1 / (1 + exp(-x))       (saturates at 0 and 1)
+  tanh:     y = (eˣ − e⁻ˣ)/(eˣ + e⁻ˣ)   (saturates at ±1)
+  softmax:  yᵢ = exp(xᵢ) / Σⱼ exp(xⱼ)   (probability distribution)
+  GELU:     y ≈ 0.5x(1 + tanh(√(2/π)(x + 0.044715 x³)))
+```
 
 ---
 
@@ -137,6 +150,29 @@ export function gelu(t: Tensor): Tensor {
 
 ---
 
+## Common Pitfalls
+
+- Computing softmax without subtracting the max — overflow on a single big logit gives `NaN`.
+- Treating ReLU as differentiable at exactly 0; pick a sub-gradient (we use 0) and document it.
+- Using sigmoid in deep hidden layers; gradients vanish through saturation.
+- Implementing GELU exactly with `erf` when the tanh approximation matches to 1e-3 and is faster.
+- Forgetting that softmax operates along an axis — usually the last one.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/nn/activations.test.ts
+```
+```bash
+bun run exercises/ch-11-activations.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. `relu([-3, -1, 0, 2, 5])` — what is the output?
@@ -148,7 +184,15 @@ export function gelu(t: Tensor): Tensor {
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 12: Loss Functions** — MSE, Cross-Entropy, and Binary Cross-Entropy, including
-the numerically stable combined softmax + cross-entropy backward pass.
+- [Hendrycks & Gimpel — Gaussian Error Linear Units (GELU)](https://arxiv.org/abs/1606.08415) — the paper introducing GELU; transformers use this everywhere.
+- [Nair & Hinton — Rectified Linear Units (2010)](https://www.cs.toronto.edu/~fritz/absps/reluICML.pdf) — the paper that made ReLU mainstream.
+- [Stanford CS231n — activations](https://cs231n.github.io/neural-networks-1/#actfun) — compact comparison of all the common activations.
+- [Goodfellow, Bengio, Courville — Deep Learning](https://www.deeplearningbook.org/) — the standard graduate textbook; chapters map cleanly to this course.
+
+---
+
+## Next Chapter
+
+**[Losses](ch-12-loss-functions.md)** — pick a scalar to minimise so we have something to differentiate.

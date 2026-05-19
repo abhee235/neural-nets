@@ -1,23 +1,44 @@
 # Chapter 02: Tensor Creation
 
-> **Part 1 of 6 — Tensor Library (NumPy-like Foundation)**
-> `src/ch-02-tensor-creation/`
+> **Part 1 of 6 — Tensor Library**
+> Source: [`src/tensor/creation.ts`](../../src/tensor/creation.ts)
+> Tests: [`src/tensor/creation.test.ts`](../../src/tensor/creation.test.ts)
+> Exercise: [`exercises/ch-02-tensor-creation.ts`](../../exercises/ch-02-tensor-creation.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-Standard factory functions for creating tensors: constant-fill, identity, ranges, and random
-distributions. These are the `np.zeros`, `np.ones`, `np.eye`, `np.random.randn` equivalents
-that will be used everywhere from weight initialization (Ch 13) to positional encoding (Ch 19).
+By the end of this chapter you can:
+
+- Create zero, one, full, and arange tensors with correct shapes and strides.
+- Sample uniform random tensors with a fixed seed for reproducibility.
+- Implement Box–Muller to sample normal random tensors without a math library.
+- Convert nested JS arrays to flat `Float64Array` tensors safely.
+- Spot when a constructor copies vs. aliases its input.
 
 ---
 
-## Why This Matters
+## Intuition First
 
-Neural network weights must start as random values before training (Ch 13). Positional
-encodings need a `linspace` of positions. Attention masks are filled with zeros and
-negative infinity. Every chapter from here to Ch 30 calls functions you build here.
+Tensors come from one of two places: code that fills them with a known pattern (zeros, ones, arange) or code that fills them with randomness (uniform, normal). Randomness is the seed of every neural network — weights must be initialised so that no two neurons start identical, otherwise gradient descent has nothing to break the symmetry between them.
+
+We get normal samples from uniform samples using the **Box–Muller transform**: pick two independent uniform numbers $u_1, u_2 \in (0, 1]$ and emit two independent standard-normal samples.
+
+---
+
+## Mental Model
+
+```text
+  uniform u1, u2 ∈ (0,1]
+          │
+          ▼
+  z0 = √(-2 ln u1) · cos(2π u2)   ← return now
+  z1 = √(-2 ln u1) · sin(2π u2)   ← cache for next call
+          │
+          ▼
+  standard normal samples (mean 0, var 1)
+```
 
 ---
 
@@ -145,6 +166,29 @@ function randnScalar(): number {
 
 ---
 
+## Common Pitfalls
+
+- Using `Math.random()` directly — it has no seed, so tests become non-deterministic.
+- Calling `Math.log(0)` in Box–Muller; clamp `u1` away from `0`.
+- Forgetting to cache the second Box–Muller sample, wasting half the work.
+- Sharing one `Float64Array` between two tensors so mutating one mutates the other.
+- Using JS `number[]` for large tensors; allocate `Float64Array(size)` once.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/tensor/creation.test.ts
+```
+```bash
+bun run exercises/ch-02-tensor-creation.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. `arange(0, 10, 2)` should produce `[0, 2, 4, 6, 8]`. How many elements is that?
@@ -157,7 +201,15 @@ function randnScalar(): number {
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 03: Element-wise Ops & Broadcasting** — apply arithmetic operations (+, -, *, /)
-across tensors of compatible shapes using NumPy-style broadcasting rules.
+- [Wikipedia — Box–Muller transform](https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform) — derivation and proof that the output is standard normal.
+- [NumPy — random number routines](https://numpy.org/doc/stable/reference/random/index.html) — the API style our creation functions mirror.
+- [Glorot & Bengio — Understanding the difficulty of training deep networks (2010)](http://proceedings.mlr.press/v9/glorot10a.html) — why scaled initial randomness matters; relevant in Ch 13.
+- [PCG Random](https://www.pcg-random.org/) — a modern seeded PRNG family if you outgrow LCG.
+
+---
+
+## Next Chapter
+
+**[Elementwise Ops](ch-03-elementwise-ops-broadcasting.md)** — once we can create tensors, we want to add, multiply, and broadcast them.

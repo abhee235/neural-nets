@@ -1,28 +1,41 @@
 # Chapter 12: Loss Functions
 
 > **Part 3 of 6 — Neural Net Primitives**
-> `src/ch-12-loss-functions/`
+> Source: [`src/nn/losses.ts`](../../src/nn/losses.ts)
+> Tests: [`src/nn/losses.test.ts`](../../src/nn/losses.test.ts)
+> Exercise: [`exercises/ch-12-losses.ts`](../../exercises/ch-12-losses.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-The standard loss functions: Mean Squared Error (MSE), Cross-Entropy, and Binary
-Cross-Entropy — each with a correct, numerically stable implementation and autograd support.
+By the end of this chapter you can:
+
+- Implement MSE for regression, BCE for binary classification, and cross-entropy for multi-class.
+- Combine softmax with cross-entropy using log-sum-exp for numerical stability.
+- Use the closed-form gradient `p − y` for softmax+CE instead of going through two backward passes.
+- Pick the right loss for the right task — regression vs. binary vs. multi-class.
+- Verify each loss's gradient with finite differences.
 
 ---
 
-## Why This Matters
+## Intuition First
 
-The loss function is what training optimizes. It's the single number that tells the model
-"how wrong you are." Different tasks need different losses:
-- **Regression** (predict a number): MSE
-- **Multi-class classification** (which of N classes?): Cross-Entropy
-- **Binary classification** (yes/no): Binary Cross-Entropy
+A loss collapses everything — millions of activations, thousands of parameters — into **one scalar** that says "how wrong are we?". Gradient descent only knows how to push that scalar down. Cross-entropy is a measure of how surprised the true label is to see our predicted distribution; surprise of 0 means perfect, large surprise means very wrong.
 
-In the transformer (Ch 29), you use Cross-Entropy between the predicted token distribution
-and the true next token at every position. Getting the loss right — especially numerically
-stable log computation — is essential.
+---
+
+## Mental Model
+
+```text
+  predictions ──┐
+                ├──► loss(scalar)  ──►  d loss / d predictions
+  targets     ──┘
+
+  MSE:                  L = (1/N) Σ (p − y)²        gradient: (2/N)(p − y)
+  Binary CE:            L = −[y log p + (1−y) log(1−p)]
+  Softmax + CE:         L = −log softmax(z)[y]      gradient: p − one_hot(y)
+```
 
 ---
 
@@ -132,6 +145,29 @@ export function mseLoss(pred: Tensor, target: Tensor): Tensor {
 
 ---
 
+## Common Pitfalls
+
+- Computing softmax then `log()` separately — use log-softmax / log-sum-exp instead.
+- Forgetting to average over the batch; you'll end up tuning the LR for one batch size and breaking another.
+- Using MSE for classification — gradients shrink as predictions become extreme and learning stalls.
+- Passing class indices where the loss expected one-hot, or vice versa; the API must be explicit.
+- Skipping the closed-form `p − y` for softmax+CE; the long path is correct but numerically worse.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/nn/losses.test.ts
+```
+```bash
+bun run exercises/ch-12-losses.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. MSE of predictions `[1, 2, 4]` vs targets `[1, 3, 3]`. Compute by hand.
@@ -146,7 +182,15 @@ export function mseLoss(pred: Tensor, target: Tensor): Tensor {
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 13: Linear Layer** — the fundamental building block of neural networks: $y = xW + b$
-with proper weight initialization and gradient support.
+- [Wikipedia — Cross entropy](https://en.wikipedia.org/wiki/Cross_entropy) — the information-theoretic motivation for the loss.
+- [Chris Olah — Visual information theory](https://colah.github.io/posts/2015-09-Visual-Information/) — best intuition piece on entropy and KL divergence.
+- [Stanford CS231n — losses](https://cs231n.github.io/neural-networks-2/#losses) — a survey of standard losses and when to use them.
+- [Goodfellow, Bengio, Courville — Deep Learning](https://www.deeplearningbook.org/) — the standard graduate textbook; chapters map cleanly to this course.
+
+---
+
+## Next Chapter
+
+**[Linear Layer](ch-13-linear-layer.md)** — connect inputs to outputs with `y = xW + b`, the fundamental building block.

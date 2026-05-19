@@ -1,29 +1,44 @@
 # Chapter 28: Sequence Data & Training Objectives
 
 > **Part 6 of 6 — Transformer**
-> `src/ch-28-sequence-data-objectives/`
+> Source: [`src/utils/data.ts`](../../src/utils/data.ts)
+> Tests: [`src/utils/data.test.ts`](../../src/utils/data.test.ts)
+> Exercise: [`exercises/ch-28-sequence-data.ts`](../../exercises/ch-28-sequence-data.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-The data pipeline for training sequence models: examples, padding, shifted decoder inputs, token-level targets, loss masking, train/validation split, and perplexity.
+By the end of this chapter you can:
 
-This chapter turns a transformer architecture into a trainable experiment.
+- Define a `Seq2SeqExample` type and a tiny toy dataset (e.g. string reversal).
+- Build `shiftRight(target, BOS)` so decoder input = `[BOS, t1, …, t_{n-1}]`.
+- Build a masked cross-entropy loss that ignores `<pad>` positions.
+- Report perplexity = `exp(loss)` alongside cross-entropy.
+- Use the one-batch overfit test as a debugging tool *before* training on the full set.
 
 ---
 
-## Why This Matters
+## Intuition First
 
-Most transformer bugs are not in the formula for attention. They are in the data plumbing:
+Most transformer bugs live in the data pipeline, not in the model. Mis-shifted targets, padding tokens in the loss, missing causal masks — each of these silently kills training. This chapter is the data-engineering chapter that makes the next one (the full transformer) a controlled experiment instead of a guessing game.
 
-- The target is not shifted correctly.
-- Padding tokens contribute to the loss.
-- The causal mask is missing.
-- BOS/EOS are inconsistent between training and generation.
-- Validation data accidentally leaks into training.
+The **overfit-one-batch** test is the single most valuable habit in this part: if the model cannot drive loss near zero on one tiny batch, something is broken upstream.
 
-If this chapter is clear, the full transformer capstone becomes a controlled engineering task instead of guesswork.
+---
+
+## Mental Model
+
+```text
+  raw pair:        source="hello"           target="olleh"
+  tokenize:        src_ids =[BOS, h, e, l, l, o, EOS]
+                   tgt_ids =[BOS, o, l, l, e, h, EOS]
+  shiftRight:      dec_in  =[BOS, o, l, l, e, h]
+                   labels  =[o,   l, l, e, h, EOS]
+  loss mask:       [1, 1, 1, 1, 1,   1]    ← pad positions get 0
+  loss:            masked cross-entropy → scalar
+  metric:          perplexity = exp(loss)
+```
 
 ---
 
@@ -151,24 +166,26 @@ export function shiftRight(targetIds: Tensor, bosId: number): Tensor {
 
 ---
 
-## Required Tests
-
-- `shiftRight([a, b, EOS], BOS)` returns `[BOS, a, b]`.
-- Padding positions have loss mask 0.
-- `maskedCrossEntropy` ignores pad positions completely.
-- Dataset split is deterministic with the same seed.
-- One-batch overfit reduces loss sharply on a tiny dataset.
-- Validation examples never appear in the training set.
-
----
-
 ## Common Pitfalls
 
 - Training the decoder to copy the token it already sees instead of predicting the next token.
-- Including `<pad>` tokens in the loss average.
+- Including `<pad>` tokens in the loss average; perplexity becomes nonsense.
 - Forgetting EOS, so generation has no natural stopping condition.
-- Testing only training loss and never validation loss.
+- Testing only training loss; without validation you cannot detect overfitting.
 - Moving to the full dataset before passing the one-batch overfit test.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/utils/data.test.ts
+```
+```bash
+bun run exercises/ch-28-sequence-data.ts
+```
 
 ---
 
@@ -182,6 +199,15 @@ export function shiftRight(targetIds: Tensor, bosId: number): Tensor {
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 29: Full Transformer** — now the final architecture has a verified sequence training pipeline.
+- [Harvard NLP — The Annotated Transformer](http://nlp.seas.harvard.edu/annotated-transformer/) — shows the same data pipeline end-to-end.
+- [Karpathy — A Recipe for Training Neural Networks](https://karpathy.github.io/2019/04/25/recipe/) — the overfit-one-batch habit comes from here.
+- [Wikipedia — Perplexity](https://en.wikipedia.org/wiki/Perplexity) — the metric and its information-theoretic meaning.
+- [Stanford CS224n — Lecture notes](https://web.stanford.edu/class/cs224n/) — standard reference for sequence-modelling data pipelines.
+
+---
+
+## Next Chapter
+
+**[Full Transformer](ch-29-full-transformer.md)** — train the complete encoder-decoder model on a real toy task.

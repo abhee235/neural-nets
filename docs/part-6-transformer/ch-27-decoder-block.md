@@ -1,28 +1,39 @@
 # Chapter 27: Decoder Block
 
 > **Part 6 of 6 — Transformer**
-> `src/ch-27-decoder-block/`
+> Source: [`src/nn/transformer.ts`](../../src/nn/transformer.ts)
+> Tests: [`src/nn/transformer.test.ts`](../../src/nn/transformer.test.ts)
+> Exercise: [`exercises/ch-27-decoder-block.ts`](../../exercises/ch-27-decoder-block.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-A complete transformer decoder block: masked self-attention (causal), then cross-attention
-over the encoder output, then FFN — each wrapped with pre-norm and residual connections.
-Stack $N$ of these to form the full decoder.
+By the end of this chapter you can:
+
+- Add a masked self-attention sublayer with a causal mask.
+- Add a cross-attention sublayer with K, V from the encoder output.
+- Keep the FFN sublayer; total of three pre-norm + residual passes.
+- Stack `N` decoder blocks to form the full decoder.
+- Trace the teacher-forcing training loop: shifted inputs, full-sequence parallel processing.
 
 ---
 
-## Why This Matters
+## Intuition First
 
-The decoder block is the generating half of the transformer. It's what produces translations,
-summaries, and answers. It sees the partial output generated so far (via self-attention)
-*and* the full encoder representation of the input (via cross-attention) — and uses both
-to decide the next token.
+The decoder is a writer with one eye on what it has written so far (masked self-attention) and another on the source it is translating from (cross-attention). During training we cheat with **teacher forcing** — we feed the true shifted target as input and rely on the causal mask to keep each position from peeking at its answer.
 
-Understanding the decoder block makes it easy to also understand GPT-style models,
-which are decoder-only (self-attention + FFN, no cross-attention), which we can discuss
-after completing the full transformer.
+---
+
+## Mental Model
+
+```text
+  x ─► LN ─► Masked MHA ─►(+)─► LN ─► Cross-Attn ─►(+)─► LN ─► FFN ─►(+)─► out
+                    ↑                  ↑                          ↑
+                    │                  │                          │
+                    │       encoder_out                          │
+  └─ residual 1 ────┘       └─ residual 2 ────┘     └─ residual 3 ┘
+```
 
 ---
 
@@ -184,6 +195,29 @@ export class Decoder {
 
 ---
 
+## Common Pitfalls
+
+- Forgetting the causal mask in the *masked* self-attention; the model trivially copies its target.
+- Passing the encoder output of the wrong layer to cross-attention — use the encoder's final output.
+- Adding a causal mask to cross-attention; only self-attention needs it.
+- Mismatched padding masks for source vs. target; track both separately.
+- Sharing weights between encoder and decoder; almost never what you want.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/nn/transformer.test.ts
+```
+```bash
+bun run exercises/ch-27-decoder-block.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. The decoder has 3 sub-layers; the encoder has 2. Which sub-layer is the extra one,
@@ -199,7 +233,15 @@ export class Decoder {
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 28: Sequence Data & Training Objectives** — build the data pipeline, shifted targets,
-loss masks, validation split, and one-batch overfit test needed before training the full model.
+- [Vaswani et al. — Attention Is All You Need (2017)](https://arxiv.org/abs/1706.03762) — the original transformer paper; every formula in Parts 5–6 comes from it.
+- [Harvard NLP — The Annotated Transformer](http://nlp.seas.harvard.edu/annotated-transformer/) — the original Transformer re-implemented with line-by-line commentary.
+- [Jay Alammar — The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/) — decoder-block diagrams.
+- [Karpathy — Let's build GPT (video)](https://www.youtube.com/watch?v=kCc8FmEb1nY) — decoder-only but illustrates the masking logic exactly.
+
+---
+
+## Next Chapter
+
+**[Sequence Data & Objectives](ch-28-sequence-data-objectives.md)** — build the data pipeline that feeds the full Transformer.

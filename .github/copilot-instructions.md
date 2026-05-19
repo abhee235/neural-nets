@@ -65,3 +65,21 @@ bun test src/ch-01-tensor-type-system            # run one chapter's tests
 
 See `.github/instructions/chapter-code.instructions.md` (auto-loaded for all `.ts` files).
 See `.github/instructions/test-style.instructions.md` (auto-loaded for all `.test.ts` files).
+See `.github/instructions/chapter-doc.instructions.md` (auto-loaded for all chapter docs).
+See `.github/instructions/chapter-media.instructions.md` (auto-loaded for all chapter docs — visuals).
+
+## Chapter Media
+
+Chapter docs are **plain Markdown plus static media** (SVG first, then PNG, then GIF).
+No MDX, no inline JavaScript widgets, no embedded apps in `.md`.
+
+- Rendered figures live in `docs/assets/ch-NN/`.
+- Reproducible generator scripts live in `scripts/media/ch-NN-*.py` (or `.ts`).
+- Chapter `.md` references only finished assets via relative paths (`../assets/ch-NN/...`).
+- Math is written in KaTeX inline, never rendered as an image.
+- See `.github/instructions/chapter-media.instructions.md` for the full rules.
+
+When helping with a chapter that needs a diagram, graph, attention map, GIF, or any
+other visual: write or update the generator script under `scripts/media/`, commit
+the rendered file into `docs/assets/ch-NN/`, and reference it from the chapter `.md`.
+Never embed generation logic, remote URLs, or interactive widgets inside the chapter doc.
