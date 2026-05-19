@@ -41,7 +41,7 @@ export function createTensor(data: number[], shape: number[]): Tensor {
   }
   return {
     data: new Float64Array(data),
-    shape,
+    shape: [...shape],  // defensive copy — caller must not be able to mutate our shape
     ndim: shape.length,
     size: data.length,
   };
