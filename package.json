@@ -1,0 +1,16 @@
+{
+  "name": "neural-nets",
+  "version": "0.1.0",
+  "description": "A tiny transformer library built from scratch in TypeScript — for learning, not production.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "ch": "bun run"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/bun": "latest"
+  }
+}
