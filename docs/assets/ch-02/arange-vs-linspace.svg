@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 460" font-family="Georgia, 'Iowan Old Style', serif">
+<rect width="1100" height="460" fill="#faf7f0"/>
+<text x="550.0" y="42" text-anchor="middle" font-size="20" font-weight="bold" fill="#1d1d1b">arange  vs  linspace</text>
+<text x="550.0" y="62" text-anchor="middle" font-size="12" fill="#64748b">Same span [0, 1].  Different rule for the right endpoint.</text>
+<text x="110" y="106" font-size="15" font-weight="bold" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#7c3aed">arange(0, 1, 0.25)</text>
+<text x="110" y="124" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">fixed step  ·  stop is exclusive</text>
+<rect x="102" y="160" width="666" height="20" rx="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="1" opacity="0.6"/>
+<line x1="96" y1="170" x2="774" y2="170" stroke="#1d1d1b" stroke-width="1.4"/>
+<circle cx="110.0" cy="170" r="7" fill="#7c3aed"/>
+<text x="110.0" y="198" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#1d1d1b">0</text>
+<circle cx="760.0" cy="170" r="7" fill="#faf7f0" stroke="#7c3aed" stroke-width="2"/>
+<text x="760.0" y="198" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#1d1d1b">1.0  ✗ stops before</text>
+<circle cx="272.5" cy="170" r="6" fill="#7c3aed"/>
+<text x="272.5" y="154" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#7c3aed">0.25</text>
+<circle cx="435.0" cy="170" r="6" fill="#7c3aed"/>
+<text x="435.0" y="154" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#7c3aed">0.5</text>
+<circle cx="597.5" cy="170" r="6" fill="#7c3aed"/>
+<text x="597.5" y="154" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#7c3aed">0.75</text>
+<path d="M 110.0 214 L 110.0 220 L 272.5 220 L 272.5 214" fill="none" stroke="#b45309" stroke-width="1.4"/>
+<text x="191.25" y="236" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#b45309">step = 0.25</text>
+<rect x="786" y="146" width="190.0" height="46" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+<text x="881.0" y="164" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#b45309">length = 4</text>
+<text x="881.0" y="182" text-anchor="middle" font-size="13" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#b45309">[0, 0.25, 0.5, 0.75]</text>
+<text x="110" y="276" font-size="15" font-weight="bold" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#0f766e">linspace(0, 1, 5)</text>
+<text x="110" y="294" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">fixed count  ·  stop is inclusive</text>
+<rect x="102" y="330" width="666" height="20" rx="10" fill="#d8f0eb" stroke="#0f766e" stroke-width="1" opacity="0.6"/>
+<line x1="96" y1="340" x2="774" y2="340" stroke="#1d1d1b" stroke-width="1.4"/>
+<circle cx="110.0" cy="340" r="7" fill="#0f766e"/>
+<text x="110.0" y="368" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#1d1d1b">0</text>
+<circle cx="760.0" cy="340" r="7" fill="#0f766e"/>
+<text x="760.0" y="368" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#1d1d1b">1.0  ✓ included</text>
+<circle cx="272.5" cy="340" r="6" fill="#0f766e"/>
+<text x="272.5" y="324" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#0f766e">0.25</text>
+<circle cx="435.0" cy="340" r="6" fill="#0f766e"/>
+<text x="435.0" y="324" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#0f766e">0.5</text>
+<circle cx="597.5" cy="340" r="6" fill="#0f766e"/>
+<text x="597.5" y="324" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#0f766e">0.75</text>
+<path d="M 110.0 384 L 110.0 390 L 272.5 390 L 272.5 384" fill="none" stroke="#b45309" stroke-width="1.4"/>
+<text x="191.25" y="406" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#b45309">Δ = (b−a)/(n−1)</text>
+<rect x="786" y="316" width="237.5" height="46" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+<text x="904.75" y="334" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#b45309">length = 5</text>
+<text x="904.75" y="352" text-anchor="middle" font-size="13" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#b45309">[0, 0.25, 0.5, 0.75, 1.0]</text>
+<text x="550.0" y="252" text-anchor="middle" font-size="12" font-style="italic" fill="#64748b">Same internal points 0.25, 0.50, 0.75. The right endpoint is the only difference.</text>
+<text x="550.0" y="446" text-anchor="middle" font-size="11" fill="#64748b" font-style="italic">positional encoding (Ch 19) uses both: arange for indices, linspace for frequencies.</text>
+</svg>
