@@ -52,6 +52,11 @@ Each chapter lives in `src/ch-NN-name/index.ts` with tests in `index.test.ts`.
 - **Strict TypeScript.** No `any`, no `@ts-ignore`, no implicit `undefined`.
 - **Comments ARE the documentation.** Every function and every non-obvious line must be commented.
 - **Cumulative.** Each chapter imports from previous chapters. No re-implementing existing utilities.
+- **Chapter docs stay lean.** A chapter doc must contain only what's needed to *build the next piece of the
+  transformer library*. Proofs, historical context, research-paper background, and optional deep
+  derivations go in `docs/deep-dives/ch-NN-topic.md` and are linked from the chapter's *Further Reading*
+  section as optional. The audience is a beginner learning AI/transformers from scratch — if a paragraph
+  doesn't help them write the next line of code, it belongs in a deep dive, not the main chapter.
 
 ## Running the Project
 

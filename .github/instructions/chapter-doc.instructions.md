@@ -14,6 +14,38 @@ follow this structure exactly.
 
 ---
 
+## Scope: Lean by Default
+
+The audience is a **beginner learning AI and transformers from scratch**. A chapter doc must
+contain only what is needed to *build the next piece of the transformer library*. Anything
+beyond that — proofs, history, research-paper context, optional optimisations, pen-and-paper
+derivations that aren't strictly required — goes into `docs/deep-dives/ch-NN-topic.md`
+and is linked from the chapter's *Further Reading* section as a single optional bullet.
+
+**Test before adding a paragraph:** "Does the reader need this to write the next line of code
+or to pass the chapter's tests?" If no, it belongs in a deep dive.
+
+Things that **belong in the main chapter**:
+
+- Definitions and formulas the implementation uses directly.
+- Mental-model diagrams that prevent shape/index bugs.
+- Common pitfalls the student will actually hit.
+- Transformer-relevance callouts (one short blockquote per concept).
+- Self-check questions that test API behaviour and edge cases.
+
+Things that **belong in `docs/deep-dives/`**:
+
+- Mathematical proofs of why a formula works.
+- Research-paper background (Glorot/Kaiming, original attention paper, etc.).
+- Long pen-and-paper derivations.
+- Performance optimisations not in the main implementation.
+- Historical context.
+
+When trimming a chapter, be ruthless about cutting depth that doesn't pay for itself.
+Concise + complete-for-the-build beats thorough + overwhelming.
+
+---
+
 ## Required Sections (in this order)
 
 Every chapter doc must contain these 11 sections, in this exact order:
@@ -75,9 +107,13 @@ not math**. Use:
 
 - A vivid analogy (spreadsheet, library shelf, conveyor belt, etc.)
 - Plain language a non-technical reader could follow
-- A "Why we care for transformers" mini-table when applicable
+- A brief "Why this matters later" note when it genuinely helps
 
 This section earns the reader's attention before any formula is introduced.
+
+For early chapters, do **not** assume the reader already understands transformers, attention,
+LayerNorm, embeddings, or positional encoding. If you mention a later use, keep it to one or two
+plain sentences. The main job of the section is to explain the current chapter, not to preview the course.
 
 ### 4. Mental Model
 
@@ -92,12 +128,28 @@ A `## Concepts` heading with sub-headings (`###`) for each concept.
 
 This is where math lives. Rules:
 
+- Open each concept with its **job** before its formula: what problem it solves, when the reader would use it, or what changes from the previous concept.
 - Define every symbol before using it.
 - Use KaTeX math blocks (`$$ ... $$`) for important formulas.
 - After every formula, add one plain-English sentence explaining what it computes.
+- Add one short, visually distinct **practical-use callout** per major concept. Prefer a blockquote with two bold labels: `Use it when` and `Picture this`.
+- The `Use it when` line should answer the practical job of the concept in one sentence.
+- The `Picture this` line should give one concrete, beginner-friendly situation in one or two sentences max.
+- Keep these callouts jargon-free unless the chapter has already defined the term. Prefer everyday situations like grids, lists, counters, sample points, or test cases over model-specific words.
+- When a concept generates simple values or patterns (`0`, `1`, identity, counting steps, sample points), explain **why the machine still needs that pattern**: for example as a starting state, a reference case, a control value, or an ordered position list.
+- In hard sections, add one short reassurance line telling the reader what they do and do not need to
+  understand right now.
+- Preserve momentum. When a section is dense, add one short line that keeps curiosity alive without fluff, for example by naming the payoff or why the concept unlocks the next implementation step.
 - Prefer bullet points over walls of prose.
 - Add a `> **Why this matters for transformers**` callout when a concept connects
   to a later transformer chapter.
+
+Use these callouts sparingly. In beginner-facing chapters, one short later-use note per major section
+is enough, and it should never require the reader to already know future terminology. If the callout
+starts to feel like a preview lecture, cut it or move it to a deep dive.
+
+When two formulas say almost the same thing, do not stack both a dense symbolic comparison and a long prose
+comparison unless both earn their place. Prefer one formula plus one short memory rule.
 
 ### 6. What to Implement
 
@@ -142,13 +194,23 @@ A `## Self-Check Questions` heading with 4-6 numbered questions.
 
 ### 10. Further Reading
 
-A `## Further Reading` heading with 4-6 external links, each:
+A `## Further Reading` heading with 2-4 items. Prefer a short list over a long one.
 
+Each item may be either:
+
+- An external link, with:
 - Bolded link title
 - One-sentence annotation explaining *why* the student should read it
 - The URL on a separate line in angle brackets: `<https://...>`
+- An optional deep-dive link inside this repo, with:
+- Bolded title
+- One-sentence annotation explaining what extra material it contains
+- A relative Markdown link to `docs/deep-dives/ch-NN-topic.md`
 
-Preferred sources:
+Keep this section optional in spirit: it should point to useful next reading, not dump every
+reference you know. If the chapter is already dense, 2 items is enough.
+
+Preferred external sources:
 
 - Official docs (NumPy, PyTorch, Hugging Face)
 - 3Blue1Brown videos
@@ -305,7 +367,7 @@ Check, in this order:
 4. Type annotations in code blocks match the actual stub file.
 5. At least one analogy in "Intuition First".
 6. At least 3 specific pitfalls in "Common Pitfalls".
-7. At least 4 external links in "Further Reading", each with an annotation.
+7. Further Reading is short, annotated, and consistent with the lean-doc rule. Deep-dive links are allowed.
 8. Next-chapter link exists and resolves.
 
 If any check fails, fix it without asking — these are non-negotiable standards.
