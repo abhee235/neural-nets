@@ -36,14 +36,22 @@ export interface Tensor {
  * Validates data.length === product(shape).
  */
 export function createTensor(data: number[], shape: number[]): Tensor {
-  throw new Error("createTensor not implemented — docs/part-1-tensor-library/ch-01-tensor-type-system.md");
+  if (data.length !== shape.reduce((a, b) => a * b, 1)) {
+    throw new Error("Data length does not match shape product");
+  }
+  return {
+    data: new Float64Array(data),
+    shape,
+    ndim: shape.length,
+    size: data.length,
+  };
 }
 
 /**
  * Create a rank-0 scalar Tensor (shape = [], size = 1).
  */
 export function scalar(value: number): Tensor {
-  throw new Error("scalar not implemented");
+  return createTensor([value], []);
 }
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
@@ -52,7 +60,18 @@ export function scalar(value: number): Tensor {
  * Runtime type guard — narrows unknown to Tensor.
  */
 export function isTensor(value: unknown): value is Tensor {
-  throw new Error("isTensor not implemented");
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "data" in value &&
+    "shape" in value &&
+    "ndim" in value &&
+    "size" in value &&
+    value.data instanceof Float64Array &&
+    Array.isArray(value.shape) &&
+    typeof value.ndim === "number" &&
+    typeof value.size === "number"
+  );
 }
 
 /**
@@ -60,7 +79,24 @@ export function isTensor(value: unknown): value is Tensor {
  * Row-major formula:  offset = Σ_i  indices[i] * stride[i]
  */
 export function flatIndex(shape: number[], indices: number[]): number {
-  throw new Error("flatIndex not implemented");
+  if (shape.length !== indices.length) {
+    throw new Error("Shape and indices must have the same length");
+  }
+  let offset = 0;
+  let stride = 1;
+  for (let i = shape.length - 1; i >= 0; i--) {
+    // noUncheckedIndexedAccess makes arr[i] return T | undefined even inside a
+    // loop whose bounds we control. Read once into typed locals so the rest of
+    // the loop body sees plain `number`.
+    const dim = shape[i] as number;
+    const idx = indices[i] as number;
+    if (idx < 0 || idx >= dim) {
+      throw new Error(`Index ${idx} out of bounds for dimension ${i} with size ${dim}`);
+    }
+    offset += idx * stride;
+    stride *= dim;
+  }
+  return offset;
 }
 
 /**
@@ -68,5 +104,7 @@ export function flatIndex(shape: number[], indices: number[]): number {
  * Use this instead of console.log(tensor) for debugging.
  */
 export function toString(t: Tensor): string {
-  throw new Error("toString not implemented");
+  const sampleSize = Math.min(5, t.size);
+  const sampleValues = Array.from(t.data.slice(0, sampleSize)).join(", ");
+  return `Tensor(shape=[${t.shape.join(", ")}], data=[${sampleValues}${t.size > sampleSize ? ", ..." : ""}])`;
 }

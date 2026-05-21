@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 460" font-family="Georgia, 'Iowan Old Style', serif">
+<rect width="880" height="460" fill="#faf7f0"/>
+<text x="440.0" y="42" text-anchor="middle" font-size="20" font-weight="bold" fill="#1d1d1b">eye(4)  ·  the 4 × 4 identity matrix</text>
+<text x="440.0" y="62" text-anchor="middle" font-size="12" fill="#64748b">I[i, j] = 1 if i = j, else 0  ·  shape [4, 4]  ·  size 16</text>
+<text x="208.0" y="88" text-anchor="middle" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#0f766e">column j</text>
+<text x="118.0" y="104" text-anchor="middle" font-size="10.5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#0f766e">0</text>
+<text x="178.0" y="104" text-anchor="middle" font-size="10.5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#0f766e">1</text>
+<text x="238.0" y="104" text-anchor="middle" font-size="10.5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#0f766e">2</text>
+<text x="298.0" y="104" text-anchor="middle" font-size="10.5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#0f766e">3</text>
+<text x="54" y="228.0" text-anchor="middle" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#7c3aed" transform="rotate(-90 54 228.0)">row i</text>
+<text x="78" y="142.0" text-anchor="end" font-size="10.5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#7c3aed">0</text>
+<text x="78" y="202.0" text-anchor="end" font-size="10.5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#7c3aed">1</text>
+<text x="78" y="262.0" text-anchor="end" font-size="10.5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#7c3aed">2</text>
+<text x="78" y="322.0" text-anchor="end" font-size="10.5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#7c3aed">3</text>
+<rect x="90" y="110" width="56" height="56" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.6"/>
+<text x="118.0" y="146.0" text-anchor="middle" font-size="22" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#b45309" font-weight="bold">1</text>
+<rect x="150" y="110" width="56" height="56" rx="6" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="178.0" y="146.0" text-anchor="middle" font-size="22" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<rect x="210" y="110" width="56" height="56" rx="6" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="238.0" y="146.0" text-anchor="middle" font-size="22" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<rect x="270" y="110" width="56" height="56" rx="6" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="298.0" y="146.0" text-anchor="middle" font-size="22" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<rect x="90" y="170" width="56" height="56" rx="6" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="118.0" y="206.0" text-anchor="middle" font-size="22" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<rect x="150" y="170" width="56" height="56" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.6"/>
+<text x="178.0" y="206.0" text-anchor="middle" font-size="22" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#b45309" font-weight="bold">1</text>
+<rect x="210" y="170" width="56" height="56" rx="6" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="238.0" y="206.0" text-anchor="middle" font-size="22" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<rect x="270" y="170" width="56" height="56" rx="6" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="298.0" y="206.0" text-anchor="middle" font-size="22" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<rect x="90" y="230" width="56" height="56" rx="6" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="118.0" y="266.0" text-anchor="middle" font-size="22" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<rect x="150" y="230" width="56" height="56" rx="6" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="178.0" y="266.0" text-anchor="middle" font-size="22" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<rect x="210" y="230" width="56" height="56" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.6"/>
+<text x="238.0" y="266.0" text-anchor="middle" font-size="22" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#b45309" font-weight="bold">1</text>
+<rect x="270" y="230" width="56" height="56" rx="6" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="298.0" y="266.0" text-anchor="middle" font-size="22" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<rect x="90" y="290" width="56" height="56" rx="6" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="118.0" y="326.0" text-anchor="middle" font-size="22" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<rect x="150" y="290" width="56" height="56" rx="6" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="178.0" y="326.0" text-anchor="middle" font-size="22" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<rect x="210" y="290" width="56" height="56" rx="6" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="238.0" y="326.0" text-anchor="middle" font-size="22" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<rect x="270" y="290" width="56" height="56" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.6"/>
+<text x="298.0" y="326.0" text-anchor="middle" font-size="22" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#b45309" font-weight="bold">1</text>
+<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#b45309"/></marker></defs>
+<text x="416" y="110" font-size="13" font-weight="bold" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#1d1d1b">flat row-major buffer (Ch 01 layout)</text>
+<text x="416" y="128" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">data[i*4 + j]  ·  diagonal lives at offsets 0, 5, 10, 15</text>
+<rect x="416" y="140" width="38" height="38" rx="5" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+<text x="435.0" y="165.0" text-anchor="middle" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#b45309" font-weight="bold">1</text>
+<text x="435.0" y="192" text-anchor="middle" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">0</text>
+<rect x="456" y="140" width="38" height="38" rx="5" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="475.0" y="165.0" text-anchor="middle" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<text x="475.0" y="192" text-anchor="middle" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">1</text>
+<rect x="496" y="140" width="38" height="38" rx="5" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="515.0" y="165.0" text-anchor="middle" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<text x="515.0" y="192" text-anchor="middle" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">2</text>
+<rect x="536" y="140" width="38" height="38" rx="5" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="555.0" y="165.0" text-anchor="middle" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<text x="555.0" y="192" text-anchor="middle" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">3</text>
+<rect x="576" y="140" width="38" height="38" rx="5" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="595.0" y="165.0" text-anchor="middle" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<text x="595.0" y="192" text-anchor="middle" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">4</text>
+<rect x="616" y="140" width="38" height="38" rx="5" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+<text x="635.0" y="165.0" text-anchor="middle" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#b45309" font-weight="bold">1</text>
+<text x="635.0" y="192" text-anchor="middle" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">5</text>
+<rect x="656" y="140" width="38" height="38" rx="5" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="675.0" y="165.0" text-anchor="middle" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<text x="675.0" y="192" text-anchor="middle" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">6</text>
+<rect x="696" y="140" width="38" height="38" rx="5" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="715.0" y="165.0" text-anchor="middle" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<text x="715.0" y="192" text-anchor="middle" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">7</text>
+<rect x="416" y="208" width="38" height="38" rx="5" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="435.0" y="233.0" text-anchor="middle" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<text x="435.0" y="260" text-anchor="middle" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">8</text>
+<rect x="456" y="208" width="38" height="38" rx="5" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="475.0" y="233.0" text-anchor="middle" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<text x="475.0" y="260" text-anchor="middle" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">9</text>
+<rect x="496" y="208" width="38" height="38" rx="5" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+<text x="515.0" y="233.0" text-anchor="middle" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#b45309" font-weight="bold">1</text>
+<text x="515.0" y="260" text-anchor="middle" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">10</text>
+<rect x="536" y="208" width="38" height="38" rx="5" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="555.0" y="233.0" text-anchor="middle" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<text x="555.0" y="260" text-anchor="middle" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">11</text>
+<rect x="576" y="208" width="38" height="38" rx="5" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="595.0" y="233.0" text-anchor="middle" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<text x="595.0" y="260" text-anchor="middle" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">12</text>
+<rect x="616" y="208" width="38" height="38" rx="5" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="635.0" y="233.0" text-anchor="middle" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<text x="635.0" y="260" text-anchor="middle" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">13</text>
+<rect x="656" y="208" width="38" height="38" rx="5" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.0"/>
+<text x="675.0" y="233.0" text-anchor="middle" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b" font-weight="normal">0</text>
+<text x="675.0" y="260" text-anchor="middle" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">14</text>
+<rect x="696" y="208" width="38" height="38" rx="5" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+<text x="715.0" y="233.0" text-anchor="middle" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#b45309" font-weight="bold">1</text>
+<text x="715.0" y="260" text-anchor="middle" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">15</text>
+<rect x="90" y="400" width="700" height="42" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+<text x="440.0" y="427" text-anchor="middle" font-size="17" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#b45309">for i in 0..n-1:  data[i * n + i] = 1   ←  one write per diagonal cell</text>
+</svg>

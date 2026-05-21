@@ -1,29 +1,40 @@
 # Chapter 04: Matrix Operations
 
-> **Part 1 of 6 — Tensor Library (NumPy-like Foundation)**
-> `src/ch-04-matrix-ops/`
+> **Part 1 of 6 — Tensor Library**
+> Source: [`src/tensor/linalg.ts`](../../src/tensor/linalg.ts)
+> Tests: [`src/tensor/linalg.test.ts`](../../src/tensor/linalg.test.ts)
+> Exercise: [`exercises/ch-04-matrix-ops.ts`](../../exercises/ch-04-matrix-ops.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-The higher-level tensor operations: `matMul`, `transpose`, `reshape`, `flatten`, `concat`,
-`stack`, `squeeze`, and `unsqueeze`. Matrix multiplication alone is the most important
-single operation in all of deep learning — every linear layer and every attention computation
-reduces to a `matMul`.
+By the end of this chapter you can:
+
+- Implement 2-D matmul, then generalise to batched matmul over leading axes.
+- Implement `transpose` as an axis permutation (no data copy when possible).
+- Implement `reshape` and explain when it is O(1) vs. when it must copy.
+- Implement `concat` and `split` along an arbitrary axis.
+- Predict the matmul shape for every layer of a transformer.
 
 ---
 
-## Why This Matters
+## Intuition First
 
-Look at the transformer's attention formula:
+A matrix multiplication is just "for every row of A, dot it with every column of B". A batched matmul is the same operation done in parallel for many independent pairs of matrices stacked along leading axes. In a transformer, the attention score `QKᵀ` is a batched matmul over `[batch, heads]`; the linear layer's `xW` is a batched matmul over `[batch, seq]`. Get one matmul right and the whole library scales up cleanly.
 
-$$\text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$
+---
 
-That contains **three** `matMul` calls: $QK^T$, then the softmax output times $V$.
-Each call on a batch of 8 sequences, 12 heads, and 64-token sequences involves matrices
-in the tens of thousands of elements. Getting `matMul` correct — and understanding its
-shape contract — is the single most important step in this entire course.
+## Mental Model
+
+```text
+  A:  [..., m, k]            B:  [..., k, n]
+                ╲    matmul    ╱
+                 ▼            ▼
+              C:  [..., m, n]
+
+  C[..., i, j] = Σ_p  A[..., i, p] · B[..., p, j]
+```
 
 ---
 
@@ -147,6 +158,29 @@ function matMul(a: Tensor, b: Tensor): Tensor {
 
 ---
 
+## Common Pitfalls
+
+- Forgetting the inner-dim constraint: `A.shape[-1]` must equal `B.shape[-2]`.
+- Transposing the wrong matrix — `(AB)ᵀ = BᵀAᵀ`, not `AᵀBᵀ`.
+- Treating `reshape` as free when the source isn't contiguous; it may have to copy.
+- Allocating a fresh output buffer inside the inner loop; allocate once outside.
+- Mismatched batch axes between the two operands; broadcast or fail loudly.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/tensor/linalg.test.ts
+```
+```bash
+bun run exercises/ch-04-matrix-ops.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. What shape does `matMul(zeros([3, 7]), zeros([7, 5]))` produce?
@@ -159,7 +193,15 @@ function matMul(a: Tensor, b: Tensor): Tensor {
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 05: Reduction & Stat Ops** — `sum`, `mean`, `max`, `min`, `argmax`, `variance`, `std`
-along arbitrary axes. These power softmax, LayerNorm, and loss computation.
+- [NumPy — `numpy.matmul`](https://numpy.org/doc/stable/reference/generated/numpy.matmul.html) — specifies the batched-matmul broadcasting rules we follow.
+- [Goto & van de Geijn — Anatomy of High-Performance Matrix Multiplication](https://www.cs.utexas.edu/~flame/pubs/GotoTOMS_revision.pdf) — the algorithms behind every fast BLAS; optional but eye-opening.
+- [3Blue1Brown — Essence of Linear Algebra](https://www.3blue1brown.com/topics/linear-algebra) — geometric intuition for vectors, matrices, and linear maps.
+- [Matrix Cookbook](https://www.math.uwaterloo.ca/~hwolkowi/matrixcookbook.pdf) — an identity reference; you will reach for it during backward passes.
+
+---
+
+## Next Chapter
+
+**[Reductions](ch-05-reductions.md)** — once we can multiply matrices, we will collapse them along axes to compute norms, means, and losses.

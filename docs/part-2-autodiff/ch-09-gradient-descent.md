@@ -1,23 +1,43 @@
 # Chapter 09: Gradient Descent
 
 > **Part 2 of 6 — Autodiff Engine**
-> `src/ch-09-gradient-descent/`
+> Source: [`src/autograd/value.ts`](../../src/autograd/value.ts)
+> Tests: [`src/autograd/value.test.ts`](../../src/autograd/value.test.ts)
+> Exercise: [`exercises/ch-09-gradient-descent.ts`](../../exercises/ch-09-gradient-descent.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-The training loop primitive: a `Parameter` wrapper for learnable tensors, a `SGD` optimizer,
-and a demonstration that gradient descent actually minimizes a loss function. This chapter
-closes the loop from Ch 07–08: define a loss, call backward, update parameters, repeat.
+By the end of this chapter you can:
+
+- Apply the rule `θ ← θ − η ∇L` to a single parameter and a vector of parameters.
+- Observe loss curves under three learning rates: too small, well-tuned, too large.
+- Explain why gradient descent finds a *local* minimum, not necessarily a global one.
+- Fit a one-parameter line and a two-parameter line to synthetic data using only autograd.
+- Spot divergence (loss going up) and react by lowering the learning rate.
 
 ---
 
-## Why This Matters
+## Intuition First
 
-Every training run in existence — from a 2-weight toy network to GPT-4 — is gradient descent
-at its core. This chapter makes it concrete: you will watch the loss decrease step by step
-and develop intuition for learning rate, convergence, and what "training" actually means.
+Imagine the loss as a landscape over the parameter space and the gradient as the compass needle pointing **uphill**. Gradient descent walks in the opposite direction. The learning rate `η` is the step size — too small and you crawl, too large and you stride past the valley and end up climbing the next hill.
+
+---
+
+## Mental Model
+
+```text
+    loss
+     ▲
+     │     ●            ← start
+     │       ╲
+     │        ╲   ← step: −η ∇L
+     │         ●
+     │           ╲
+     │            ● ── ● ── ●   ← convergence
+     └──────────────────────────► parameter
+```
 
 ---
 
@@ -146,6 +166,29 @@ Print the loss every 10 steps. By the end, $w$ should be near $2$ and $b$ near $
 
 ---
 
+## Common Pitfalls
+
+- Forgetting `zeroGrad()` before `backward()` — gradients accumulate across steps.
+- Updating parameters *inside* the autograd graph; do the update without tracking.
+- Picking a learning rate by guessing; sweep on a log scale (`1e-4, 1e-3, 1e-2`).
+- Declaring victory after one step — plot the loss curve.
+- Comparing different runs without fixing the random seed first.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/autograd/value.test.ts
+```
+```bash
+bun run exercises/ch-09-gradient-descent.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. For the linear fit demo, compute the gradient of MSE loss w.r.t. $w$ by hand at step 0.
@@ -168,8 +211,15 @@ and watch $w_1 \to 3$ and $w_2 \to -1$.
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 10: Tensor Autograd Bridge** — extend scalar autograd into tensor autograd with
-broadcasting, reductions, matmul, reshape, transpose, and gradient checks. This is the
-real bridge into neural networks and transformers.
+- [Sebastian Ruder — An overview of gradient descent optimization algorithms](https://ruder.io/optimizing-gradient-descent/) — tour of SGD variants; we will implement several in Ch 14.
+- [3Blue1Brown — Gradient descent, how neural networks learn](https://www.3blue1brown.com/lessons/gradient-descent) — visual treatment of the loss landscape.
+- [Bottou, Curtis & Nocedal — Optimization Methods for Large-Scale ML](https://arxiv.org/abs/1606.04838) — more rigorous look at SGD and its analysis.
+- [Goodfellow, Bengio, Courville — Deep Learning](https://www.deeplearningbook.org/) — the standard graduate textbook; chapters map cleanly to this course.
+
+---
+
+## Next Chapter
+
+**[Tensor Autograd](ch-10-tensor-autograd-bridge.md)** — lift scalar autograd to tensors so we can train real neural networks.

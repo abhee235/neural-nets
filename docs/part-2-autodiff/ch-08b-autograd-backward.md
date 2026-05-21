@@ -1,27 +1,41 @@
 # Chapter 08b: Autograd — Backward Pass
 
 > **Part 2 of 6 — Autodiff Engine**
-> `src/ch-08b-autograd-backward/`
+> Source: [`src/autograd/value.ts`](../../src/autograd/value.ts)
+> Tests: [`src/autograd/value.test.ts`](../../src/autograd/value.test.ts)
+> Exercise: [`exercises/ch-08-autograd.ts`](../../exercises/ch-08-autograd.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-The backward pass of the autograd engine: implement the `_backward` function for each
-operation and add a `backward()` method to `Value` that propagates gradients from the
-loss node all the way back to every input, using **reverse-mode automatic differentiation**.
+By the end of this chapter you can:
+
+- Implement `backward()` as a reverse topological traversal of the computation graph.
+- Accumulate gradients with `+=` so that a `Value` used in two places sums its contributions.
+- Derive and memorise the local-gradient table for `add`, `mul`, `pow`, `exp`, `log`, `tanh`.
+- Verify each operator's gradient with finite differences from Ch 07.
+- Identify when *not* zeroing gradients between steps causes runaway updates.
 
 ---
 
-## Why This Matters
+## Intuition First
 
-This chapter is where the magic happens. After this, you will never hand-derive a gradient
-again. You just write the forward pass, call `.backward()`, and every `.grad` is filled in
-automatically. This is literally how PyTorch works internally.
+Backprop is one rule applied repeatedly: **the gradient flowing into a node is the sum of the gradients flowing out of it, each multiplied by the local derivative on that edge.** Topological order guarantees we never visit a node before all its downstream users have contributed.
 
-Milestone: once `backward()` works, call it on a tiny 2-weight "network", print the gradients,
-and verify them against the numerical gradient from Ch 07. When they match to 6 decimal places,
-your autograd engine is correct. That moment is worth celebrating.
+---
+
+## Mental Model
+
+```text
+  forward:        a ─► (*) ─► c ─► (+) ─► L
+                   ╲                ╱
+                    b              d
+
+  backward starts at L.grad = 1, then for each node in reverse-topo order:
+      for each parent p:
+          p.grad += local_∂node/∂p · node.grad
+```
 
 ---
 
@@ -186,6 +200,29 @@ exp(): Value {
 
 ---
 
+## Common Pitfalls
+
+- Assigning `p.grad = …` instead of `p.grad += …` — a node reused twice will lose half its gradient.
+- Forgetting to call `zeroGrad()` between training steps; gradients accumulate forever.
+- Visiting nodes in forward order; you must run in **reverse** topological order.
+- Re-running `backward()` on a graph that has already been backwarded — fresh forward each time.
+- Implementing `tanh` backward as `1 - x²` instead of `1 - out²` (use the cached output).
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/autograd/value.test.ts
+```
+```bash
+bun run exercises/ch-08-autograd.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. For $z = x \cdot y$ with $x = 3, y = 4$: if $\partial L / \partial z = 2$,
@@ -201,7 +238,15 @@ exp(): Value {
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 09: Gradient Descent** — use the autograd engine to train a simple model by
-repeatedly computing the loss, calling `.backward()`, and updating parameters.
+- [Karpathy — micrograd walkthrough video](https://www.youtube.com/watch?v=VMj-3S1tku0) — step-by-step build of the same backward pass we are coding.
+- [Goodfellow et al. — Deep Learning, ch. 6.5 (Back-Propagation)](https://www.deeplearningbook.org/contents/mlp.html) — the formal treatment of reverse-mode AD.
+- [Justin Domke — Why is automatic differentiation efficient?](https://justindomke.wordpress.com/2009/02/17/automatic-differentiation-the-most-criminally-underused-tool-in-the-potential-machine-learning-toolbox/) — explains why reverse mode is `O(forward)` for scalar loss.
+- [Chris Olah — Calculus on Computational Graphs](https://colah.github.io/posts/2015-08-Backprop/) — complements the 08a reading; focus on multivariate examples.
+
+---
+
+## Next Chapter
+
+**[Gradient Descent](ch-09-gradient-descent.md)** — now that gradients flow, use them to actually move parameters downhill.

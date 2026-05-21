@@ -1,33 +1,46 @@
-# Chapter 10: Tensor Autograd Bridge
+# Chapter 10: Tensor Autograd
 
 > **Part 2 of 6 — Autodiff Engine**
-> `src/ch-10-tensor-autograd-bridge/`
+> Source: [`src/autograd/grad.ts`](../../src/autograd/grad.ts) · [`src/autograd/engine.ts`](../../src/autograd/engine.ts)
+> Tests: [`src/autograd/grad.test.ts`](../../src/autograd/grad.test.ts)
+> Exercise: [`exercises/ch-10-tensor-autograd.ts`](../../exercises/ch-10-tensor-autograd.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-The missing bridge between scalar autograd and neural-network autograd: a `Value` object that wraps a full `Tensor`, stores a tensor-shaped gradient, and knows how to backpropagate through broadcasting, reductions, matrix multiplication, reshape, and transpose.
+By the end of this chapter you can:
 
-This is the chapter that turns a tiny scalar micrograd-style engine into the foundation of a tiny PyTorch-style learning library.
+- Promote `Value` from scalar to tensor: data and grad are both `Tensor`s with matching shapes.
+- Implement backward passes for tensor `add`, `mul`, `matMul`, `reshape`, and `transpose`.
+- Implement `sumToShape` to un-broadcast a gradient back to its original tensor shape.
+- Verify every tensor op against finite differences before depending on it.
+- Confirm that all 19 tests pass; this is the foundation every later chapter relies on.
 
 ---
 
-## Why This Matters
+## Intuition First
 
-Scalar autograd teaches the idea: build a computation graph, sort it topologically, and run local backward functions in reverse.
+Tensor autograd is scalar autograd with two extra rules:
 
-Tensor autograd is where the real engineering starts.
+1. **Matrix backward.** If `C = A @ B`, then `∂L/∂A = ∂L/∂C @ Bᵀ` and `∂L/∂B = Aᵀ @ ∂L/∂C`. These two formulas are the workhorses of every backward pass in this course.
+2. **Un-broadcasting.** If a forward op broadcast a small tensor up to a large shape, the backward op must sum the gradient back down to the small shape. Otherwise gradients have the wrong shape and the optimizer blows up.
 
-Every transformer component depends on tensor gradients:
+---
 
-- Linear layers need matmul backward.
-- LayerNorm needs reduction and broadcasting backward.
-- Softmax and cross-entropy need stable tensor operations.
-- Attention needs batched matmul, transpose, masking, and softmax.
-- Embeddings need scatter-add style gradient accumulation.
+## Mental Model
 
-If this bridge is weak, the final transformer will fail in confusing ways. If this bridge is solid, the rest of the course becomes much easier.
+```text
+  forward:  C = A @ B           (shapes: A:[m,k], B:[k,n] → C:[m,n])
+
+  backward (given dL/dC of shape [m,n]):
+      dL/dA = dL/dC @ Bᵀ       → [m, k]
+      dL/dB = Aᵀ @ dL/dC      → [k, n]
+
+  broadcast rule:
+      forward stretched [d] → [batch, seq, d]
+      backward must  Σ over batch and seq to get [d] again
+```
 
 ---
 
@@ -224,25 +237,26 @@ export class Value {
 
 ---
 
-## Required Tests
+## Common Pitfalls
 
-- `sumToShape([2, 3, 4] -> [1, 3, 1])` sums the correct axes.
-- `add` backward passes through unchanged for equal shapes.
-- `add` backward sums over broadcasted dimensions.
-- `mean` backward gives each input element `1 / n` for a full-tensor mean.
-- `matMul` backward matches finite differences for both operands.
-- `reshape` backward preserves all gradient values in the original order.
-- `transpose` backward applies the inverse axis permutation.
+- Forgetting to transpose in matmul backward — the shape error will be obvious if your shape checks are strict.
+- Skipping `sumToShape` after a broadcasted op; the gradient comes back the wrong shape.
+- Reusing a tensor's data buffer in two ops without cloning — backward will corrupt forward data.
+- Implementing `reshape` backward as a fresh reshape; it should be `reshape(grad, original_shape)`.
+- Trusting your op without a finite-difference check; this chapter *needs* checks because every later layer depends on it.
 
 ---
 
-## Common Pitfalls
+## How to Verify
 
-- Forgetting to initialize `grad` as a tensor of zeros.
-- Returning a gradient with the wrong shape after broadcasting.
-- Using assignment instead of accumulation in `_backward`.
-- Implementing 2D matmul backward but forgetting batched matmul for attention.
-- Running gradient checks with too large or too small an epsilon.
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/autograd/grad.test.ts
+```
+```bash
+bun run exercises/ch-10-tensor-autograd.ts
+```
 
 ---
 
@@ -256,6 +270,15 @@ export class Value {
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 11: Activation Functions** — now that tensor autograd is solid, nonlinearities can become differentiable tensor operations.
+- [PyTorch internals — autograd](https://pytorch.org/blog/overview-of-pytorch-autograd-engine/) — production autograd; same ideas, more bookkeeping.
+- [Bornschein — Matrix calculus you need for deep learning](https://arxiv.org/abs/1802.01528) — derivations of matmul, sum, mean, and softmax backward.
+- [Justin Domke — Reverse-mode AD](https://people.cs.umass.edu/~domke/courses/sml/08autodiff_nnets.pdf) — clean lecture notes generalising 08b to tensors.
+- [Goodfellow, Bengio, Courville — Deep Learning](https://www.deeplearningbook.org/) — the standard graduate textbook; chapters map cleanly to this course.
+
+---
+
+## Next Chapter
+
+**[Activations](../part-3-neural-net-primitives/ch-11-activation-functions.md)** — with tensor autograd in place, we can build the nonlinear layers that make networks expressive.

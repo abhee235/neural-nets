@@ -1,23 +1,52 @@
 # Chapter 15: Training Loop
 
 > **Part 3 of 6 — Neural Net Primitives**
-> `src/ch-15-training-loop/`
+> Source: [`src/nn/linear.ts`](../../src/nn/linear.ts) · [`src/optim/sgd.ts`](../../src/optim/sgd.ts) · [`src/optim/adam.ts`](../../src/optim/adam.ts)
+> Tests: [`src/nn/linear.test.ts`](../../src/nn/linear.test.ts)
+> Exercise: [`exercises/ch-15-training-loop.ts`](../../exercises/ch-15-training-loop.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-A complete MLP (Multi-Layer Perceptron) from scratch using the components from Ch 11–13,
-plus a full training loop: forward pass → loss → backward → optimizer step. Train it on
-a toy dataset (XOR or spiral classification) and watch the loss decrease.
+By the end of this chapter you can:
+
+- Build a small MLP from `Linear` + activation + `Linear`.
+- Wire forward → loss → zeroGrad → backward → step into one training step.
+- Iterate over batches, log loss, and confirm the loss curve goes down.
+- Fit a non-trivial dataset (spiral, XOR, or moons) and visualise the decision boundary.
+- Detect divergence and recover by lowering the learning rate.
 
 ---
 
-## Why This Matters
+## Intuition First
 
-This chapter closes Part 3. Every component you've built — tensors, autograd, activations,
-loss, layers, optimizer — is orchestrated here into a working neural network that actually
-learns. This is the full training loop used, at a larger scale, to train GPT.
+Every neural-network training routine — from a 2-layer MLP to GPT-4 — is the same five-line ritual:
+
+1. `predictions = model.forward(inputs)`
+2. `loss = lossFn(predictions, targets)`
+3. `optimizer.zeroGrad()`
+4. `loss.backward()`
+5. `optimizer.step()`
+
+The rest is data plumbing, logging, and validation.
+
+---
+
+## Mental Model
+
+```text
+  ┌──────────────────────────────────────────┐
+  │ for epoch in 0..E:                      │
+  │   for batch in shuffle(dataset):        │
+  │     y_hat = model.forward(batch.x)      │
+  │     loss  = lossFn(y_hat, batch.y)      │
+  │     optimizer.zeroGrad()                │
+  │     loss.backward()                     │
+  │     optimizer.step()                    │
+  │   log(epoch, mean_loss, val_loss)       │
+  └──────────────────────────────────────────┘
+```
 
 ---
 
@@ -194,6 +223,26 @@ export function train(
 
 ---
 
+## Common Pitfalls
+
+- Forgetting `zeroGrad()` — gradients accumulate and the model explodes after a few steps.
+- Computing loss on the *training* set and never on a held-out set — you cannot detect overfitting.
+- Logging the last batch's loss instead of the epoch mean — too noisy to read.
+- Shuffling the labels but not the inputs (or vice versa) by accident.
+- Letting `dropout`/`train` mode leak into evaluation — turn it off for validation.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun run exercises/ch-15-training-loop.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. Why must `zeroGrad` come BEFORE `backward()`, not after `step()`?
@@ -220,7 +269,15 @@ for language models and transformers.
 
 ---
 
-## → Next Part
+## Further Reading
 
-**Part 4 — Language Model Inputs (Ch 16–21):** tokenize text into numbers, embed tokens
-into vectors, add positional information, and normalize with LayerNorm.
+- [Karpathy — A Recipe for Training Neural Networks](https://karpathy.github.io/2019/04/25/recipe/) — the *exact* habits this chapter trains you to develop.
+- [Smith — Cyclical Learning Rates](https://arxiv.org/abs/1506.01186) — an early but practical look at LR scheduling.
+- [Stanford CS231n — practical training notes](https://cs231n.github.io/neural-networks-3/) — babysitting the learning process; how to read loss curves.
+- [PyTorch — training loop tutorial](https://pytorch.org/tutorials/beginner/basics/optimization_tutorial.html) — the same ritual in a production library.
+
+---
+
+## Next Chapter
+
+**[Char Tokenizer](../part-4-tokenizer-and-inputs/ch-16-char-tokenizer.md)** — switch from synthetic data to text, the input format every language model needs.

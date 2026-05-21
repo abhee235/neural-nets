@@ -2,3 +2,6 @@ node_modules/
 dist/
 *.js.map
 .DS_Store
+
+# PDFs — generated exports, printed notes, downloaded references
+*.pdf
