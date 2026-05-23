@@ -36,14 +36,21 @@ export interface Tensor {
  * Validates data.length === product(shape).
  */
 export function createTensor(data: number[], shape: number[]): Tensor {
-  if (data.length !== shape.reduce((a, b) => a * b, 1)) {
-    throw new Error("Data length does not match shape product");
+  // Compute the expected total size: product of all shape dimensions.
+  // Empty shape [] means a scalar with size 1.
+  const size = shape.length === 0 ? 1 : shape.reduce((acc, d) => acc * d, 1);
+
+  if (data.length !== size) {
+    throw new Error(
+      `createTensor: data length ${data.length} does not match shape [${shape}] (expected ${size})`,
+    );
   }
+
   return {
-    data: new Float64Array(data),
-    shape,
+    data: new Float64Array(data),  // copy into typed array for numeric precision
+    shape: [...shape],             // defensive copy so callers can't mutate
     ndim: shape.length,
-    size: data.length,
+    size,
   };
 }
 
@@ -51,6 +58,7 @@ export function createTensor(data: number[], shape: number[]): Tensor {
  * Create a rank-0 scalar Tensor (shape = [], size = 1).
  */
 export function scalar(value: number): Tensor {
+  // A rank-0 tensor has no axes; its flat data holds exactly one element.
   return createTensor([value], []);
 }
 
@@ -60,17 +68,13 @@ export function scalar(value: number): Tensor {
  * Runtime type guard — narrows unknown to Tensor.
  */
 export function isTensor(value: unknown): value is Tensor {
+  if (value === null || typeof value !== "object") return false;
+  const t = value as Record<string, unknown>;
   return (
-    typeof value === "object" &&
-    value !== null &&
-    "data" in value &&
-    "shape" in value &&
-    "ndim" in value &&
-    "size" in value &&
-    value.data instanceof Float64Array &&
-    Array.isArray(value.shape) &&
-    typeof value.ndim === "number" &&
-    typeof value.size === "number"
+    t["data"] instanceof Float64Array &&
+    Array.isArray(t["shape"]) &&
+    typeof t["ndim"] === "number" &&
+    typeof t["size"] === "number"
   );
 }
 
@@ -79,24 +83,21 @@ export function isTensor(value: unknown): value is Tensor {
  * Row-major formula:  offset = Σ_i  indices[i] * stride[i]
  */
 export function flatIndex(shape: number[], indices: number[]): number {
-  if (shape.length !== indices.length) {
-    throw new Error("Shape and indices must have the same length");
-  }
-  let offset = 0;
+  // Row-major (C-order) formula:
+  //   flat = i_0*s_1*s_2*...*s_n  +  i_1*s_2*...*s_n  +  ...  +  i_n
+  // Each axis contributes its index scaled by the product of all trailing dims.
+  //
+  // Example: shape=[2,3,4], indices=[1,2,3]
+  //   stride_0 = 3*4 = 12,  stride_1 = 4,  stride_2 = 1
+  //   flat = 1*12 + 2*4 + 3*1 = 23
+  let flat = 0;
   let stride = 1;
+  // Walk RIGHT to LEFT: accumulate stride as we go.
   for (let i = shape.length - 1; i >= 0; i--) {
-    // noUncheckedIndexedAccess makes arr[i] return T | undefined even inside a
-    // loop whose bounds we control. Read once into typed locals so the rest of
-    // the loop body sees plain `number`.
-    const dim = shape[i] as number;
-    const idx = indices[i] as number;
-    if (idx < 0 || idx >= dim) {
-      throw new Error(`Index ${idx} out of bounds for dimension ${i} with size ${dim}`);
-    }
-    offset += idx * stride;
-    stride *= dim;
+    flat += (indices[i] as number) * stride;
+    stride *= shape[i] as number;
   }
-  return offset;
+  return flat;
 }
 
 /**
@@ -104,7 +105,8 @@ export function flatIndex(shape: number[], indices: number[]): number {
  * Use this instead of console.log(tensor) for debugging.
  */
 export function toString(t: Tensor): string {
-  const sampleSize = Math.min(5, t.size);
-  const sampleValues = Array.from(t.data.slice(0, sampleSize)).join(", ");
-  return `Tensor(shape=[${t.shape.join(", ")}], data=[${sampleValues}${t.size > sampleSize ? ", ..." : ""}])`;
+  // Show shape and up to 8 values so the output is readable even for large tensors.
+  const preview = Array.from(t.data.slice(0, 8)).map(v => v.toFixed(4));
+  const suffix = t.size > 8 ? `, ... (${t.size} total)` : "";
+  return `Tensor(shape=[${t.shape}], [${preview.join(", ")}${suffix}])`;
 }
