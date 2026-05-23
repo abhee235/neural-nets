@@ -48,7 +48,7 @@ Concise + complete-for-the-build beats thorough + overwhelming.
 
 ## Required Sections (in this order)
 
-Every chapter doc must contain these 11 sections, in this exact order:
+Every chapter doc must contain these 12 sections, in this exact order:
 
 ```
 1.  Title + Header block (Part X of 6, cross-links)
@@ -60,8 +60,9 @@ Every chapter doc must contain these 11 sections, in this exact order:
 7.  Common Pitfalls
 8.  How to Verify
 9.  Self-Check Questions
-10. Further Reading
-11. Next Chapter
+10. Coding Exercises
+11. Further Reading
+12. Next Chapter
 ```
 
 Do **not** rename sections. Do **not** reorder them. Do **not** omit any section. If a
@@ -144,6 +145,63 @@ This is where math lives. Rules:
 - Add a `> **Why this matters for transformers**` callout when a concept connects
   to a later transformer chapter.
 
+#### Concept beat order (the ch-02 template)
+
+Every `### N. Concept` sub-section should follow this beat order. Skip a beat only when it genuinely
+does not apply, never to save space:
+
+1. **Roadmap connector** — one sentence linking back to the previous concept. Examples: *"This is the
+   simplest filling rule …"*, *"The filling rule changes slightly …"*, *"Now the values follow a counting
+   pattern …"*. Keeps the chapter feeling like a single thread, not a list of APIs.
+2. **Job paragraph** — *"You use X when …"* in plain English. Two or three sentences max.
+3. **Practical-use callout** — the `Use it when` / `Picture this` blockquote (rules above).
+4. **"Why does this matter…" paragraph** — the rhetorical move: *"Why does this matter if the machine
+   can already …?"* followed by the answer in everyday language. Required for any concept that produces
+   simple-looking values; explains the pattern's role (starting state, reference case, control value,
+   ordered positions, controlled randomness, etc.).
+5. **Boxed key formula** — `\Large \boxed{...}`. One per concept. See *Math Formatting Conventions*.
+6. **"In plain English" line** — immediately after the boxed formula. One sentence reading the formula
+   aloud, plus a short paragraph defining each new symbol.
+7. **Code example** — `**Example:**` label, then a fenced TypeScript block. Use the arrow-comment style
+   `// → [[…], […]]` to show output inline. The example should match the formula one-to-one.
+8. **Worked numeric/matrix display** *(optional)* — a KaTeX block showing the same example as a math
+   matrix or staircase, for concepts where the formula benefits from being seen at one concrete shape.
+9. **Figure with caption** *(optional)* — SVG under `docs/assets/ch-NN/`, alt text, italic
+   `*Figure N: …*` caption immediately below. Figures are numbered **in chapter reading order**
+   (1, 2, 3 …), never by section number. See `chapter-media.instructions.md`.
+10. **Implementation note** — one paragraph (not pseudo-code) describing the loop or invariant the
+    student will write. Reference the Ch 01 row-major rule when offsets are involved.
+11. **Reference table or comparison** *(optional)* — a small Markdown table only when the concept covers
+    a family of related functions (e.g. `zeros` / `ones` / `fill`).
+
+#### Inline deep-dive callout
+
+When a concept introduces a non-trivial formula whose *derivation* would distract from the build (for
+example Box–Muller, softmax stability, attention scaling), add a short blockquote callout right where
+the formula appears, pointing to the optional deep dive:
+
+```markdown
+> **Curious why …?** That is the geometric/probabilistic part of the story — the short version is … 
+> The full intuition lives in the optional [Deep Dive — Topic](../deep-dives/ch-NN-topic.md#section).
+> Skip it for now if you only want to ship the chapter; the formula below is all you need to write code.
+```
+
+Place this callout **before** the boxed formula so curious readers can branch out, while readers who
+just want to build can keep moving. The same deep-dive link must also appear (once) in *Further Reading*.
+
+#### "Where you will see this again" closing table
+
+At the very end of `## Concepts`, before the `---` that separates it from `## What to Implement`, add a
+short `### Where you will see these <things> again` subsection with a forward-reference table:
+
+| Symbol / concept | Where it shows up next | Why that chapter needs it |
+|---|---|---|
+| `name` | **Ch NN** (one-line topic) | one short reason |
+
+Follow with a single closing line telling the reader they do not need to memorise the table — just expect
+each concept to pay back many times. This is the textbook "now you know what's coming" move and replaces
+any scattered "this will appear later" hints inside individual concepts.
+
 Use these callouts sparingly. In beginner-facing chapters, one short later-use note per major section
 is enough, and it should never require the reader to already know future terminology. If the callout
 starts to feel like a preview lecture, cut it or move it to a deep dive.
@@ -192,7 +250,40 @@ A `## Self-Check Questions` heading with 4-6 numbered questions.
 - Questions should test conceptual understanding, not just code recall.
 - Connect at least one question to a future chapter ("In Ch 23, ...").
 
-### 10. Further Reading
+### 10. Coding Exercises
+
+A `## Coding Exercises` heading with **2 to 3 open-ended exercises** of increasing difficulty.
+These are the hands-on counterpart to Self-Check Questions: students build something, run it,
+and check the output themselves. There are no answers in the chapter.
+
+For each exercise, follow this sub-template:
+
+```markdown
+**Exercise N — <short title> (easy | intermediate | hard)**
+
+<one or two sentences stating exactly what to build, in plain language>
+
+<one paragraph of starter guidance: which factory or function to begin from,
+ what shape to use, what to print or compare>
+
+Check:
+- <bullet 1: a concrete, observable property the output must satisfy>
+- <bullet 2: another property>
+- <bullet 3: optional, for the harder exercises>
+
+*Why this helps:* <one sentence connecting the exercise to a specific later chapter
+ that will use the same pattern, e.g. "this is the exact pattern you will use in Ch 19 …">
+```
+
+Rules:
+
+- Difficulty must increase across the exercises (easy → intermediate, optionally → hard).
+- Each exercise must reuse only what is already implemented in this chapter or earlier ones.
+- Each exercise must end with a *Why this helps* sentence pointing to a future chapter, so the
+  reader sees the payoff. This is the same forward-reference rule as the closing Concepts table.
+- Do not provide solutions. Provide enough check-conditions that students can self-verify.
+
+### 11. Further Reading
 
 A `## Further Reading` heading with 2-4 items. Prefer a short list over a long one.
 
@@ -223,7 +314,7 @@ Preferred external sources:
 Avoid: dead links, paywalled content, low-quality Medium articles, content older than 2018
 unless it is a primary source.
 
-### 11. Next Chapter
+### 12. Next Chapter
 
 A `## Next Chapter` heading with one paragraph that:
 
@@ -361,13 +452,21 @@ pen-and-paper step") — gentle suggestions get ignored.
 
 Check, in this order:
 
-1. All 11 sections present and in order.
+1. All 12 sections present and in order.
 2. Cross-links at the top resolve to existing files.
 3. Path references match the actual library layout (no `src/ch-NN-name/`).
 4. Type annotations in code blocks match the actual stub file.
 5. At least one analogy in "Intuition First".
-6. At least 3 specific pitfalls in "Common Pitfalls".
-7. Further Reading is short, annotated, and consistent with the lean-doc rule. Deep-dive links are allowed.
-8. Next-chapter link exists and resolves.
+6. Every `### N. Concept` sub-section follows the beat order (roadmap connector → job paragraph →
+   practical-use callout → "Why this matters" → boxed formula → plain-English line → code example →
+   optional figure → implementation note).
+7. Concepts ends with a `### Where you will see these … again` forward-reference table.
+8. Figures are numbered **in chapter reading order** (Figure 1 is the first to appear, regardless of
+   which section it lives in) and every figure has an italic `*Figure N: …*` caption.
+9. At least 3 specific pitfalls in "Common Pitfalls".
+10. "Coding Exercises" has 2–3 exercises, increasing in difficulty, each with a *Why this helps*
+    sentence pointing to a future chapter.
+11. Further Reading is short, annotated, and consistent with the lean-doc rule. Deep-dive links are allowed.
+12. Next-chapter link exists and resolves.
 
 If any check fails, fix it without asking — these are non-negotiable standards.
