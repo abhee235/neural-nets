@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 460" font-family="Georgia, 'Iowan Old Style', serif">
+<rect width="980" height="460" fill="#faf7f0"/>
+<text x="490.0" y="44" text-anchor="middle" font-size="20" font-weight="bold" fill="#1d1d1b">10 000 samples · two distributions</text>
+<text x="490.0" y="64" text-anchor="middle" font-size="12" fill="#64748b">Same `Math.random()` underneath. The right panel reshapes uniform samples into a bell via Box–Muller.</text>
+<rect x="50" y="90" width="420" height="320" rx="14" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.2"/>
+<text x="260.0" y="114" text-anchor="middle" font-size="14" font-weight="bold" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#7c3aed">rand([10000])  →  Uniform(0, 1)</text>
+<line x1="100" y1="360.0" x2="446" y2="360.0" stroke="#e2dfd8" stroke-width="0.8"/>
+<text x="92" y="364.0" text-anchor="end" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">0</text>
+<line x1="100" y1="313.2" x2="446" y2="313.2" stroke="#e2dfd8" stroke-width="0.8"/>
+<text x="92" y="317.2" text-anchor="end" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">100</text>
+<line x1="100" y1="266.4" x2="446" y2="266.4" stroke="#e2dfd8" stroke-width="0.8"/>
+<text x="92" y="270.4" text-anchor="end" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">200</text>
+<line x1="100" y1="219.6" x2="446" y2="219.6" stroke="#e2dfd8" stroke-width="0.8"/>
+<text x="92" y="223.6" text-anchor="end" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">300</text>
+<line x1="100" y1="172.8" x2="446" y2="172.8" stroke="#e2dfd8" stroke-width="0.8"/>
+<text x="92" y="176.8" text-anchor="end" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">400</text>
+<line x1="100" y1="126.0" x2="446" y2="126.0" stroke="#e2dfd8" stroke-width="0.8"/>
+<text x="92" y="130.0" text-anchor="end" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">500</text>
+<rect x="100.60" y="192.92" width="12.64" height="167.08" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="114.44" y="169.52" width="12.64" height="190.48" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="128.28" y="155.02" width="12.64" height="204.98" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="142.12" y="163.44" width="12.64" height="196.56" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="155.96" y="168.59" width="12.64" height="191.41" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="169.80" y="195.73" width="12.64" height="164.27" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="183.64" y="180.29" width="12.64" height="179.71" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="197.48" y="155.48" width="12.64" height="204.52" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="211.32" y="176.54" width="12.64" height="183.46" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="225.16" y="173.27" width="12.64" height="186.73" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="239.00" y="179.35" width="12.64" height="180.65" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="252.84" y="169.99" width="12.64" height="190.01" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="266.68" y="177.48" width="12.64" height="182.52" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="280.52" y="176.54" width="12.64" height="183.46" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="294.36" y="177.95" width="12.64" height="182.05" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="308.20" y="169.52" width="12.64" height="190.48" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="322.04" y="154.55" width="12.64" height="205.45" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="335.88" y="161.10" width="12.64" height="198.90" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="349.72" y="170.46" width="12.64" height="189.54" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="363.56" y="173.74" width="12.64" height="186.26" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="377.40" y="168.59" width="12.64" height="191.41" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="391.24" y="168.12" width="12.64" height="191.88" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="405.08" y="197.14" width="12.64" height="162.86" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="418.92" y="182.16" width="12.64" height="177.84" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<rect x="432.76" y="162.50" width="12.64" height="197.50" fill="#ede9fe" stroke="#7c3aed" stroke-width="0.8"/>
+<line x1="100" y1="360" x2="446" y2="360" stroke="#1d1d1b" stroke-width="1"/>
+<line x1="100.0" y1="360" x2="100.0" y2="365" stroke="#1d1d1b" stroke-width="1"/>
+<text x="100.0" y="378" text-anchor="middle" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">0</text>
+<line x1="186.5" y1="360" x2="186.5" y2="365" stroke="#1d1d1b" stroke-width="1"/>
+<text x="186.5" y="378" text-anchor="middle" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">0.25</text>
+<line x1="273.0" y1="360" x2="273.0" y2="365" stroke="#1d1d1b" stroke-width="1"/>
+<text x="273.0" y="378" text-anchor="middle" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">0.5</text>
+<line x1="359.5" y1="360" x2="359.5" y2="365" stroke="#1d1d1b" stroke-width="1"/>
+<text x="359.5" y="378" text-anchor="middle" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">0.75</text>
+<line x1="446.0" y1="360" x2="446.0" y2="365" stroke="#1d1d1b" stroke-width="1"/>
+<text x="446.0" y="378" text-anchor="middle" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">1</text>
+<rect x="332" y="126" width="124" height="40" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+<text x="394" y="143" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#b45309">mean = +0.500</text>
+<text x="394" y="158" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#b45309">std  = 0.288</text>
+<text x="260.0" y="402" text-anchor="middle" font-size="11" fill="#64748b">value of sample</text>
+<rect x="530" y="90" width="420" height="320" rx="14" fill="#ffffff" stroke="#e2dfd8" stroke-width="1.2"/>
+<text x="740.0" y="114" text-anchor="middle" font-size="14" font-weight="bold" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#0f766e">randn([10000])  →  N(0, 1)</text>
+<line x1="580" y1="360.0" x2="926" y2="360.0" stroke="#e2dfd8" stroke-width="0.8"/>
+<text x="572" y="364.0" text-anchor="end" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">0</text>
+<line x1="580" y1="313.2" x2="926" y2="313.2" stroke="#e2dfd8" stroke-width="0.8"/>
+<text x="572" y="317.2" text-anchor="end" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">200</text>
+<line x1="580" y1="266.4" x2="926" y2="266.4" stroke="#e2dfd8" stroke-width="0.8"/>
+<text x="572" y="270.4" text-anchor="end" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">400</text>
+<line x1="580" y1="219.6" x2="926" y2="219.6" stroke="#e2dfd8" stroke-width="0.8"/>
+<text x="572" y="223.6" text-anchor="end" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">600</text>
+<line x1="580" y1="172.8" x2="926" y2="172.8" stroke="#e2dfd8" stroke-width="0.8"/>
+<text x="572" y="176.8" text-anchor="end" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">800</text>
+<line x1="580" y1="126.0" x2="926" y2="126.0" stroke="#e2dfd8" stroke-width="0.8"/>
+<text x="572" y="130.0" text-anchor="end" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">1000</text>
+<rect x="580.60" y="359.77" width="7.24" height="0.23" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="589.04" y="359.77" width="7.24" height="0.23" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="597.48" y="359.30" width="7.24" height="0.70" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="605.92" y="359.06" width="7.24" height="0.94" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="614.36" y="359.30" width="7.24" height="0.70" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="622.80" y="358.13" width="7.24" height="1.87" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="631.23" y="354.38" width="7.24" height="5.62" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="639.67" y="352.04" width="7.24" height="7.96" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="648.11" y="345.96" width="7.24" height="14.04" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="656.55" y="344.32" width="7.24" height="15.68" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="664.99" y="332.86" width="7.24" height="27.14" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="673.43" y="320.22" width="7.24" height="39.78" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="681.87" y="304.54" width="7.24" height="55.46" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="690.31" y="284.42" width="7.24" height="75.58" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="698.75" y="266.17" width="7.24" height="93.83" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="707.19" y="242.53" width="7.24" height="117.47" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="715.62" y="227.32" width="7.24" height="132.68" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="724.06" y="216.79" width="7.24" height="143.21" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="732.50" y="184.73" width="7.24" height="175.27" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="740.94" y="184.03" width="7.24" height="175.97" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="749.38" y="184.27" width="7.24" height="175.73" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="757.82" y="167.42" width="7.24" height="192.58" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="766.26" y="191.05" width="7.24" height="168.95" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="774.70" y="200.65" width="7.24" height="159.35" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="783.14" y="231.77" width="7.24" height="128.23" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="791.58" y="254.70" width="7.24" height="105.30" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="800.01" y="268.04" width="7.24" height="91.96" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="808.45" y="289.33" width="7.24" height="70.67" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="816.89" y="302.90" width="7.24" height="57.10" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="825.33" y="325.60" width="7.24" height="34.40" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="833.77" y="332.86" width="7.24" height="27.14" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="842.21" y="343.39" width="7.24" height="16.61" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="850.65" y="348.07" width="7.24" height="11.93" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="859.09" y="352.28" width="7.24" height="7.72" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="867.53" y="356.72" width="7.24" height="3.28" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="875.97" y="358.13" width="7.24" height="1.87" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="884.40" y="359.06" width="7.24" height="0.94" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="892.84" y="359.30" width="7.24" height="0.70" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="901.28" y="359.06" width="7.24" height="0.94" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="909.72" y="360.00" width="7.24" height="0.00" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<rect x="918.16" y="360.00" width="7.24" height="0.00" fill="#d8f0eb" stroke="#0f766e" stroke-width="0.8"/>
+<polyline points="580.0,359.9 582.9,359.9 585.8,359.9 588.7,359.9 591.6,359.8 594.5,359.8 597.4,359.7 600.4,359.6 603.3,359.5 606.2,359.4 609.1,359.3 612.0,359.1 614.9,358.9 617.8,358.6 620.7,358.3 623.6,357.9 626.5,357.5 629.4,356.9 632.3,356.3 635.2,355.5 638.2,354.6 641.1,353.6 644.0,352.4 646.9,351.0 649.8,349.4 652.7,347.6 655.6,345.6 658.5,343.3 661.4,340.7 664.3,337.7 667.2,334.5 670.1,330.9 673.0,327.0 675.9,322.7 678.9,318.1 681.8,313.1 684.7,307.7 687.6,302.0 690.5,295.9 693.4,289.5 696.3,282.9 699.2,275.9 702.1,268.8 705.0,261.5 707.9,254.2 710.8,246.7 713.7,239.3 716.7,232.0 719.6,224.9 722.5,218.0 725.4,211.5 728.3,205.3 731.2,199.6 734.1,194.4 737.0,189.9 739.9,186.0 742.8,182.8 745.7,180.4 748.6,178.8 751.5,178.0 754.5,178.0 757.4,178.8 760.3,180.4 763.2,182.8 766.1,186.0 769.0,189.9 771.9,194.4 774.8,199.6 777.7,205.3 780.6,211.5 783.5,218.0 786.4,224.9 789.3,232.0 792.3,239.3 795.2,246.7 798.1,254.2 801.0,261.5 803.9,268.8 806.8,275.9 809.7,282.9 812.6,289.5 815.5,295.9 818.4,302.0 821.3,307.7 824.2,313.1 827.1,318.1 830.1,322.7 833.0,327.0 835.9,330.9 838.8,334.5 841.7,337.7 844.6,340.7 847.5,343.3 850.4,345.6 853.3,347.6 856.2,349.4 859.1,351.0 862.0,352.4 864.9,353.6 867.8,354.6 870.8,355.5 873.7,356.3 876.6,356.9 879.5,357.5 882.4,357.9 885.3,358.3 888.2,358.6 891.1,358.9 894.0,359.1 896.9,359.3 899.8,359.4 902.7,359.5 905.6,359.6 908.6,359.7 911.5,359.8 914.4,359.8 917.3,359.9 920.2,359.9 923.1,359.9 926.0,359.9" fill="none" stroke="#b45309" stroke-width="2"/>
+<line x1="580" y1="360" x2="926" y2="360" stroke="#1d1d1b" stroke-width="1"/>
+<line x1="580.0" y1="360" x2="580.0" y2="365" stroke="#1d1d1b" stroke-width="1"/>
+<text x="580.0" y="378" text-anchor="middle" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">-4</text>
+<line x1="666.5" y1="360" x2="666.5" y2="365" stroke="#1d1d1b" stroke-width="1"/>
+<text x="666.5" y="378" text-anchor="middle" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">-2</text>
+<line x1="753.0" y1="360" x2="753.0" y2="365" stroke="#1d1d1b" stroke-width="1"/>
+<text x="753.0" y="378" text-anchor="middle" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">0</text>
+<line x1="839.5" y1="360" x2="839.5" y2="365" stroke="#1d1d1b" stroke-width="1"/>
+<text x="839.5" y="378" text-anchor="middle" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">2</text>
+<line x1="926.0" y1="360" x2="926.0" y2="365" stroke="#1d1d1b" stroke-width="1"/>
+<text x="926.0" y="378" text-anchor="middle" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#64748b">4</text>
+<rect x="812" y="126" width="124" height="40" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+<text x="874" y="143" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#b45309">mean = -0.013</text>
+<text x="874" y="158" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#b45309">std  = 0.997</text>
+<text x="740.0" y="402" text-anchor="middle" font-size="11" fill="#64748b">value of sample</text>
+<text x="490.0" y="446" text-anchor="middle" font-size="11" fill="#64748b" font-style="italic">amber curve on the right panel: ideal N(0, 1) density.  amber stat box: empirical mean and std of the 10 000 samples.</text>
+</svg>

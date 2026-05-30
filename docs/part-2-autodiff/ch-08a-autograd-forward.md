@@ -1,29 +1,47 @@
-# Chapter 08a: Autograd — Forward Pass & Computation Graph
+# Chapter 08a: Autograd — Forward Graph
 
 > **Part 2 of 6 — Autodiff Engine**
-> `src/ch-08a-autograd-forward/`
+> Source: [`src/autograd/value.ts`](../../src/autograd/value.ts)
+> Tests: [`src/autograd/value.test.ts`](../../src/autograd/value.test.ts)
+> Exercise: [`exercises/ch-08-autograd.ts`](../../exercises/ch-08-autograd.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-A `Value` class that wraps a tensor and records the operation that created it, forming a
-**computation graph** during the forward pass. This is the data structure that makes automatic
-differentiation possible. It is the core of PyTorch's autograd engine, Micrograd, and every
-modern ML framework.
+By the end of this chapter you can:
+
+- Wrap a single number in a `Value` that knows its parents, its operation, and its gradient.
+- Build a computation graph by overloading `add`, `mul`, `pow`, `exp`, `log`, and `tanh`.
+- Explain why every `Value` stores a `_backward` closure instead of a giant switch statement.
+- Spot the difference between the forward graph (built eagerly) and the backward pass (run on demand).
+- Replicate Karpathy's micrograd API in strict TypeScript.
 
 ---
 
-## Why This Matters
+## Intuition First
 
-Without a computation graph, computing gradients means manually deriving $\partial L / \partial w$
-for every weight in every architecture — new architecture, new derivation, hours of calculus.
+Autograd is bookkeeping. Every time you do `c = a * b`, we secretly record:
 
-With a computation graph, you write the forward pass once (just normal math), and the backward
-pass is computed automatically. The graph records every operation, and backpropagation
-(Ch 08b) walks the graph in reverse to compute all gradients at once.
+- `c` came from `a` and `b`.
+- The operation was `*`.
+- The local derivatives are `∂c/∂a = b` and `∂c/∂b = a`.
 
-This is the single most intellectually important chapter in the course.
+When you later call `c.backward()`, we walk the recorded graph backwards and multiply local derivatives together using the chain rule. The forward pass *builds* the graph; the backward pass *walks* it.
+
+---
+
+## Mental Model
+
+```text
+    a ───┐
+         ├── (*) ──► c ───┐
+    b ───┘                ├── (+) ──► L
+                     d ───┘
+
+  forward:  store data, parents, op on each node
+  backward: visit nodes in reverse topological order and accumulate `grad`
+```
 
 ---
 
@@ -189,6 +207,29 @@ class Value {
 
 ---
 
+## Common Pitfalls
+
+- Storing parents as a `Set` and losing iteration order — use an array.
+- Capturing `this` inside `_backward` and confusing it with a different node; bind the locals you need.
+- Forgetting that `Value` is *scalar* in 08a — tensor autograd waits until Ch 10.
+- Reusing the same `Value` across two unrelated computations; build a fresh graph for each forward pass.
+- Returning a primitive `number` from an operator when you should return a `Value`.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/autograd/value.test.ts
+```
+```bash
+bun run exercises/ch-08-autograd.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. Draw the computation graph for $L = (a \cdot b + c)^2$.
@@ -202,8 +243,15 @@ class Value {
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 08b: Autograd — Backward Pass** — implement the `_backward` functions for each
-operation and write the `backward()` method that walks the graph in reverse topological
-order to accumulate gradients into every node's `.grad`.
+- [Karpathy — micrograd](https://github.com/karpathy/micrograd) — the ~100-line Python autograd this chapter is modelled on.
+- [Karpathy — Neural Networks: Zero to Hero](https://karpathy.ai/zero-to-hero.html) — video series that builds micrograd and nanoGPT from scratch.
+- [Baydin et al. — Automatic Differentiation in Machine Learning: a Survey](https://arxiv.org/abs/1502.05767) — the survey paper; covers forward, reverse, and tape-based AD.
+- [Chris Olah — Calculus on Computational Graphs](https://colah.github.io/posts/2015-08-Backprop/) — best intuition piece on graph-based backprop.
+
+---
+
+## Next Chapter
+
+**[Autograd Backward](ch-08b-autograd-backward.md)** — wire up the `backward()` pass that walks the graph in reverse and accumulates gradients.

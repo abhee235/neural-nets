@@ -1,30 +1,44 @@
 # Chapter 23: Multi-Head Attention
 
 > **Part 5 of 6 — Attention Mechanism**
-> `src/ch-23-multi-head-attention/`
+> Source: [`src/nn/attention.ts`](../../src/nn/attention.ts)
+> Tests: [`src/nn/attention.test.ts`](../../src/nn/attention.test.ts)
+> Exercise: [`exercises/ch-23-multi-head-attention.ts`](../../exercises/ch-23-multi-head-attention.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-Multi-head attention: run $H$ attention heads in parallel, each attending to different
-aspects of the input, then concatenate and project their outputs. This is the component
-at the heart of every transformer encoder and decoder block.
+By the end of this chapter you can:
+
+- Split `d_model` into `H` heads of size `d_head = d_model / H`.
+- Implement projection → reshape → permute to get `[batch, H, seq, d_head]`.
+- Run scaled dot-product attention per head, in parallel.
+- Concatenate heads back to `[batch, seq, d_model]` and project with `W_O`.
+- Predict the parameter count: `4 · d_model²` (for `W_Q`, `W_K`, `W_V`, `W_O`).
 
 ---
 
-## Why This Matters
+## Intuition First
 
-Single-head attention (Ch 22) learns one type of relationship: "which tokens are relevant
-to me?" But language has many simultaneous relationships — syntactic dependencies, semantic
-similarity, coreference, topic coherence, etc. A single head can only capture one at a time.
+One attention head captures one kind of relationship — say, "which token is the subject?". Multi-head attention runs several smaller heads in parallel so the model can attend to different relationships at the same time (syntax, coreference, semantic similarity). After each head has done its work, we concatenate their outputs and let a final projection mix the heads together.
 
-Multi-head attention lets each head specialize. In trained models, you can observe:
-- Head 1 attends to recent tokens (local syntax)
-- Head 2 attends to matching brackets / clauses
-- Head 3 tracks subject-verb agreement
-- Head 4 attends to semantically similar content
-...and so on. The model discovers these specializations through gradient descent.
+---
+
+## Mental Model
+
+```text
+  x : [batch, seq, d_model]
+       │
+       │  packed projections
+       ├── W_Q ──► Q : [batch, seq, d_model]  ──► reshape ──► [batch, H, seq, d_head]
+       ├── W_K ──► K : [batch, seq, d_model]  ──► reshape ──► [batch, H, seq, d_head]
+       └── W_V ──► V : [batch, seq, d_model]  ──► reshape ──► [batch, H, seq, d_head]
+
+  per-head:    scaled-dot-product-attention(Q_h, K_h, V_h)
+  concat heads back ──► [batch, seq, d_model]
+  W_O projection    ──► [batch, seq, d_model]
+```
 
 ---
 
@@ -165,6 +179,29 @@ export class MultiHeadAttention {
 
 ---
 
+## Common Pitfalls
+
+- Wrong reshape order — must split *then* permute; permute-then-split breaks per-head identity.
+- Forgetting the final `W_O` projection; without it heads stay disjoint.
+- Letting `d_model` not divide by `H`; assert this on construction.
+- Computing scaling with `√d_model` instead of `√d_head`.
+- Materialising 4 separate parameters when one packed `[d_model, 3 · d_model]` works fine.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/nn/attention.test.ts
+```
+```bash
+bun run exercises/ch-23-multi-head-attention.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. `MultiHeadAttention(dModel=512, numHeads=8)`: what is `dHead`? How many total parameters
@@ -180,7 +217,15 @@ export class MultiHeadAttention {
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 24: Cross-Attention** — the decoder variant where Query comes from the decoder
-and Key/Value come from the encoder output.
+- [Vaswani et al. — Attention Is All You Need (2017)](https://arxiv.org/abs/1706.03762) — the original transformer paper; every formula in Parts 5–6 comes from it.
+- [Voita et al. — Analyzing Multi-Head Self-Attention](https://arxiv.org/abs/1905.09418) — what individual heads learn; pruning experiments.
+- [Jay Alammar — The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/) — the multi-head section is the clearest visual we know.
+- [Lilian Weng — Attention? Attention!](https://lilianweng.github.io/posts/2018-06-24-attention/) — history of attention from seq2seq to multi-head.
+
+---
+
+## Next Chapter
+
+**[Cross-Attention](ch-24-cross-attention.md)** — let the decoder query the encoder, the glue between source and target.

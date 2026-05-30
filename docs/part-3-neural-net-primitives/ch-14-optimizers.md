@@ -1,27 +1,43 @@
 # Chapter 14: Optimizers
 
 > **Part 3 of 6 — Neural Net Primitives**
-> `src/ch-14-optimizers/`
+> Source: [`src/optim/sgd.ts`](../../src/optim/sgd.ts) · [`src/optim/adam.ts`](../../src/optim/adam.ts)
+> Tests: [`src/optim/sgd.test.ts`](../../src/optim/sgd.test.ts) · [`src/optim/adam.test.ts`](../../src/optim/adam.test.ts)
+> Exercise: [`exercises/ch-14-optimizers.ts`](../../exercises/ch-14-optimizers.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-Three optimizers: vanilla SGD, SGD with Momentum, and Adam. Each implements the
-`step(parameters)` interface. Adam is the optimizer used by virtually every modern
-transformer training run.
+By the end of this chapter you can:
+
+- Implement plain SGD: `θ ← θ − η ∇L`.
+- Implement SGD with momentum: `v ← μ v + ∇L; θ ← θ − η v`.
+- Implement Adam with bias-corrected first and second moments.
+- Implement AdamW (Adam with decoupled weight decay).
+- Pick the right optimizer for a task and tune `lr`/`β₁`/`β₂` sanely.
 
 ---
 
-## Why This Matters
+## Intuition First
 
-The optimizer is what takes gradients (computed by backward()) and turns them into
-parameter updates. A bad optimizer (wrong learning rate, no momentum) can mean training
-never converges — the same network that trains in 10 minutes with Adam could take hours
-with poorly-tuned SGD.
+Plain SGD treats every parameter the same. Real loss surfaces have steep, narrow valleys; SGD bounces off the walls. **Momentum** smooths updates by averaging recent gradients. **Adam** goes further: it gives each parameter its own learning rate based on its recent gradient magnitudes (parameters with big gradients get smaller steps, parameters with tiny gradients get bigger ones).
 
-Adam (Adaptive Moment Estimation) is the default choice for transformers. Understanding
-*why* Adam works better than SGD requires understanding what it does differently.
+---
+
+## Mental Model
+
+```text
+  SGD:        θ ← θ − η · g
+
+  Momentum:   v ← μ v + g
+              θ ← θ − η · v
+
+  Adam:       m ← β₁ m + (1−β₁) g            ← first moment (mean)
+              v ← β₂ v + (1−β₂) g²           ← second moment (uncentred variance)
+              m̂ ← m / (1 − β₁ᵗ),  v̂ ← v / (1 − β₂ᵗ)
+              θ ← θ − η · m̂ / (√v̂ + ε)
+```
 
 ---
 
@@ -173,6 +189,29 @@ export class Adam implements Optimizer {
 
 ---
 
+## Common Pitfalls
+
+- Mutating the parameter tensor in place inside the autograd graph; do updates outside.
+- Forgetting bias correction in Adam — early steps will be tiny because `m`, `v` start at 0.
+- Initialising `v` (Adam's second moment) at 0 and then doing `1/√v` on step 1 without `eps`.
+- Using Adam's high learning rate (1e-3) with SGD — SGD wants 1e-2 or higher.
+- Letting state (`m`, `v`) drift between training runs; reset it whenever you reset the model.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/optim/sgd.test.ts src/optim/adam.test.ts
+```
+```bash
+bun run exercises/ch-14-optimizers.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. With momentum $\beta = 0.9$, after how many steps does the contribution of the initial
@@ -188,7 +227,15 @@ export class Adam implements Optimizer {
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 15: Training Loop** — assemble all components (layers, loss, optimizer) into a complete
-training loop and train an MLP on a toy classification problem.
+- [Kingma & Ba — Adam: A Method for Stochastic Optimization (2014)](https://arxiv.org/abs/1412.6980) — the original Adam paper.
+- [Loshchilov & Hutter — Decoupled Weight Decay Regularization (AdamW)](https://arxiv.org/abs/1711.05101) — why AdamW differs from Adam + L2 and when it matters.
+- [Sebastian Ruder — gradient descent algorithms](https://ruder.io/optimizing-gradient-descent/) — compares every optimizer in one place.
+- [Distill — Why Momentum Really Works](https://distill.pub/2017/momentum/) — interactive treatment of the momentum dynamics.
+
+---
+
+## Next Chapter
+
+**[Training Loop](ch-15-training-loop.md)** — assemble layers, loss, optimizer, and data into a working training routine.

@@ -1,27 +1,40 @@
 # Chapter 19: Positional Encoding
 
-> **Part 4 of 6 — Language Model Inputs**
-> `src/ch-19-positional-encoding/`
+> **Part 4 of 6 — Tokenizer & Inputs**
+> Source: [`src/nn/positional.ts`](../../src/nn/positional.ts)
+> Tests: [`src/nn/transformer.test.ts`](../../src/nn/transformer.test.ts)
+> Exercise: [`exercises/ch-19-positional-encoding.ts`](../../exercises/ch-19-positional-encoding.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-Sinusoidal positional encoding from the original "Attention Is All You Need" paper:
-a fixed (non-learnable) matrix of shape `[maxSeqLen, dModel]` that encodes each token
-position as a unique vector. Added to the token embeddings before they enter the transformer.
+By the end of this chapter you can:
+
+- Implement sinusoidal positional encoding with the original Transformer formula.
+- Add positional encodings to embeddings so token + position information mix.
+- Plot a few PE rows and recognise the wavelength pattern.
+- Compare sinusoidal PE to learned PE and to RoPE / ALiBi at a high level.
+- Predict PE output shape for any `[batch, seq, dModel]` input.
 
 ---
 
-## Why This Matters
+## Intuition First
 
-Attention (Ch 22) has no built-in notion of order — the operation is the same whether you
-feed it tokens in the correct order or in a random shuffle. Without positional encoding,
-"dog bites man" and "man bites dog" produce identical attention patterns. That's catastrophic
-for a language model.
+Self-attention is permutation-invariant: it treats a sequence like a *set*. Without positional information, "the cat sat" and "sat the cat" produce identical representations. Positional encoding injects a deterministic, position-dependent vector that the network can latch onto. Sinusoids give the model a smooth, extrapolatable signal across many wavelengths.
 
-Positional encoding solves this: each position gets a unique vector added to its embedding,
-so the model can distinguish position 0, position 1, position 2, etc.
+---
+
+## Mental Model
+
+```text
+  PE(pos, 2i)   = sin(pos / 10000^(2i / dModel))
+  PE(pos, 2i+1) = cos(pos / 10000^(2i / dModel))
+
+      pos = 0  → [sin(0),    cos(0),    sin(0),    cos(0), …]
+      pos = 1  → [sin(1/1),  cos(1/1),  sin(1/10000^(2/d)), …]
+      pos = 2  → [sin(2/1),  cos(2/1),  …]
+```
 
 ---
 
@@ -170,6 +183,29 @@ export class PositionalEncoding {
 
 ---
 
+## Common Pitfalls
+
+- Forgetting that PE is added to embeddings, not concatenated — shapes must match.
+- Using base 10000 with `i` in the wrong units; the exponent is `2i / dModel`.
+- Computing PE inside the training loop every step; cache it once.
+- Allowing `pos` to exceed `maxSeqLen`; crop or extend the table explicitly.
+- Scaling embeddings by `√dModel` but forgetting to leave PE unscaled (or vice versa).
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/nn/transformer.test.ts
+```
+```bash
+bun run exercises/ch-19-positional-encoding.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. Compute `PE(0, 0)` and `PE(1, 0)` by hand. (Position 0 and 1, dimension 0.)
@@ -183,7 +219,15 @@ export class PositionalEncoding {
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 20: LayerNorm & Dropout** — the two remaining normalization/regularization primitives
-needed before building the transformer blocks.
+- [Vaswani et al. — Attention Is All You Need (2017)](https://arxiv.org/abs/1706.03762) — the original transformer paper; every formula in Parts 5–6 comes from it.
+- [Su et al. — RoPE: Rotary Position Embedding](https://arxiv.org/abs/2104.09864) — the modern alternative used by LLaMA and others.
+- [Press et al. — ALiBi: Train Short, Test Long](https://arxiv.org/abs/2108.12409) — another modern alternative; bias-based, no learned PE.
+- [Jay Alammar — The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/) — visual treatment that includes positional encodings.
+
+---
+
+## Next Chapter
+
+**[LayerNorm & Dropout](ch-20-layernorm-dropout.md)** — make activations stable and add the only regulariser inside transformer blocks.

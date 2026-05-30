@@ -1,28 +1,41 @@
 # Chapter 30: Decoder-Only GPT
 
-> **Post-Core Capstone — Modern Language Modeling**
-> `src/ch-30-decoder-only-gpt/`
+> **Part 6 of 6 — Transformer**
+> Source: [`src/nn/gpt.ts`](../../src/nn/gpt.ts)
+> Tests: [`src/nn/gpt.test.ts`](../../src/nn/gpt.test.ts)
+> Exercise: [`exercises/ch-30-decoder-only-gpt.ts`](../../exercises/ch-30-decoder-only-gpt.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-A GPT-style decoder-only transformer trained with next-token prediction. This model removes the encoder and cross-attention from the full Transformer and keeps only token embeddings, positional encoding, masked self-attention, FFN blocks, LayerNorm, and an output projection.
+By the end of this chapter you can:
 
-This is the architecture family behind modern autoregressive language models.
+- Strip the encoder and cross-attention; keep only masked self-attention + FFN blocks.
+- Train on next-token prediction with a sliding-window language-modelling batch.
+- Generate text autoregressively with greedy decoding, then with temperature sampling.
+- Recognise the architecture family behind GPT-2, GPT-3, LLaMA, and Mistral.
+- Identify natural extensions: KV cache, MoE, LoRA, quantization.
 
 ---
 
-## Why This Matters
+## Intuition First
 
-The original Transformer is encoder-decoder and was designed for sequence transduction such as translation. Modern AI engineering often starts from decoder-only language models.
+If you can already train an encoder-decoder transformer on string reversal, GPT is *simpler*. There is only one sequence, only one stack of blocks (decoder-only), and only one objective: predict the next token. The same self-attention you wrote in Ch 22, the same FFN from Ch 25, the same LayerNorm from Ch 20 — composed into a language model.
 
-The conceptual shift is simple but important:
+---
 
-- Encoder-decoder model: source sequence maps to target sequence.
-- Decoder-only model: one sequence predicts its own next token.
+## Mental Model
 
-This chapter turns the course from “I can implement the original Transformer” into “I understand the core architecture behind GPT-style models.”
+```text
+  token ids ──► Embed + PE ──► Dropout ──► DecoderOnlyBlock × N ──► LN ──► Linear(d→V)
+                                                                                │
+                                                                                ▼
+                                                                       next-token logits
+
+  DecoderOnlyBlock:  x = x + MaskedMHA(LN(x))
+                     x = x + FFN(LN(x))
+```
 
 ---
 
@@ -155,23 +168,26 @@ export class DecoderOnlyBlock {
 
 ---
 
-## Required Tests
+## Common Pitfalls
 
-- Decoder-only block preserves shape `[batch, seq, dModel]`.
-- Causal mask prevents position 0 from depending on position 1.
-- Language-modeling batch shifts targets by exactly one token.
-- Training can overfit a tiny repeated string.
-- Greedy generation produces deterministic output with the same prompt and model.
+- Accidentally importing the full decoder block (with cross-attention) instead of the decoder-only block.
+- Forgetting the causal mask during training — the model trivially copies inputs.
+- Generating from all logit positions instead of only the final one at inference.
+- Letting the context length exceed `maxSeqLen` without cropping.
+- Expecting meaningful language from a tiny dataset before it has memorised patterns.
 
 ---
 
-## Common Pitfalls
+## How to Verify
 
-- Accidentally using cross-attention from the full decoder block.
-- Forgetting the causal mask during training.
-- Generating from all logits instead of only the final position.
-- Letting context length exceed `maxSeqLen` without cropping.
-- Expecting meaningful language from a tiny dataset before it has memorized patterns.
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/nn/gpt.test.ts
+```
+```bash
+bun run exercises/ch-30-decoder-only-gpt.ts
+```
 
 ---
 
@@ -185,11 +201,15 @@ export class DecoderOnlyBlock {
 
 ---
 
-## Course Milestone
+## Further Reading
 
-After this chapter, you have two transformer families implemented from scratch:
+- [Radford et al. — Language Models are Unsupervised Multitask Learners (GPT-2)](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf) — the GPT-2 paper; this is the architecture you just built.
+- [Karpathy — nanoGPT](https://github.com/karpathy/nanoGPT) — minimal reference implementation in PyTorch.
+- [Karpathy — Let's build GPT (video)](https://www.youtube.com/watch?v=kCc8FmEb1nY) — the live build you can compare your code against.
+- [Anthropic — Transformer Circuits](https://transformer-circuits.pub/) — for the next steps in interpretability.
 
-- Encoder-decoder Transformer for sequence-to-sequence tasks.
-- Decoder-only GPT-style Transformer for next-token prediction.
+---
 
-That is the minimum architecture foundation expected of a serious AI engineering course.
+## Next Chapter
+
+You have reached the end of the core course. Natural follow-ons: **KV cache** for fast inference, **Mixture of Experts** for sparse FFNs, **LoRA** for parameter-efficient fine-tuning, and **quantization** for low-precision inference.

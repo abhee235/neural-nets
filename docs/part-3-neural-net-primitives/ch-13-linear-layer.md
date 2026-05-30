@@ -1,30 +1,40 @@
 # Chapter 13: Linear Layer
 
 > **Part 3 of 6 — Neural Net Primitives**
-> `src/ch-13-linear-layer/`
+> Source: [`src/nn/linear.ts`](../../src/nn/linear.ts)
+> Tests: [`src/nn/linear.test.ts`](../../src/nn/linear.test.ts)
+> Exercise: [`exercises/ch-13-linear-layer.ts`](../../exercises/ch-13-linear-layer.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-The `Linear` layer (also called `Dense` or `Fully Connected`): a function $y = xW + b$
-with learnable weight matrix $W$ and bias vector $b$. This is the most-used building block
-in all of deep learning — every attention projection, every FFN layer in the transformer is
-a `Linear` layer.
+By the end of this chapter you can:
+
+- Implement `Linear(inDim, outDim)` as `y = x @ W + b`.
+- Initialise weights with Xavier (for tanh) and He (for ReLU) scaling.
+- Initialise biases to zero and explain why that is safe.
+- Confirm the forward shape is `[..., outDim]` for any leading shape on `x`.
+- Read your parameter count and predict it for the full transformer.
 
 ---
 
-## Why This Matters
+## Intuition First
 
-In the transformer chapters (Ch 25–30), `Linear` layers appear everywhere:
-- Q, K, V projections: `Linear(dModel, dHead)`
-- Output projection: `Linear(dModel, dModel)`
-- FFN first layer: `Linear(dModel, dFf)` (e.g., `Linear(512, 2048)`)
-- FFN second layer: `Linear(dFf, dModel)`
-- Final language model head: `Linear(dModel, vocabSize)`
+A linear layer is a learned matrix transform. Geometrically it can rotate, stretch, and project the input; statistically it learns which combinations of inputs predict the output. Initialisation matters: weights too small and the signal dies; too large and it explodes. Xavier and He are calibrated so the variance of activations stays roughly constant through many layers.
 
-Building it once and correctly here means you just reuse it for all 20+ linear projections
-in a full transformer.
+---
+
+## Mental Model
+
+```text
+  x : [..., in]  ──►  x @ W  ──►  + b  ──►  y : [..., out]
+                       W: [in, out]      b: [out]
+
+  Xavier (tanh):   W ~ U(±√(6 / (in + out)))
+  He (ReLU):       W ~ N(0, √(2 / in))
+  bias:            zeros
+```
 
 ---
 
@@ -163,6 +173,29 @@ function xavierInit(inF: number, outF: number): Tensor {
 
 ---
 
+## Common Pitfalls
+
+- Using zero initialisation for `W` — all neurons compute the same function and gradients are identical.
+- Using a huge std-dev so activations saturate or explode after a few layers.
+- Forgetting to broadcast the bias across the leading axes of `x`.
+- Hard-coding the weight shape as `[out, in]` then transposing in forward; pick one convention.
+- Mis-counting parameters; total = `in * out + out`.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/nn/linear.test.ts
+```
+```bash
+bun run exercises/ch-13-linear-layer.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. A `Linear(128, 64)` layer: what are the shapes of `W` and `b`? How many parameters total?
@@ -176,6 +209,15 @@ function xavierInit(inF: number, outF: number): Tensor {
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 14: Optimizers** — SGD with momentum and Adam, the two workhorses of neural network training.
+- [Glorot & Bengio — Understanding the difficulty of training deep networks (2010)](http://proceedings.mlr.press/v9/glorot10a.html) — the Xavier paper; derives the initialisation.
+- [He et al. — Delving Deep into Rectifiers (2015)](https://arxiv.org/abs/1502.01852) — He initialisation tuned for ReLU networks.
+- [Stanford CS231n — weight initialisation](https://cs231n.github.io/neural-networks-2/#init) — intuitive variance analysis.
+- [Goodfellow, Bengio, Courville — Deep Learning](https://www.deeplearningbook.org/) — the standard graduate textbook; chapters map cleanly to this course.
+
+---
+
+## Next Chapter
+
+**[Optimizers](ch-14-optimizers.md)** — go beyond plain SGD with momentum, Adam, and AdamW.

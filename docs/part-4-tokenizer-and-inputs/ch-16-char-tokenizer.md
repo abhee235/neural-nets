@@ -1,27 +1,45 @@
-# Chapter 16: Character-level Tokenizer
+# Chapter 16: Character Tokenizer
 
-> **Part 4 of 6 — Language Model Inputs**
-> `src/ch-16-char-tokenizer/`
-
----
-
-## What You're Building
-
-A character-level tokenizer: the bridge between raw text (strings) and numbers that a
-neural network can process. Implements `encode` (text → token IDs) and `decode` (token IDs → text),
-plus a vocabulary builder and special tokens.
+> **Part 4 of 6 — Tokenizer & Inputs**
+> Source: [`src/tokenizer/char.ts`](../../src/tokenizer/char.ts)
+> Tests: [`src/tokenizer/char.test.ts`](../../src/tokenizer/char.test.ts)
+> Exercise: [`exercises/ch-16-char-tokenizer.ts`](../../exercises/ch-16-char-tokenizer.ts)
 
 ---
 
-## Why This Matters
+## Learning Goals
 
-Neural networks work with numbers, not text. Before any transformer can process the sentence
-"Hello world", every character (or word piece) must be converted to an integer index.
-That index then gets looked up in the embedding table (Ch 18) to produce a vector.
+By the end of this chapter you can:
 
-A character-level tokenizer is the simplest possible tokenizer — it treats every character as
-a token. While modern LLMs use BPE (Ch 17) for efficiency, a character-level tokenizer is
-sufficient to build and train a working transformer, and it's much simpler to understand.
+- Build `stoi`/`itos` vocab maps over a fixed set of characters.
+- Reserve and use special tokens `<pad>`, `<unk>`, `<bos>`, `<eos>`.
+- Implement `encode(text) → number[]` and `decode(ids) → string`.
+- Implement `encodeBatch` with right-padding and a parallel `paddingMask`.
+- Round-trip every test string: `decode(encode(s)) === s`.
+
+---
+
+## Intuition First
+
+Neural networks cannot read strings; they can only read numbers. A tokenizer is a **dictionary** that assigns each character (or subword) a unique integer. A character tokenizer is the simplest possible: one ID per character. It is slow (long sequences) but it never sees an unknown character if the vocabulary is the full alphabet.
+
+---
+
+## Mental Model
+
+```text
+  text:      "hi"
+                │
+                ▼ stoi
+  token ids: [12, 21]
+                │
+                ▼ encodeBatch (pad to length 4)
+  ids:       [12, 21, 0,  0]
+  mask:      [ 1,  1, 0,  0]
+                │
+                ▼ decode
+  text:      "hi"
+```
 
 ---
 
@@ -166,6 +184,29 @@ export class CharTokenizer {
 
 ---
 
+## Common Pitfalls
+
+- Skipping the `<unk>` token — any character outside the vocab silently breaks encoding.
+- Padding on the *left* by accident; the rest of the course assumes right padding.
+- Returning padded IDs without the matching padding mask; downstream attention will attend to pad.
+- Including newline/whitespace inconsistently — pick a normalisation rule and document it.
+- Letting `stoi` and `itos` drift out of sync after vocabulary edits.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/tokenizer/char.test.ts
+```
+```bash
+bun run exercises/ch-16-char-tokenizer.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. Build a `CharTokenizer` from the text "abcabc". What is `vocabSize`? What is `stoi`?
@@ -179,7 +220,15 @@ export class CharTokenizer {
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 17: BPE Tokenizer** — the Byte-Pair Encoding algorithm used by GPT-2/3/4.
-Handles multi-character tokens for efficiency. (Optional: Ch 18–27 only need Ch 16.)
+- [Karpathy — Let's build the GPT Tokenizer](https://www.youtube.com/watch?v=zduSFxRajkE) — video walkthrough that starts at char level and builds up to BPE.
+- [HuggingFace — Tokenizers introduction](https://huggingface.co/docs/tokenizers/introduction) — industry tokenizer reference.
+- [Wikipedia — Unicode normalisation forms](https://en.wikipedia.org/wiki/Unicode_equivalence) — decide once whether you NFC-normalise your inputs.
+- [OpenAI — tiktoken](https://github.com/openai/tiktoken) — GPT's production tokenizer; useful comparison point.
+
+---
+
+## Next Chapter
+
+**[BPE Tokenizer](ch-17-bpe-tokenizer.md)** — graduate from one-token-per-character to learned subword units.

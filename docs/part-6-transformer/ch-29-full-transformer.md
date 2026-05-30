@@ -1,27 +1,46 @@
 # Chapter 29: Full Transformer
 
 > **Part 6 of 6 — Transformer**
-> `src/ch-29-full-transformer/`
+> Source: [`src/nn/transformer.ts`](../../src/nn/transformer.ts)
+> Tests: [`src/nn/transformer.test.ts`](../../src/nn/transformer.test.ts)
+> Exercise: [`exercises/ch-29-full-transformer.ts`](../../exercises/ch-29-full-transformer.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-The complete transformer: encoder stack + decoder stack + embedding layers + output
-projection, assembled into a single trainable model. Train it on a toy sequence-to-sequence
-task (e.g., character-level reversal: "hello" → "olleh") to see all the pieces working together.
+By the end of this chapter you can:
+
+- Assemble embeddings, positional encoding, encoder stack, decoder stack, final norm, and output projection.
+- Run a full forward pass: `forward(src, tgt) → logits [batch, tgt_len, vocab_size]`.
+- Scale embeddings by `√d_model` before adding positional encoding.
+- Optionally tie embedding weights to the output projection.
+- Train on the string-reversal task and achieve loss < 0.1 within ~100 epochs.
 
 ---
 
-## Why This Matters
+## Intuition First
 
-This is the culmination of the encoder-decoder path. Every single piece you have built — tensor arithmetic,
-broadcasting, autograd, activations, losses, optimizers, tokenizer, embeddings, positional
-encoding, LayerNorm, dropout, attention, multi-head attention, cross-attention, FFN, encoder
-blocks, decoder blocks — comes together here.
+Every previous chapter has been one ingredient. This chapter is the **recipe**. The encoder reads the source into a context tensor; the decoder, guided by cross-attention on that tensor, writes the target token by token. Once you can train this on a toy task, you can train it on translation — only the dataset changes.
 
-After this chapter you will have trained a working transformer from scratch, in TypeScript,
-with zero external libraries.
+---
+
+## Mental Model
+
+```text
+  source ids   ──► Embed + √d_model ──► +PE ──► Dropout ──► Encoder × N ──► enc_out
+                                                                            │
+  target ids   ──► Embed + √d_model ──► +PE ──► Dropout ──► Decoder × N ◄───┘
+                                                            │
+                                                            ▼
+                                                       Final LN
+                                                            │
+                                                            ▼
+                                                  Linear(d_model → vocab)
+                                                            │
+                                                            ▼
+                                                          logits
+```
 
 ---
 
@@ -216,6 +235,29 @@ export class Transformer {
 
 ---
 
+## Common Pitfalls
+
+- Forgetting to scale embeddings by `√d_model`; the magnitudes don't match the positional encoding.
+- Building one `nn.LayerNorm` and using it everywhere — each location needs its own.
+- Feeding raw target tokens (not shifted) into the decoder; trivial copy task results.
+- Letting the decoder maxSeqLen exceed the trained PE table; either crop or extend.
+- Declaring victory at low train loss without checking generation on unseen examples.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/nn/transformer.test.ts
+```
+```bash
+bun run exercises/ch-29-full-transformer.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. Trace the full forward pass for one batch of source length 5, target length 5,
@@ -231,44 +273,15 @@ export class Transformer {
 
 ---
 
-## Core Transformer Complete
+## Further Reading
 
-You have built a full transformer from scratch:
-- Part 1: Tensor library (Ch 01–06)
-- Part 2: Autograd engine (Ch 07–10)
-- Part 3: Neural net primitives (Ch 11–15)
-- Part 4: Language model inputs (Ch 16–21)
-- Part 5: Attention mechanism (Ch 22–24)
-- Part 6: Full encoder-decoder transformer (Ch 25–29)
+- [Vaswani et al. — Attention Is All You Need (2017)](https://arxiv.org/abs/1706.03762) — the original transformer paper; every formula in Parts 5–6 comes from it.
+- [Harvard NLP — The Annotated Transformer](http://nlp.seas.harvard.edu/annotated-transformer/) — the closest published cousin of what we are building.
+- [Sasha Rush — The Annotated Encoder-Decoder](https://bastings.github.io/annotated_encoder_decoder/) — more notes on training dynamics.
+- [Jay Alammar — The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/) — still the best single visual reference for the full model.
 
 ---
 
-## → Next Chapter
+## Next Chapter
 
-**Ch 30: Decoder-Only GPT** — remove the encoder and cross-attention, then train a
-GPT-style model with next-token prediction.
-
----
-
-## Later Extensions
-
-After the decoder-only capstone, natural extensions to explore:
-
-**KV Cache**
-- Cache K and V tensors at each decoder step during inference
-- Avoid recomputing the full context at every autoregressive step
-- Critical for fast inference in production
-
-**Mixture of Experts (MoE)**
-- Replace FFN with multiple expert FFNs
-- A router network selects which experts to activate per token
-- Used in Mixtral, GPT-4 (rumored), and other large models
-
-**LoRA (Low-Rank Adaptation)**
-- Fine-tune only small rank-decomposed matrices, not the full weight matrices
-- $W' = W + \frac{\alpha}{r} A B$ where $A \in \mathbb{R}^{d \times r}, B \in \mathbb{R}^{r \times d}$
-- Massively reduces fine-tuning memory and compute
-
-**Quantization**
-- Store weights in 4-bit or 8-bit integers instead of 32-bit floats
-- Reduces memory 4–8×, with minimal quality loss
+**[Decoder-Only GPT](ch-30-decoder-only-gpt.md)** — strip the encoder away and train next-token prediction directly.

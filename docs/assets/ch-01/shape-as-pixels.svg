@@ -1,0 +1,198 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 600" width="940" height="600" font-family="ui-sans-serif, -apple-system, Helvetica, Arial">
+<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker><linearGradient id="greyramp" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#000000"/><stop offset="100%" stop-color="#ffffff"/></linearGradient></defs>
+<rect x="0" y="0" width="940" height="600" rx="3" fill="#faf7f0" stroke="#faf7f0" stroke-width="0" opacity="1.0"/>
+<text x="470.0" y="32" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Helvetica, Arial" font-size="17" font-weight="700" fill="#1d1d1b">Shape [2, 3, 4] as 2 tiny greyscale images  (each 3 rows × 4 cols)</text>
+<text x="470.0" y="52" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Helvetica, Arial" font-size="12" font-weight="normal" fill="#64748b">Each cell of the tensor is one pixel. The number IS the brightness.</text>
+<text x="470.0" y="68" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Helvetica, Arial" font-size="11" font-weight="600" fill="#1d1d1b">How a number becomes a shade  (8-bit greyscale)</text>
+<rect x="230.0" y="74" width="480" height="22" fill="url(#greyramp)" stroke="#1d1d1b" stroke-width="1" rx="2"/>
+<line x1="230.0" y1="96" x2="230.0" y2="100" stroke="#1d1d1b" stroke-width="1.2"/>
+<text x="230.0" y="112" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="600" fill="#1d1d1b">0</text>
+<text x="230.0" y="126" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Helvetica, Arial" font-size="10" font-weight="normal" fill="#64748b">black</text>
+<line x1="350.47058823529414" y1="96" x2="350.47058823529414" y2="100" stroke="#1d1d1b" stroke-width="1.2"/>
+<text x="350.47058823529414" y="112" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="600" fill="#1d1d1b">64</text>
+<line x1="470.94117647058823" y1="96" x2="470.94117647058823" y2="100" stroke="#1d1d1b" stroke-width="1.2"/>
+<text x="470.94117647058823" y="112" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="600" fill="#1d1d1b">128</text>
+<text x="470.94117647058823" y="126" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Helvetica, Arial" font-size="10" font-weight="normal" fill="#64748b">mid-grey</text>
+<line x1="591.4117647058823" y1="96" x2="591.4117647058823" y2="100" stroke="#1d1d1b" stroke-width="1.2"/>
+<text x="591.4117647058823" y="112" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="600" fill="#1d1d1b">192</text>
+<line x1="710.0" y1="96" x2="710.0" y2="100" stroke="#1d1d1b" stroke-width="1.2"/>
+<text x="710.0" y="112" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="600" fill="#1d1d1b">255</text>
+<text x="710.0" y="126" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Helvetica, Arial" font-size="10" font-weight="normal" fill="#64748b">white</text>
+<text x="470.0" y="144" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Helvetica, Arial" font-size="11" font-weight="normal" fill="#1d1d1b">a value of v paints a cell that is  v/255  of the way from black to white</text>
+<rect x="51.0" y="160" width="404" height="178" rx="8" fill="#faf7f0" stroke="#64748b" stroke-width="1.2" opacity="1.0" stroke-dasharray="4 4"/>
+<text x="253.0" y="182" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Helvetica, Arial" font-size="13" font-weight="700" fill="#0f766e">image 0  —  tensor[0, :, :]</text>
+<rect x="65.0" y="196" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="86.0" y="218.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">20</text>
+<rect x="107.0" y="196" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="128.0" y="218.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">80</text>
+<rect x="149.0" y="196" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="170.0" y="218.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">140</text>
+<rect x="191.0" y="196" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="212.0" y="218.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">200</text>
+<rect x="65.0" y="232" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="86.0" y="254.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">40</text>
+<rect x="107.0" y="232" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="128.0" y="254.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">100</text>
+<rect x="149.0" y="232" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="170.0" y="254.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">160</text>
+<rect x="191.0" y="232" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="212.0" y="254.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">220</text>
+<rect x="65.0" y="268" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="86.0" y="290.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">60</text>
+<rect x="107.0" y="268" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="128.0" y="290.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">120</text>
+<rect x="149.0" y="268" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="170.0" y="290.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">180</text>
+<rect x="191.0" y="268" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="212.0" y="290.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">240</text>
+<text x="149.0" y="326" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Helvetica, Arial" font-size="11" font-weight="500" fill="#64748b">12 numbers</text>
+<line x1="241.0" y1="250.0" x2="265.0" y2="250.0" stroke="#b45309" stroke-width="2.0" marker-end="url(#arr)"/>
+<text x="253.0" y="242.0" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Helvetica, Arial" font-size="10" font-weight="600" fill="#b45309">render</text>
+<rect x="273.0" y="196" width="42" height="36" rx="2" fill="#141414" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="294.0" y="218.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#ffffff">20</text>
+<rect x="315.0" y="196" width="42" height="36" rx="2" fill="#505050" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="336.0" y="218.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#ffffff">80</text>
+<rect x="357.0" y="196" width="42" height="36" rx="2" fill="#8c8c8c" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="378.0" y="218.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#111111">140</text>
+<rect x="399.0" y="196" width="42" height="36" rx="2" fill="#c8c8c8" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="420.0" y="218.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#111111">200</text>
+<rect x="273.0" y="232" width="42" height="36" rx="2" fill="#282828" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="294.0" y="254.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#ffffff">40</text>
+<rect x="315.0" y="232" width="42" height="36" rx="2" fill="#646464" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="336.0" y="254.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#ffffff">100</text>
+<rect x="357.0" y="232" width="42" height="36" rx="2" fill="#a0a0a0" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="378.0" y="254.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#111111">160</text>
+<rect x="399.0" y="232" width="42" height="36" rx="2" fill="#dcdcdc" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="420.0" y="254.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#111111">220</text>
+<rect x="273.0" y="268" width="42" height="36" rx="2" fill="#3c3c3c" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="294.0" y="290.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#ffffff">60</text>
+<rect x="315.0" y="268" width="42" height="36" rx="2" fill="#787878" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="336.0" y="290.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#ffffff">120</text>
+<rect x="357.0" y="268" width="42" height="36" rx="2" fill="#b4b4b4" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="378.0" y="290.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#111111">180</text>
+<rect x="399.0" y="268" width="42" height="36" rx="2" fill="#f0f0f0" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="420.0" y="290.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#111111">240</text>
+<rect x="272.0" y="195" width="170" height="110" rx="2" fill="none" stroke="#1d1d1b" stroke-width="1.6" opacity="1.0"/>
+<text x="357.0" y="326" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Helvetica, Arial" font-size="11" font-weight="600" fill="#1d1d1b">the actual picture</text>
+<rect x="485.0" y="160" width="404" height="178" rx="8" fill="#faf7f0" stroke="#64748b" stroke-width="1.2" opacity="1.0" stroke-dasharray="4 4"/>
+<text x="687.0" y="182" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Helvetica, Arial" font-size="13" font-weight="700" fill="#0f766e">image 1  —  tensor[1, :, :]</text>
+<rect x="499.0" y="196" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="520.0" y="218.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">240</text>
+<rect x="541.0" y="196" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="562.0" y="218.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">180</text>
+<rect x="583.0" y="196" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="604.0" y="218.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">120</text>
+<rect x="625.0" y="196" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="646.0" y="218.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">60</text>
+<rect x="499.0" y="232" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="520.0" y="254.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">200</text>
+<rect x="541.0" y="232" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="562.0" y="254.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">140</text>
+<rect x="583.0" y="232" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="604.0" y="254.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">80</text>
+<rect x="625.0" y="232" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="646.0" y="254.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">40</text>
+<rect x="499.0" y="268" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="520.0" y="290.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">160</text>
+<rect x="541.0" y="268" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="562.0" y="290.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">100</text>
+<rect x="583.0" y="268" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="604.0" y="290.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">40</text>
+<rect x="625.0" y="268" width="42" height="36" rx="3" fill="#faf7f0" stroke="#1d1d1b" stroke-width="1.2" opacity="1.0"/>
+<text x="646.0" y="290.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="500" fill="#1d1d1b">20</text>
+<text x="583.0" y="326" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Helvetica, Arial" font-size="11" font-weight="500" fill="#64748b">12 numbers</text>
+<line x1="675.0" y1="250.0" x2="699.0" y2="250.0" stroke="#b45309" stroke-width="2.0" marker-end="url(#arr)"/>
+<text x="687.0" y="242.0" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Helvetica, Arial" font-size="10" font-weight="600" fill="#b45309">render</text>
+<rect x="707.0" y="196" width="42" height="36" rx="2" fill="#f0f0f0" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="728.0" y="218.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#111111">240</text>
+<rect x="749.0" y="196" width="42" height="36" rx="2" fill="#b4b4b4" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="770.0" y="218.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#111111">180</text>
+<rect x="791.0" y="196" width="42" height="36" rx="2" fill="#787878" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="812.0" y="218.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#ffffff">120</text>
+<rect x="833.0" y="196" width="42" height="36" rx="2" fill="#3c3c3c" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="854.0" y="218.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#ffffff">60</text>
+<rect x="707.0" y="232" width="42" height="36" rx="2" fill="#c8c8c8" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="728.0" y="254.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#111111">200</text>
+<rect x="749.0" y="232" width="42" height="36" rx="2" fill="#8c8c8c" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="770.0" y="254.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#111111">140</text>
+<rect x="791.0" y="232" width="42" height="36" rx="2" fill="#505050" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="812.0" y="254.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#ffffff">80</text>
+<rect x="833.0" y="232" width="42" height="36" rx="2" fill="#282828" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="854.0" y="254.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#ffffff">40</text>
+<rect x="707.0" y="268" width="42" height="36" rx="2" fill="#a0a0a0" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="728.0" y="290.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#111111">160</text>
+<rect x="749.0" y="268" width="42" height="36" rx="2" fill="#646464" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="770.0" y="290.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#ffffff">100</text>
+<rect x="791.0" y="268" width="42" height="36" rx="2" fill="#282828" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="812.0" y="290.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#ffffff">40</text>
+<rect x="833.0" y="268" width="42" height="36" rx="2" fill="#141414" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="854.0" y="290.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="500" fill="#ffffff">20</text>
+<rect x="706.0" y="195" width="170" height="110" rx="2" fill="none" stroke="#1d1d1b" stroke-width="1.6" opacity="1.0"/>
+<text x="791.0" y="326" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Helvetica, Arial" font-size="11" font-weight="600" fill="#1d1d1b">the actual picture</text>
+<text x="470.0" y="394" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Helvetica, Arial" font-size="13" font-weight="600" fill="#1d1d1b">...and underneath it is one flat Float64Array(24) — same numbers, same shades</text>
+<rect x="86.0" y="414" width="32" height="36" rx="2" fill="#141414" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="102.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#ffffff">20</text>
+<rect x="118.0" y="414" width="32" height="36" rx="2" fill="#505050" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="134.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#ffffff">80</text>
+<rect x="150.0" y="414" width="32" height="36" rx="2" fill="#8c8c8c" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="166.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#111111">140</text>
+<rect x="182.0" y="414" width="32" height="36" rx="2" fill="#c8c8c8" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="198.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#111111">200</text>
+<rect x="214.0" y="414" width="32" height="36" rx="2" fill="#282828" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="230.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#ffffff">40</text>
+<rect x="246.0" y="414" width="32" height="36" rx="2" fill="#646464" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="262.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#ffffff">100</text>
+<rect x="278.0" y="414" width="32" height="36" rx="2" fill="#a0a0a0" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="294.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#111111">160</text>
+<rect x="310.0" y="414" width="32" height="36" rx="2" fill="#dcdcdc" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="326.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#111111">220</text>
+<rect x="342.0" y="414" width="32" height="36" rx="2" fill="#3c3c3c" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="358.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#ffffff">60</text>
+<rect x="374.0" y="414" width="32" height="36" rx="2" fill="#787878" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="390.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#ffffff">120</text>
+<rect x="406.0" y="414" width="32" height="36" rx="2" fill="#b4b4b4" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="422.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#111111">180</text>
+<rect x="438.0" y="414" width="32" height="36" rx="2" fill="#f0f0f0" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="454.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#111111">240</text>
+<rect x="470.0" y="414" width="32" height="36" rx="2" fill="#f0f0f0" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="486.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#111111">240</text>
+<rect x="502.0" y="414" width="32" height="36" rx="2" fill="#b4b4b4" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="518.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#111111">180</text>
+<rect x="534.0" y="414" width="32" height="36" rx="2" fill="#787878" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="550.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#ffffff">120</text>
+<rect x="566.0" y="414" width="32" height="36" rx="2" fill="#3c3c3c" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="582.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#ffffff">60</text>
+<rect x="598.0" y="414" width="32" height="36" rx="2" fill="#c8c8c8" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="614.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#111111">200</text>
+<rect x="630.0" y="414" width="32" height="36" rx="2" fill="#8c8c8c" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="646.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#111111">140</text>
+<rect x="662.0" y="414" width="32" height="36" rx="2" fill="#505050" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="678.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#ffffff">80</text>
+<rect x="694.0" y="414" width="32" height="36" rx="2" fill="#282828" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="710.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#ffffff">40</text>
+<rect x="726.0" y="414" width="32" height="36" rx="2" fill="#a0a0a0" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="742.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#111111">160</text>
+<rect x="758.0" y="414" width="32" height="36" rx="2" fill="#646464" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="774.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#ffffff">100</text>
+<rect x="790.0" y="414" width="32" height="36" rx="2" fill="#282828" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="806.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#ffffff">40</text>
+<rect x="822.0" y="414" width="32" height="36" rx="2" fill="#141414" stroke="#444" stroke-width="0.8" opacity="1.0"/>
+<text x="838.0" y="436.0" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="500" fill="#ffffff">20</text>
+<text x="102.0" y="464" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="normal" fill="#64748b">0</text>
+<text x="230.0" y="464" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="normal" fill="#64748b">4</text>
+<text x="358.0" y="464" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="normal" fill="#64748b">8</text>
+<text x="486.0" y="464" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="normal" fill="#64748b">12</text>
+<text x="614.0" y="464" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="normal" fill="#64748b">16</text>
+<text x="742.0" y="464" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="normal" fill="#64748b">20</text>
+<text x="838.0" y="464" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="normal" fill="#64748b">23</text>
+<text x="68.0" y="436.0" text-anchor="end" font-family="ui-sans-serif, -apple-system, Helvetica, Arial" font-size="11" font-weight="600" fill="#64748b">data:</text>
+<text x="68.0" y="464" text-anchor="end" font-family="ui-sans-serif, -apple-system, Helvetica, Arial" font-size="10" font-weight="600" fill="#64748b">index:</text>
+<line x1="88.0" y1="484" x2="468.0" y2="484" stroke="#0f766e" stroke-width="1.8"/>
+<line x1="88.0" y1="484" x2="88.0" y2="478" stroke="#0f766e" stroke-width="1.8"/>
+<line x1="468.0" y1="484" x2="468.0" y2="478" stroke="#0f766e" stroke-width="1.8"/>
+<text x="278.0" y="500" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Helvetica, Arial" font-size="11" font-weight="600" fill="#0f766e">image 0  (12 numbers)</text>
+<line x1="472.0" y1="484" x2="852.0" y2="484" stroke="#0f766e" stroke-width="1.8"/>
+<line x1="472.0" y1="484" x2="472.0" y2="478" stroke="#0f766e" stroke-width="1.8"/>
+<line x1="852.0" y1="484" x2="852.0" y2="478" stroke="#0f766e" stroke-width="1.8"/>
+<text x="662.0" y="500" text-anchor="middle" font-family="ui-sans-serif, -apple-system, Helvetica, Arial" font-size="11" font-weight="600" fill="#0f766e">image 1  (12 numbers)</text>
+</svg>

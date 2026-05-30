@@ -1,29 +1,38 @@
-# Chapter 17: BPE Tokenizer (Byte-Pair Encoding)
+# Chapter 17: BPE Tokenizer
 
-> **Part 4 of 6 — Language Model Inputs**
-> `src/ch-17-bpe-tokenizer/`
-
-> ⚠️ **Optional chapter.** Chapters 18–30 only require the character tokenizer from Ch 16.
-> Come back to this after completing the full transformer if you want GPT-style tokenization.
-
----
-
-## What You're Building
-
-A Byte-Pair Encoding tokenizer from scratch: the algorithm that learns a vocabulary of
-sub-word tokens from a corpus, then encodes text using that vocabulary. This is how
-GPT-2, GPT-3, GPT-4, LLaMA, and virtually all modern LLMs tokenize text.
+> **Part 4 of 6 — Tokenizer & Inputs**
+> Source: [`src/tokenizer/bpe.ts`](../../src/tokenizer/bpe.ts)
+> Tests: [`src/tokenizer/bpe.test.ts`](../../src/tokenizer/bpe.test.ts)
+> Exercise: [`exercises/ch-17-bpe-tokenizer.ts`](../../exercises/ch-17-bpe-tokenizer.ts)
 
 ---
 
-## Why This Matters
+## Learning Goals
 
-Character-level tokenization works but is inefficient: the word "transformer" takes 11
-tokens. With BPE, common multi-character sequences get their own token. "transformer"
-might be a single token, or two tokens "trans" + "former". This means:
-- Fewer tokens per sentence → shorter sequences → faster training
-- The model attends over fewer positions → attention is less expensive
-- Common words are atomic units, which may help the model learn their meaning
+By the end of this chapter you can:
+
+- Implement BPE training: count pairs, merge the most frequent pair, repeat to vocab size.
+- Encode text by greedily applying learned merges in order.
+- Decode back to text from BPE token IDs.
+- Reason about the trade-off between vocab size, sequence length, and `<unk>` rate.
+- Reproduce a tiny end-to-end train→encode→decode round-trip.
+
+---
+
+## Intuition First
+
+BPE compresses common letter pairs into single tokens. Start with characters; find the most common adjacent pair (say `t` + `h`); merge them into a new token `th`; repeat. After a few thousand merges, common words become one token, rare words become a handful of subwords, and unknown words never appear because every character is still a fallback.
+
+---
+
+## Mental Model
+
+```text
+  initial:   l   o   w   e   r   _   l   o   w   _   l   o   w   e   s   t
+  step 1:    lo  w   e   r   _   lo  w   _   lo  w   e   s   t            (merged "l"+"o")
+  step 2:    low e   r   _   low _   low e   s   t                          (merged "lo"+"w")
+  ...
+```
 
 ---
 
@@ -165,6 +174,29 @@ function countPairs(tokens: string[]): Map<string, number> {
 
 ---
 
+## Common Pitfalls
+
+- Re-counting pairs from scratch after every merge — keep an incremental counter.
+- Forgetting that merges must be applied in **learn-order** at encode time.
+- Letting whitespace be part of merges in subtle ways; pick a clear word-boundary rule.
+- Setting `vocabSize` too high relative to corpus size; merges become noise.
+- Skipping the round-trip test — silent off-by-one bugs in `encode` are common.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/tokenizer/bpe.test.ts
+```
+```bash
+bun run exercises/ch-17-bpe-tokenizer.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. Run BPE training on "aababcabc" with target vocab size 8.
@@ -180,6 +212,15 @@ function countPairs(tokens: string[]): Map<string, number> {
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 18: Token Embeddings** — map integer token IDs to dense vectors using an embedding table.
+- [Sennrich, Haddow, Birch — Neural Machine Translation of Rare Words with Subword Units](https://arxiv.org/abs/1508.07909) — the BPE paper.
+- [HuggingFace — BPE tutorial](https://huggingface.co/learn/nlp-course/chapter6/5) — walks through the same algorithm with diagrams.
+- [Karpathy — minbpe](https://github.com/karpathy/minbpe) — minimal reference implementation in Python.
+- [Google — SentencePiece](https://github.com/google/sentencepiece) — BPE + Unigram in one library; what most production models use.
+
+---
+
+## Next Chapter
+
+**[Embeddings](ch-18-token-embeddings.md)** — turn token IDs into dense vectors the network can actually learn from.

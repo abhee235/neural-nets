@@ -1,26 +1,40 @@
 # Chapter 18: Token Embeddings
 
-> **Part 4 of 6 — Language Model Inputs**
-> `src/ch-18-token-embeddings/`
+> **Part 4 of 6 — Tokenizer & Inputs**
+> Source: [`src/nn/embedding.ts`](../../src/nn/embedding.ts)
+> Tests: [`src/nn/transformer.test.ts`](../../src/nn/transformer.test.ts)
+> Exercise: [`exercises/ch-18-embeddings.ts`](../../exercises/ch-18-embeddings.ts)
 
 ---
 
-## What You're Building
+## Learning Goals
 
-An embedding layer: a lookup table that maps integer token IDs to dense floating-point vectors.
-This is the first learnable layer in every language model.
+By the end of this chapter you can:
+
+- Implement `Embedding(vocabSize, dModel)` as a learned lookup table.
+- Lookup turns `[batch, seq]` integer IDs into `[batch, seq, dModel]` dense vectors.
+- Initialise the embedding table with small random values (e.g. `N(0, 0.02)`).
+- Optionally share weights between the embedding lookup and the output projection (weight tying).
+- Explain how the embedding table is updated during backprop.
 
 ---
 
-## Why This Matters
+## Intuition First
 
-A transformer can't operate on integers directly — it needs continuous vectors it can apply
-matrix multiplications to. The embedding layer is the bridge: each token in the vocabulary
-gets its own learnable vector in $\mathbb{R}^{d_{\text{model}}}$. Semantically similar tokens
-(like "king" and "queen") end up with similar embeddings after training.
+An embedding table is a dictionary where each token ID maps to a learned vector. The vector lives in `ℝ^{dModel}` and is shaped by training: words used in similar contexts end up near each other. The lookup is just "pick row `id` from the table" — no matrix multiplication needed.
 
-In the transformer, the embedding layer (Ch 18) + positional encoding (Ch 19) are the
-*entire input processing pipeline* before any attention is computed.
+---
+
+## Mental Model
+
+```text
+  table W: [vocabSize, dModel]
+
+      id = 3  ───►  W[3, :]   ─── one row, length dModel
+      id = 7  ───►  W[7, :]
+
+  Embedding(ids: [batch, seq]) → [batch, seq, dModel]
+```
 
 ---
 
@@ -158,6 +172,29 @@ export class Embedding {
 
 ---
 
+## Common Pitfalls
+
+- Using `matmul` with a one-hot matrix — correct but absurdly slow; gather rows directly.
+- Forgetting that backward must scatter-add into the embedding rows that were looked up.
+- Sharing the embedding table with the output projection but transposing it inconsistently.
+- Initialising with a huge std-dev; embeddings then dominate positional encodings.
+- Including the `<pad>` row in the loss when it should be ignored.
+
+---
+
+## How to Verify
+
+Run the tests and the exercise. Both should pass cleanly with no warnings:
+
+```bash
+bun test src/nn/transformer.test.ts
+```
+```bash
+bun run exercises/ch-18-embeddings.ts
+```
+
+---
+
 ## Self-Check Questions
 
 1. An embedding layer with `vocabSize=1000, dModel=64`: how many learnable parameters?
@@ -171,7 +208,15 @@ export class Embedding {
 
 ---
 
-## → Next Chapter
+## Further Reading
 
-**Ch 19: Positional Encoding** — add position information to embeddings so the model
-knows the order of tokens in the sequence.
+- [Mikolov et al. — Efficient Estimation of Word Representations (word2vec)](https://arxiv.org/abs/1301.3781) — the paper that made dense word embeddings famous.
+- [Press & Wolf — Using the Output Embedding to Improve Language Models](https://arxiv.org/abs/1608.05859) — the weight-tying paper we will optionally apply in Ch 29.
+- [Distill — The Building Blocks of Interpretability](https://distill.pub/2018/building-blocks/) — what learned embeddings actually represent.
+- [Karpathy — makemore (videos)](https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ) — embedding tables in action, from scratch.
+
+---
+
+## Next Chapter
+
+**[Positional Encoding](ch-19-positional-encoding.md)** — give the model a sense of *where* each token sits in the sequence.
