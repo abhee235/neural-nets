@@ -19,22 +19,89 @@ By the end of this chapter you will be able to:
 
 ---
 
-## Intuition First — Why does shape matter so much?
+## Intuition First — Why does matrix multiplication exist at all?
 
-Imagine you have a spreadsheet with 3 rows and 4 columns. You want to combine it with another spreadsheet using matrix multiplication. The rule is simple: **the number of columns in the first sheet must equal the number of rows in the second sheet.** That shared dimension gets "consumed" — it disappears from the output. What you get back is a new spreadsheet whose size is rows-of-first × columns-of-second.
+### The real question it answers
+
+Imagine you're building a music recommendation system. You have **4 users**, and for each user you've measured how much they like 3 genres: pop, rock, jazz. You also have **5 songs**, and for each song you know its genre profile.
 
 ```
-Sheet A: 3 rows × 4 columns    (shape [3, 4])
-Sheet B: 4 rows × 5 columns    (shape [4, 5])
-                  ↑ ↑
-           these must match
+Users [4 × 3]            Songs [3 × 5]
+(one row per user)        (one col per song)
+(one col per genre)       (one row per genre)
 
-Result:   3 rows × 5 columns   (shape [3, 5])
+          pop  rock jazz          s0   s1   s2   s3   s4
+user 0  [ 0.9  0.1  0.5 ]  pop [ 0.7  0.8  0.9  0.0  0.5 ]
+user 1  [ 0.2  0.8  0.3 ]  rock[ 0.3  0.1  0.0  0.9  0.7 ]
+user 2  [ 0.5  0.5  0.9 ]  jazz[ 0.8  0.2  0.4  0.5  0.1 ]
+user 3  [ 0.0  0.9  0.2 ]
 ```
 
-Every number in the result sheet is a single dot product: you multiply an entire row from A against an entire column from B, and sum all the products. That is the whole algorithm.
+**The question:** How much will user 0 enjoy song 2?
 
-The other operations in this chapter — `transpose`, `reshape`, `squeeze`, `concat` — are pure **bookkeeping**. They rearrange or relabel the data without doing any arithmetic. They exist because the shapes coming out of one layer rarely align perfectly with the shapes the next layer expects.
+To answer it, you need to combine **all three** of user 0's genre preferences with **all three** of song 2's genre scores simultaneously:
+
+```
+score(user 0, song 2) = 0.9 × 0.9   +   0.1 × 0.0   +   0.5 × 0.4
+                      = 0.81         +   0.00         +   0.20
+                      = 1.01
+```
+
+That single sum — multiply each feature pair, then add — is called a **dot product**. One dot product gives one score.
+
+Now the real power: **to get ALL user–song scores at once** (4 users × 5 songs = 20 scores), you do this dot product for every user-row against every song-column simultaneously. That is **matrix multiplication**.
+
+```
+Users [4 × 3]  ×  Songs [3 × 5]  =  Scores [4 × 5]
+               ↑ ↑
+     inner dims must match (both 3 = "number of genres")
+```
+
+Every cell of the result is one dot product. The entire 4×5 score table comes from one `matMul`.
+
+---
+
+### Why row × column? Why not some other combination?
+
+This question is worth a dedicated stop. There are several ways you could imagine combining two matrices. Here is why only row × column works:
+
+| Attempt | What you'd compute | Why it fails |
+|---|---|---|
+| **row × column** ✓ | All features of one user vs all features of one song | Gives one scalar — a meaningful compatibility score |
+| row × row | User features vs user features | You'd compare users to users, not users to songs. Also gives a vector of 3 values, not a single score |
+| column × column | Genre scores of Users vs genre scores of Songs | Compares genres, not user-song pairs. And they may have different lengths |
+| elementwise (A * B) | Only works if shapes are equal. No summation | Gives a vector, not a scalar — you still can't compare full profiles |
+
+The fundamental requirement is: **to measure how well two complete profiles align, you need a single number that combines all their features together**. The dot product (multiply each pair, sum everything) is exactly that number. And row × column is the only arrangement where one matrix holds complete "input profiles" as rows and the other holds complete "output profiles" as columns.
+
+---
+
+### What happens if the inner dimensions don't match?
+
+```
+Users  [4 × 3]  ×  Songs  [5 × 3]   ← WRONG: inner dims are 3 and 5
+```
+
+User 0's row has 3 genre values. Song 0's row also has 3 genre values. But if you tried to pair them as row × row, you'd be multiplying genre slot 1 of the user with genre slot 1 of the song — that part works. But the shape says there are 5 song rows and 3 user columns. The 4th and 5th song rows have no corresponding user column to multiply with. **The feature spaces don't align.** The sum is undefined.
+
+The rigid rule — inner dims must match — is not an arbitrary mathematical quirk. It's a guarantee that feature slot $k$ in A is the **same kind of thing** as feature slot $k$ in B. If they don't match, you're summing apples and oranges.
+
+---
+
+### The neural network connection
+
+In a neural network's **linear layer** (Ch 13):
+- A = `input` tensor `[batch, features_in]` — each row is one data point's features
+- B = `weights` matrix `[features_in, features_out]` — each column is one output neuron's weights
+- C = `matMul(A, B)` → `[batch, features_out]` — each cell is "how much does data point i activate neuron j"
+
+It is the same dot-product-as-compatibility-score idea, scaled up to millions of parameters. This single function call is what makes neurons "fire": they compute their weighted sum of inputs.
+
+---
+
+### The other operations in this chapter
+
+`transpose`, `reshape`, `squeeze`, `concat` do **no arithmetic at all** — they only rearrange or relabel data. They exist because the shapes coming out of one layer rarely align perfectly with the shapes the next layer expects. They are plumbing, not computation.
 
 ---
 
@@ -79,18 +146,49 @@ reshape to [2, 3]:    reshape to [3, 2]:    transpose [2,3] → [3,2]:
 
 `matMul` is the core operation of every neural network layer. It is where numbers actually mix together — in `transpose` and `reshape` they only move around.
 
-> **Use it when** you need to linearly combine every input feature with every output feature.
-> **Picture this** You have 3 questions (rows of A) and you want to score them against 5 answer keys (columns of B). Each score is a dot product. The result is a 3×5 score table.
+> **Use it when** you need to compute "how much does each input profile match each output profile" — the dot product of every row of A with every column of B.
+
+#### Animation — watch the row sweep across the columns
+
+The animation below steps through all 9 output cells of a 3×2 × 2×3 multiply. Watch how one **blue row** of A pairs with one **green column** of B to produce one **amber cell** of C.
+
+![matMul step-by-step animation](../../assets/ch-04/matmul-animation.svg)
+
+*Each step: pick one row of A (blue) and one column of B (green). Multiply element-wise and sum → one cell of C (amber). The formula bar at the bottom shows the exact arithmetic.*
+
+#### The formula
 
 $$\Large \boxed{C[i,j] = \sum_{k=0}^{K-1} A[i,k] \cdot B[k,j]}$$
 
-In plain English: each cell of the output is the sum of products of one row of A with one column of B. $M$ is the number of rows in A, $K$ is the shared inner dimension, $N$ is the number of columns in B.
+In plain English: cell `C[i,j]` is the dot product of **row `i` of A** with **column `j` of B**. Every pair of indices `(i, j)` produces exactly one output cell.
 
 **Shape rule:**
 
 $$A \in \mathbb{R}^{M \times K},\quad B \in \mathbb{R}^{K \times N} \implies C \in \mathbb{R}^{M \times N}$$
 
-The $K$ dimension is consumed. $M$ and $N$ survive into the output.
+$K$ is consumed. $M$ and $N$ survive. This is why a `[3,4] × [4,5]` gives `[3,5]` — the 4 disappears.
+
+#### Worked trace (smallest useful example)
+
+```
+A = [[1, 2],    B = [[7, 8, 9 ],    C = A × B
+     [3, 4],         [10,11,12]]
+     [5, 6]]
+
+C[0,0]: row 0 of A = [1,2],  col 0 of B = [7,10]  → 1×7 + 2×10 = 27
+C[0,1]: row 0 of A = [1,2],  col 1 of B = [8,11]  → 1×8 + 2×11 = 30
+C[1,0]: row 1 of A = [3,4],  col 0 of B = [7,10]  → 3×7 + 4×10 = 61
+  ...9 cells total, each from one row × one column dot product.
+```
+
+Notice the pattern: as `j` increases (moving across columns of B), the **row stays the same** and only the column changes. As `i` increases, a new row of A is used. This is the three-loop structure:
+
+```typescript
+for i in 0..M       // which row of A (and row of C)
+  for j in 0..N     // which col of B (and col of C)
+    for k in 0..K   // step through the shared inner dimension
+      C[i,j] += A[i,k] * B[k,j]
+```
 
 **Example:**
 
@@ -98,17 +196,13 @@ The $K$ dimension is consumed. $M$ and $N$ survive into the output.
 const A = createTensor([1, 2, 3, 4], [2, 2]); // [[1,2],[3,4]]
 const B = createTensor([1, 0, 0, 1], [2, 2]); // identity matrix
 matMul(A, B);
-// → [[1,2],[3,4]]  (multiplying by identity leaves A unchanged)
-
-const C = createTensor([1, 2, 3, 4, 5, 6], [2, 3]); // [2,3]
-const D = createTensor([1, 2, 1, 2, 1, 2], [3, 2]); // [3,2]
-matMul(C, D);
-// → [2,2] result: C[0,0] = 1*1+2*1+3*1 = 6, C[0,1] = 1*2+2*2+3*2 = 12
+// → [[1,2],[3,4]]  — multiplying by identity leaves A unchanged
+// This is the matrix equivalent of n × 1 = n.
 ```
 
-**Implementation note:** three nested loops — `i` over rows of A, `j` over columns of B, `k` over the shared inner dim. Each inner iteration does one multiply-accumulate into `out[i * N + j]`. The row-major flat offset for A is `i * K + k`; for B it is `k * N + j`.
+**Implementation note:** three nested loops — `i` over rows of A, `j` over columns of B, `k` over the shared inner dim. The flat offsets are `i*K+k` for A and `k*N+j` for B.
 
-> **Why this matters for transformers:** In Ch 22 (self-attention), the query–key score matrix is `matMul(Q, transposeK)`. In Ch 13 (linear layer), the forward pass is `matMul(input, weights)`. This single function is called hundreds of times per forward pass.
+> **Why this matters for transformers:** In Ch 22 (self-attention), the query–key score matrix is `matMulBatch(Q, transpose(K))`. In Ch 13 (linear layer), the forward pass is `matMul(input, weights)`. The user–song example from the Intuition section maps exactly: users=inputs, songs=weight vectors, scores=activations.
 
 ### 2. Batched Matrix Multiplication — `matMulBatch`
 
@@ -120,6 +214,12 @@ In the transformer, Q, K, V are not 2-D matrices — they are 3-D tensors with a
 $$\Large \boxed{\text{matMulBatch}(A, B)[b] = \text{matMul}(A[b],\; B[b])}$$
 
 **Shape rule:** `[B, M, K] × [B, K, N] → [B, M, N]`. The leading batch axes must match; the 2-D multiply happens on the last two axes.
+
+#### Animation — the 3-D view: a stack of independent 2-D matMuls
+
+![matMulBatch shown as 3 stacked 2-D matrices, with each batch slice highlighted in turn](../assets/ch-04/matmul-batch-3d.svg)
+
+*A 3-D tensor of shape `[B, M, K]` is **B stacked copies of an `[M, K]` matrix**, drawn here in isometric view as slabs receding into the page along the batch axis. Each animation cycle highlights one batch index `b`: the corresponding slice of A pairs with the matching slice of B and produces the matching slice of C. The 2-D matMul itself is identical to Section 1 — `matMulBatch` is just "do that `B` times, one per slab." On a GPU, all `B` matMuls run in parallel.*
 
 **Implementation note:** slice out each `b`-th 2-D matrix from A and B using `b * M * K` and `b * K * N` as base offsets into the flat data. Call the inner 2-D multiply logic for each slice, then concatenate results.
 
@@ -357,7 +457,7 @@ Three-step sanity check for all other ops:
 
 ## Further Reading
 
-- [Deep Dive — Why matMul is O(n³) and why GPUs matter](../deep-dives/ch-04-matmul-complexity.md) *(optional)*
+- [Deep Dive — Why does matrix multiplication use row × column? (history, proofs, geometry)](../deep-dives/ch-04-why-matmul.md) *(optional — covers Arthur Cayley's 1858 derivation, the function-composition proof in plain English, and why AI specifically chose this math)*
 - NumPy broadcasting + matmul docs — the canonical reference for axis semantics.
 - [Ch 22 — Self-attention](../part-5-attention/ch-22-self-attention.md) is where all of these ops work together for the first time.
 

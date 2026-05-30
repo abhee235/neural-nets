@@ -1,0 +1,298 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 240" width="560" height="240">
+
+  <!-- ─── background ─────────────────────────────────────────── -->
+  <rect width="560" height="240" fill="#0d1117" rx="12"/>
+
+  <!-- ─── matrix labels ─────────────────────────────────────── -->
+  <text x="72"  y="22" text-anchor="middle" fill="#6e7681" font-family="monospace" font-size="11" font-weight="600">A  [3 × 2]</text>
+  <text x="246" y="22" text-anchor="middle" fill="#6e7681" font-family="monospace" font-size="11" font-weight="600">B  [2 × 3]</text>
+  <text x="448" y="22" text-anchor="middle" fill="#6e7681" font-family="monospace" font-size="11" font-weight="600">C = A × B  [3 × 3]</text>
+
+  <!-- ─── matrix brackets ───────────────────────────────────── -->
+  <!-- A  x: 20..124, y: 37..160 -->
+  <path d="M 16,37 L 9,37 L 9,160 L 16,160"   fill="none" stroke="#6e7681" stroke-width="2"/>
+  <path d="M 124,37 L 131,37 L 131,160 L 124,160" fill="none" stroke="#6e7681" stroke-width="2"/>
+  <!-- B  x: 165..327, y: 37..120 -->
+  <path d="M 161,37 L 154,37 L 154,120 L 161,120"  fill="none" stroke="#6e7681" stroke-width="2"/>
+  <path d="M 327,37 L 334,37 L 334,120 L 327,120"  fill="none" stroke="#6e7681" stroke-width="2"/>
+  <!-- C  x: 365..527, y: 37..160 -->
+  <path d="M 361,37 L 354,37 L 354,160 L 361,160"  fill="none" stroke="#6e7681" stroke-width="2"/>
+  <path d="M 527,37 L 534,37 L 534,160 L 527,160"  fill="none" stroke="#6e7681" stroke-width="2"/>
+
+  <!-- ─── operators ──────────────────────────────────────────── -->
+  <text x="148" y="96" text-anchor="middle" fill="#6e7681" font-family="serif" font-size="22">×</text>
+  <text x="347" y="96" text-anchor="middle" fill="#6e7681" font-family="serif" font-size="22">=</text>
+
+  <!--
+    Animation timing:
+      9 steps × 2 s each = 18 s total
+      keyTimes = "0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889"
+
+    Row highlight colours
+      A row active:  bg=#0d2137  text=#79c0ff  (blue)
+      B col active:  bg=#0d2b0d  text=#56d364  (green)
+      C cell active: bg=#2b1e00  text=#f0883e  (amber)
+      Normal:        bg=#161b22  text=#8b949e
+  -->
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- MATRIX A  — cells at (20+c*54, 42+r*39), w=50 h=35       -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+
+  <!-- A[0,0] = 1  row-0 -->
+  <rect x="20" y="42" width="50" height="35" rx="4" stroke="#30363d" stroke-width="1">
+    <animate attributeName="fill" values="#0d2137;#0d2137;#0d2137;#161b22;#161b22;#161b22;#161b22;#161b22;#161b22" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="45" y="64" text-anchor="middle" font-family="monospace" font-size="15" font-weight="600">
+    <animate attributeName="fill" values="#79c0ff;#79c0ff;#79c0ff;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    1
+  </text>
+
+  <!-- A[0,1] = 2  row-0 -->
+  <rect x="74" y="42" width="50" height="35" rx="4" stroke="#30363d" stroke-width="1">
+    <animate attributeName="fill" values="#0d2137;#0d2137;#0d2137;#161b22;#161b22;#161b22;#161b22;#161b22;#161b22" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="99" y="64" text-anchor="middle" font-family="monospace" font-size="15" font-weight="600">
+    <animate attributeName="fill" values="#79c0ff;#79c0ff;#79c0ff;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    2
+  </text>
+
+  <!-- A[1,0] = 3  row-1 -->
+  <rect x="20" y="81" width="50" height="35" rx="4" stroke="#30363d" stroke-width="1">
+    <animate attributeName="fill" values="#161b22;#161b22;#161b22;#0d2137;#0d2137;#0d2137;#161b22;#161b22;#161b22" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="45" y="103" text-anchor="middle" font-family="monospace" font-size="15" font-weight="600">
+    <animate attributeName="fill" values="#8b949e;#8b949e;#8b949e;#79c0ff;#79c0ff;#79c0ff;#8b949e;#8b949e;#8b949e" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    3
+  </text>
+
+  <!-- A[1,1] = 4  row-1 -->
+  <rect x="74" y="81" width="50" height="35" rx="4" stroke="#30363d" stroke-width="1">
+    <animate attributeName="fill" values="#161b22;#161b22;#161b22;#0d2137;#0d2137;#0d2137;#161b22;#161b22;#161b22" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="99" y="103" text-anchor="middle" font-family="monospace" font-size="15" font-weight="600">
+    <animate attributeName="fill" values="#8b949e;#8b949e;#8b949e;#79c0ff;#79c0ff;#79c0ff;#8b949e;#8b949e;#8b949e" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    4
+  </text>
+
+  <!-- A[2,0] = 5  row-2 -->
+  <rect x="20" y="120" width="50" height="35" rx="4" stroke="#30363d" stroke-width="1">
+    <animate attributeName="fill" values="#161b22;#161b22;#161b22;#161b22;#161b22;#161b22;#0d2137;#0d2137;#0d2137" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="45" y="142" text-anchor="middle" font-family="monospace" font-size="15" font-weight="600">
+    <animate attributeName="fill" values="#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#79c0ff;#79c0ff;#79c0ff" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    5
+  </text>
+
+  <!-- A[2,1] = 6  row-2 -->
+  <rect x="74" y="120" width="50" height="35" rx="4" stroke="#30363d" stroke-width="1">
+    <animate attributeName="fill" values="#161b22;#161b22;#161b22;#161b22;#161b22;#161b22;#0d2137;#0d2137;#0d2137" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="99" y="142" text-anchor="middle" font-family="monospace" font-size="15" font-weight="600">
+    <animate attributeName="fill" values="#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#79c0ff;#79c0ff;#79c0ff" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    6
+  </text>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- MATRIX B  — cells at (165+c*54, 42+r*39), w=50 h=35      -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+
+  <!-- B[0,0] = 7   col-0 -->
+  <rect x="165" y="42" width="50" height="35" rx="4" stroke="#30363d" stroke-width="1">
+    <animate attributeName="fill" values="#0d2b0d;#161b22;#161b22;#0d2b0d;#161b22;#161b22;#0d2b0d;#161b22;#161b22" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="190" y="64" text-anchor="middle" font-family="monospace" font-size="15" font-weight="600">
+    <animate attributeName="fill" values="#56d364;#8b949e;#8b949e;#56d364;#8b949e;#8b949e;#56d364;#8b949e;#8b949e" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    7
+  </text>
+
+  <!-- B[0,1] = 8   col-1 -->
+  <rect x="219" y="42" width="50" height="35" rx="4" stroke="#30363d" stroke-width="1">
+    <animate attributeName="fill" values="#161b22;#0d2b0d;#161b22;#161b22;#0d2b0d;#161b22;#161b22;#0d2b0d;#161b22" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="244" y="64" text-anchor="middle" font-family="monospace" font-size="15" font-weight="600">
+    <animate attributeName="fill" values="#8b949e;#56d364;#8b949e;#8b949e;#56d364;#8b949e;#8b949e;#56d364;#8b949e" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    8
+  </text>
+
+  <!-- B[0,2] = 9   col-2 -->
+  <rect x="273" y="42" width="50" height="35" rx="4" stroke="#30363d" stroke-width="1">
+    <animate attributeName="fill" values="#161b22;#161b22;#0d2b0d;#161b22;#161b22;#0d2b0d;#161b22;#161b22;#0d2b0d" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="298" y="64" text-anchor="middle" font-family="monospace" font-size="15" font-weight="600">
+    <animate attributeName="fill" values="#8b949e;#8b949e;#56d364;#8b949e;#8b949e;#56d364;#8b949e;#8b949e;#56d364" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    9
+  </text>
+
+  <!-- B[1,0] = 10  col-0 -->
+  <rect x="165" y="81" width="50" height="35" rx="4" stroke="#30363d" stroke-width="1">
+    <animate attributeName="fill" values="#0d2b0d;#161b22;#161b22;#0d2b0d;#161b22;#161b22;#0d2b0d;#161b22;#161b22" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="190" y="103" text-anchor="middle" font-family="monospace" font-size="15" font-weight="600">
+    <animate attributeName="fill" values="#56d364;#8b949e;#8b949e;#56d364;#8b949e;#8b949e;#56d364;#8b949e;#8b949e" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    10
+  </text>
+
+  <!-- B[1,1] = 11  col-1 -->
+  <rect x="219" y="81" width="50" height="35" rx="4" stroke="#30363d" stroke-width="1">
+    <animate attributeName="fill" values="#161b22;#0d2b0d;#161b22;#161b22;#0d2b0d;#161b22;#161b22;#0d2b0d;#161b22" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="244" y="103" text-anchor="middle" font-family="monospace" font-size="15" font-weight="600">
+    <animate attributeName="fill" values="#8b949e;#56d364;#8b949e;#8b949e;#56d364;#8b949e;#8b949e;#56d364;#8b949e" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    11
+  </text>
+
+  <!-- B[1,2] = 12  col-2 -->
+  <rect x="273" y="81" width="50" height="35" rx="4" stroke="#30363d" stroke-width="1">
+    <animate attributeName="fill" values="#161b22;#161b22;#0d2b0d;#161b22;#161b22;#0d2b0d;#161b22;#161b22;#0d2b0d" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="298" y="103" text-anchor="middle" font-family="monospace" font-size="15" font-weight="600">
+    <animate attributeName="fill" values="#8b949e;#8b949e;#56d364;#8b949e;#8b949e;#56d364;#8b949e;#8b949e;#56d364" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    12
+  </text>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- MATRIX C  — cells at (365+c*54, 42+r*39), w=50 h=35      -->
+  <!-- Each cell is amber-highlighted at exactly one step.        -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+
+  <!-- C[0,0] = 27   step 0 -->
+  <rect x="365" y="42" width="50" height="35" rx="4" stroke="#30363d" stroke-width="1">
+    <animate attributeName="fill" values="#2b1e00;#161b22;#161b22;#161b22;#161b22;#161b22;#161b22;#161b22;#161b22" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="390" y="64" text-anchor="middle" font-family="monospace" font-size="14" font-weight="600">
+    <animate attributeName="fill" values="#f0883e;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    27
+  </text>
+
+  <!-- C[0,1] = 30   step 1 -->
+  <rect x="419" y="42" width="50" height="35" rx="4" stroke="#30363d" stroke-width="1">
+    <animate attributeName="fill" values="#161b22;#2b1e00;#161b22;#161b22;#161b22;#161b22;#161b22;#161b22;#161b22" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="444" y="64" text-anchor="middle" font-family="monospace" font-size="14" font-weight="600">
+    <animate attributeName="fill" values="#8b949e;#f0883e;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    30
+  </text>
+
+  <!-- C[0,2] = 33   step 2 -->
+  <rect x="473" y="42" width="50" height="35" rx="4" stroke="#30363d" stroke-width="1">
+    <animate attributeName="fill" values="#161b22;#161b22;#2b1e00;#161b22;#161b22;#161b22;#161b22;#161b22;#161b22" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="498" y="64" text-anchor="middle" font-family="monospace" font-size="14" font-weight="600">
+    <animate attributeName="fill" values="#8b949e;#8b949e;#f0883e;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    33
+  </text>
+
+  <!-- C[1,0] = 61   step 3 -->
+  <rect x="365" y="81" width="50" height="35" rx="4" stroke="#30363d" stroke-width="1">
+    <animate attributeName="fill" values="#161b22;#161b22;#161b22;#2b1e00;#161b22;#161b22;#161b22;#161b22;#161b22" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="390" y="103" text-anchor="middle" font-family="monospace" font-size="14" font-weight="600">
+    <animate attributeName="fill" values="#8b949e;#8b949e;#8b949e;#f0883e;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    61
+  </text>
+
+  <!-- C[1,1] = 68   step 4 -->
+  <rect x="419" y="81" width="50" height="35" rx="4" stroke="#30363d" stroke-width="1">
+    <animate attributeName="fill" values="#161b22;#161b22;#161b22;#161b22;#2b1e00;#161b22;#161b22;#161b22;#161b22" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="444" y="103" text-anchor="middle" font-family="monospace" font-size="14" font-weight="600">
+    <animate attributeName="fill" values="#8b949e;#8b949e;#8b949e;#8b949e;#f0883e;#8b949e;#8b949e;#8b949e;#8b949e" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    68
+  </text>
+
+  <!-- C[1,2] = 75   step 5 -->
+  <rect x="473" y="81" width="50" height="35" rx="4" stroke="#30363d" stroke-width="1">
+    <animate attributeName="fill" values="#161b22;#161b22;#161b22;#161b22;#161b22;#2b1e00;#161b22;#161b22;#161b22" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="498" y="103" text-anchor="middle" font-family="monospace" font-size="14" font-weight="600">
+    <animate attributeName="fill" values="#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#f0883e;#8b949e;#8b949e;#8b949e" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    75
+  </text>
+
+  <!-- C[2,0] = 95   step 6 -->
+  <rect x="365" y="120" width="50" height="35" rx="4" stroke="#30363d" stroke-width="1">
+    <animate attributeName="fill" values="#161b22;#161b22;#161b22;#161b22;#161b22;#161b22;#2b1e00;#161b22;#161b22" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="390" y="142" text-anchor="middle" font-family="monospace" font-size="14" font-weight="600">
+    <animate attributeName="fill" values="#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#f0883e;#8b949e;#8b949e" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    95
+  </text>
+
+  <!-- C[2,1] = 106  step 7 -->
+  <rect x="419" y="120" width="50" height="35" rx="4" stroke="#30363d" stroke-width="1">
+    <animate attributeName="fill" values="#161b22;#161b22;#161b22;#161b22;#161b22;#161b22;#161b22;#2b1e00;#161b22" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="444" y="142" text-anchor="middle" font-family="monospace" font-size="14" font-weight="600">
+    <animate attributeName="fill" values="#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#f0883e;#8b949e" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    106
+  </text>
+
+  <!-- C[2,2] = 117  step 8 -->
+  <rect x="473" y="120" width="50" height="35" rx="4" stroke="#30363d" stroke-width="1">
+    <animate attributeName="fill" values="#161b22;#161b22;#161b22;#161b22;#161b22;#161b22;#161b22;#161b22;#2b1e00" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="498" y="142" text-anchor="middle" font-family="monospace" font-size="14" font-weight="600">
+    <animate attributeName="fill" values="#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#8b949e;#f0883e" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    117
+  </text>
+
+  <!-- ─── colour legend ──────────────────────────────────────── -->
+  <rect x="110" y="172" width="10" height="10" rx="2" fill="#0d2137"/>
+  <text x="126" y="182" fill="#79c0ff" font-family="monospace" font-size="11">row of A</text>
+  <rect x="220" y="172" width="10" height="10" rx="2" fill="#0d2b0d"/>
+  <text x="236" y="182" fill="#56d364" font-family="monospace" font-size="11">col of B</text>
+  <rect x="322" y="172" width="10" height="10" rx="2" fill="#2b1e00"/>
+  <text x="338" y="182" fill="#f0883e" font-family="monospace" font-size="11">result C[i,j]</text>
+
+  <!-- ─── formula text (9 steps, one visible at a time) ─────── -->
+  <!-- background strip -->
+  <rect x="30" y="194" width="500" height="26" rx="6" fill="#161b22"/>
+
+  <!-- step 0: C[0,0] = [1,2]·[7,10] = 1×7 + 2×10 = 27 -->
+  <text x="280" y="211" text-anchor="middle" font-family="monospace" font-size="12" fill="#d2a8ff">
+    <animate attributeName="opacity" values="1;0;0;0;0;0;0;0;0" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    C[0,0]  =  [1,2] · [7,10]  =  1×7 + 2×10  =  27
+  </text>
+  <!-- step 1 -->
+  <text x="280" y="211" text-anchor="middle" font-family="monospace" font-size="12" fill="#d2a8ff">
+    <animate attributeName="opacity" values="0;1;0;0;0;0;0;0;0" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    C[0,1]  =  [1,2] · [8,11]  =  1×8 + 2×11  =  30
+  </text>
+  <!-- step 2 -->
+  <text x="280" y="211" text-anchor="middle" font-family="monospace" font-size="12" fill="#d2a8ff">
+    <animate attributeName="opacity" values="0;0;1;0;0;0;0;0;0" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    C[0,2]  =  [1,2] · [9,12]  =  1×9 + 2×12  =  33
+  </text>
+  <!-- step 3 -->
+  <text x="280" y="211" text-anchor="middle" font-family="monospace" font-size="12" fill="#d2a8ff">
+    <animate attributeName="opacity" values="0;0;0;1;0;0;0;0;0" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    C[1,0]  =  [3,4] · [7,10]  =  3×7 + 4×10  =  61
+  </text>
+  <!-- step 4 -->
+  <text x="280" y="211" text-anchor="middle" font-family="monospace" font-size="12" fill="#d2a8ff">
+    <animate attributeName="opacity" values="0;0;0;0;1;0;0;0;0" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    C[1,1]  =  [3,4] · [8,11]  =  3×8 + 4×11  =  68
+  </text>
+  <!-- step 5 -->
+  <text x="280" y="211" text-anchor="middle" font-family="monospace" font-size="12" fill="#d2a8ff">
+    <animate attributeName="opacity" values="0;0;0;0;0;1;0;0;0" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    C[1,2]  =  [3,4] · [9,12]  =  3×9 + 4×12  =  75
+  </text>
+  <!-- step 6 -->
+  <text x="280" y="211" text-anchor="middle" font-family="monospace" font-size="12" fill="#d2a8ff">
+    <animate attributeName="opacity" values="0;0;0;0;0;0;1;0;0" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    C[2,0]  =  [5,6] · [7,10]  =  5×7 + 6×10  =  95
+  </text>
+  <!-- step 7 -->
+  <text x="280" y="211" text-anchor="middle" font-family="monospace" font-size="12" fill="#d2a8ff">
+    <animate attributeName="opacity" values="0;0;0;0;0;0;0;1;0" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    C[2,1]  =  [5,6] · [8,11]  =  5×8 + 6×11  =  106
+  </text>
+  <!-- step 8 -->
+  <text x="280" y="211" text-anchor="middle" font-family="monospace" font-size="12" fill="#d2a8ff">
+    <animate attributeName="opacity" values="0;0;0;0;0;0;0;0;1" keyTimes="0;0.111;0.222;0.333;0.444;0.556;0.667;0.778;0.889" dur="18s" calcMode="discrete" repeatCount="indefinite"/>
+    C[2,2]  =  [5,6] · [9,12]  =  5×9 + 6×12  =  117
+  </text>
+
+</svg>
