@@ -1,0 +1,255 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 410" width="720" height="410">
+
+  <!-- ─── background (light cream) ───────────────────────────── -->
+  <rect width="720" height="410" fill="#faf7f0" rx="12"/>
+
+  <!-- ─── header ─────────────────────────────────────────────── -->
+  <text x="360" y="22" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">concat keeps the rank · stack adds a new axis</text>
+
+  <!--
+    Animation timing
+    ────────────────
+    12 s cycle, 3 phases × 4 s, discrete jumps:
+      keyTimes = "0;0.333;0.667"
+
+      Phase 0  Inputs       A [2 × 3] on left   ·   B [2 × 3] on right
+      Phase 1  concat 0     result [4, 3]       ·   A rows on top, B rows below
+      Phase 2  stack 0      result [2, 2, 3]    ·   A and B become 3-D slabs
+
+    A elements (vals 1–6) are BLUE.  B elements (vals 7–12) are GREEN.
+    Colour is fixed per element so you can track where each cell ends up.
+  -->
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- Shape badge — 3 stacked text elements                      -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+
+  <rect x="190" y="33" width="340" height="28" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+
+  <text x="360" y="52" text-anchor="middle" font-family="monospace" font-size="13" font-weight="600" fill="#6f42c1">
+    <animate attributeName="opacity" values="1;0;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    inputs:  A [2 × 3]   ·   B [2 × 3]
+  </text>
+  <text x="360" y="52" text-anchor="middle" font-family="monospace" font-size="13" font-weight="600" fill="#6f42c1">
+    <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    concat([A, B], axis=0)   →   shape [4, 3]
+  </text>
+  <text x="360" y="52" text-anchor="middle" font-family="monospace" font-size="13" font-weight="600" fill="#6f42c1">
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    stack([A, B], axis=0)   →   shape [2, 2, 3]   ← new axis!
+  </text>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- Phase 0 input labels                                       -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+
+  <g>
+    <animate attributeName="opacity" values="1;0;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    <text x="195" y="83" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="11" font-weight="700">A  [2 × 3]</text>
+    <text x="495" y="83" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="11" font-weight="700">B  [2 × 3]</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- Phase 1 result label                                       -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+
+  <g>
+    <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    <text x="500" y="80" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="11" font-weight="700">rows 0–1: A</text>
+    <text x="500" y="142" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="11" font-weight="700">rows 2–3: B</text>
+    <line x1="430" y1="95" x2="460" y2="95" stroke="#1e6091" stroke-width="1.2"/>
+    <line x1="430" y1="193" x2="460" y2="193" stroke="#2e7d32" stroke-width="1.2"/>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- Phase 2 stack — 3-D depth connectors                       -->
+  <!-- 4 dashed lines connect A corners to B corners              -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+
+  <g>
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+
+    <!-- A top-left (100,200) → B top-left (260,110) -->
+    <line x1="100" y1="200" x2="260" y2="110" stroke="#6f42c1" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <!-- A top-right (290,200) → B top-right (450,110) -->
+    <line x1="290" y1="200" x2="450" y2="110" stroke="#6f42c1" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <!-- A bottom-left (100,293) → B bottom-left (260,203) -->
+    <line x1="100" y1="293" x2="260" y2="203" stroke="#6f42c1" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <!-- A bottom-right (290,293) → B bottom-right (450,203) -->
+    <line x1="290" y1="293" x2="450" y2="203" stroke="#6f42c1" stroke-width="1.2" stroke-dasharray="4,3"/>
+
+    <!-- depth axis arrow + label -->
+    <line x1="470" y1="225" x2="540" y2="170" stroke="#6f42c1" stroke-width="1.5"/>
+    <polygon points="540,170 533,173 538,179" fill="#6f42c1"/>
+    <text x="585" y="175" text-anchor="middle" fill="#6f42c1" font-family="monospace" font-size="11" font-weight="700">new axis-0</text>
+    <text x="585" y="190" text-anchor="middle" fill="#6f42c1" font-family="monospace" font-size="11" font-weight="700">(size = 2)</text>
+
+    <!-- slab labels -->
+    <text x="195" y="320" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="11" font-weight="700">A  (front slab,  axis-0 = 0)</text>
+    <text x="540" y="100" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="11" font-weight="700">B  (back slab,  axis-0 = 1)</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- DATA CELLS — 12 elements that jump between 3 layouts       -->
+  <!-- A elements: blue.   B elements: green.                     -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+
+  <!-- A[0,0] = 1 -->
+  <g>
+    <animateTransform attributeName="transform" type="translate"
+      values="130,95; 265,70; 100,200"
+      keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="0" y="0" width="60" height="44" rx="4" fill="#d6e9f8" stroke="#1e6091" stroke-width="1"/>
+    <text x="30" y="28" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="16" font-weight="600">1</text>
+  </g>
+
+  <!-- A[0,1] = 2 -->
+  <g>
+    <animateTransform attributeName="transform" type="translate"
+      values="195,95; 330,70; 165,200"
+      keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="0" y="0" width="60" height="44" rx="4" fill="#d6e9f8" stroke="#1e6091" stroke-width="1"/>
+    <text x="30" y="28" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="16" font-weight="600">2</text>
+  </g>
+
+  <!-- A[0,2] = 3 -->
+  <g>
+    <animateTransform attributeName="transform" type="translate"
+      values="260,95; 395,70; 230,200"
+      keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="0" y="0" width="60" height="44" rx="4" fill="#d6e9f8" stroke="#1e6091" stroke-width="1"/>
+    <text x="30" y="28" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="16" font-weight="600">3</text>
+  </g>
+
+  <!-- A[1,0] = 4 -->
+  <g>
+    <animateTransform attributeName="transform" type="translate"
+      values="130,144; 265,119; 100,249"
+      keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="0" y="0" width="60" height="44" rx="4" fill="#d6e9f8" stroke="#1e6091" stroke-width="1"/>
+    <text x="30" y="28" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="16" font-weight="600">4</text>
+  </g>
+
+  <!-- A[1,1] = 5 -->
+  <g>
+    <animateTransform attributeName="transform" type="translate"
+      values="195,144; 330,119; 165,249"
+      keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="0" y="0" width="60" height="44" rx="4" fill="#d6e9f8" stroke="#1e6091" stroke-width="1"/>
+    <text x="30" y="28" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="16" font-weight="600">5</text>
+  </g>
+
+  <!-- A[1,2] = 6 -->
+  <g>
+    <animateTransform attributeName="transform" type="translate"
+      values="260,144; 395,119; 230,249"
+      keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="0" y="0" width="60" height="44" rx="4" fill="#d6e9f8" stroke="#1e6091" stroke-width="1"/>
+    <text x="30" y="28" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="16" font-weight="600">6</text>
+  </g>
+
+  <!-- B[0,0] = 7 -->
+  <g>
+    <animateTransform attributeName="transform" type="translate"
+      values="430,95; 265,168; 260,110"
+      keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="0" y="0" width="60" height="44" rx="4" fill="#d4ecd5" stroke="#2e7d32" stroke-width="1"/>
+    <text x="30" y="28" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="16" font-weight="600">7</text>
+  </g>
+
+  <!-- B[0,1] = 8 -->
+  <g>
+    <animateTransform attributeName="transform" type="translate"
+      values="495,95; 330,168; 325,110"
+      keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="0" y="0" width="60" height="44" rx="4" fill="#d4ecd5" stroke="#2e7d32" stroke-width="1"/>
+    <text x="30" y="28" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="16" font-weight="600">8</text>
+  </g>
+
+  <!-- B[0,2] = 9 -->
+  <g>
+    <animateTransform attributeName="transform" type="translate"
+      values="560,95; 395,168; 390,110"
+      keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="0" y="0" width="60" height="44" rx="4" fill="#d4ecd5" stroke="#2e7d32" stroke-width="1"/>
+    <text x="30" y="28" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="16" font-weight="600">9</text>
+  </g>
+
+  <!-- B[1,0] = 10 -->
+  <g>
+    <animateTransform attributeName="transform" type="translate"
+      values="430,144; 265,217; 260,159"
+      keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="0" y="0" width="60" height="44" rx="4" fill="#d4ecd5" stroke="#2e7d32" stroke-width="1"/>
+    <text x="30" y="28" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="16" font-weight="600">10</text>
+  </g>
+
+  <!-- B[1,1] = 11 -->
+  <g>
+    <animateTransform attributeName="transform" type="translate"
+      values="495,144; 330,217; 325,159"
+      keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="0" y="0" width="60" height="44" rx="4" fill="#d4ecd5" stroke="#2e7d32" stroke-width="1"/>
+    <text x="30" y="28" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="16" font-weight="600">11</text>
+  </g>
+
+  <!-- B[1,2] = 12 -->
+  <g>
+    <animateTransform attributeName="transform" type="translate"
+      values="560,144; 395,217; 390,159"
+      keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="0" y="0" width="60" height="44" rx="4" fill="#d4ecd5" stroke="#2e7d32" stroke-width="1"/>
+    <text x="30" y="28" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="16" font-weight="600">12</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- ndim indicator bar — pulses to show 2 vs 3                 -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+
+  <text x="360" y="335" text-anchor="middle" font-family="monospace" font-size="12" fill="#5a4220" font-weight="600">
+    <animate attributeName="opacity" values="1;0;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    ndim = 2   (both A and B are 2-D)
+  </text>
+  <text x="360" y="335" text-anchor="middle" font-family="monospace" font-size="12" fill="#5a4220" font-weight="600">
+    <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    ndim = 2   (still 2-D — concat preserves rank)
+  </text>
+  <text x="360" y="335" text-anchor="middle" font-family="monospace" font-size="12" fill="#6f42c1" font-weight="600">
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    ndim = 3   (stack adds an axis — rank went 2 → 3)
+  </text>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- Formula bar — 3 phases                                     -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+
+  <rect x="30" y="362" width="660" height="38" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+
+  <text x="360" y="378" text-anchor="middle" font-family="monospace" font-size="12" fill="#5a4220">
+    <animate attributeName="opacity" values="1;0;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    inputs:  A.shape = [2, 3]   B.shape = [2, 3]
+  </text>
+  <text x="360" y="392" text-anchor="middle" font-family="monospace" font-size="11" fill="#8b7355">
+    <animate attributeName="opacity" values="1;0;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    we are about to combine these two tensors — concat or stack?
+  </text>
+
+  <text x="360" y="378" text-anchor="middle" font-family="monospace" font-size="12" fill="#5a4220">
+    <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    concat axis=0:  axis-0 grows  2 + 2 = 4   →   shape becomes [4, 3]
+  </text>
+  <text x="360" y="392" text-anchor="middle" font-family="monospace" font-size="11" fill="#8b7355">
+    <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    same rank — all other axes must match exactly
+  </text>
+
+  <text x="360" y="378" text-anchor="middle" font-family="monospace" font-size="12" fill="#5a4220">
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    stack axis=0:  NEW axis of size 2 inserted at front   →   shape [2, 2, 3]
+  </text>
+  <text x="360" y="392" text-anchor="middle" font-family="monospace" font-size="11" fill="#8b7355">
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    rank +1 — every input must have identical shape
+  </text>
+
+</svg>

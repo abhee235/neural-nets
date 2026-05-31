@@ -8,14 +8,21 @@
 
 ## Learning Goals
 
-By the end of this chapter you will be able to:
+By the end of this chapter you will be able to **hand-trace every matrix operation in the attention formula**:
 
-- **Explain** why matrix multiplication contracts the inner dimension and what that means for shapes.
-- **Implement** `matMul` for 2-D matrices using a triple loop, reading the result of each `C[i,j]` as a dot product.
-- **Implement** batched `matMul` that applies 2-D matrix multiply across a leading batch dimension.
-- **Implement** `transpose`, `reshape`, `flatten`, `squeeze`, and `unsqueeze` as shape-manipulation helpers.
-- **Implement** `concat` and `stack` to join tensors along existing or new axes.
-- **Describe** where each of these operations appears in the attention formula and the linear layer.
+```
+Attention(Q, K, V) = softmax( Q @ Kᵀ / √d_k ) @ V
+```
+
+That single line hides six distinct tensor operations — projections, a transpose, a batched multiply, a scale, a softmax, and a final aggregation. You will implement every primitive that makes it work and know exactly what shape each one produces and why.
+
+To get there you will:
+
+- **Implement** `matMul` as a triple loop and read `C[i,j]` as a dot product — the core operation behind every linear layer and attention score
+- **Implement** batched `matMul` to handle the `[batch, seq, seq]` attention weight tensor that emerges when you process a full sequence at once
+- **Implement** `transpose` to flip `[seq, d_k] → [d_k, seq]` — the step that makes `Q @ Kᵀ` legal
+- **Implement** `reshape`, `flatten`, `squeeze`, `unsqueeze` — the shape surgery that splits one big `[seq, d_model]` tensor into `numHeads` separate `[seq, d_k]` heads
+- **Implement** `concat` and `stack` to merge those heads back together after each attends independently
 
 ---
 
@@ -152,7 +159,9 @@ reshape to [2, 3]:    reshape to [3, 2]:    transpose [2,3] → [3,2]:
 
 The animation below steps through all 9 output cells of a 3×2 × 2×3 multiply. Watch how one **blue row** of A pairs with one **green column** of B to produce one **amber cell** of C.
 
-![matMul step-by-step animation](../../assets/ch-04/matmul-animation.svg)
+<p align="center">
+  <img src="../assets/ch-04/matmul-animation.svg" alt="matMul step-by-step animation" />
+</p>
 
 *Each step: pick one row of A (blue) and one column of B (green). Multiply element-wise and sum → one cell of C (amber). The formula bar at the bottom shows the exact arithmetic.*
 
@@ -217,7 +226,9 @@ $$\Large \boxed{\text{matMulBatch}(A, B)[b] = \text{matMul}(A[b],\; B[b])}$$
 
 #### Animation — the 3-D view: a stack of independent 2-D matMuls
 
-![matMulBatch shown as 3 stacked 2-D matrices, with each batch slice highlighted in turn](../assets/ch-04/matmul-batch-3d.svg)
+<p align="center">
+  <img src="../assets/ch-04/matmul-batch-3d.svg" alt="matMulBatch shown as 3 stacked 2-D matrices, with each batch slice highlighted in turn" />
+</p>
 
 *A 3-D tensor of shape `[B, M, K]` is **B stacked copies of an `[M, K]` matrix**, drawn here in isometric view as slabs receding into the page along the batch axis. Each animation cycle highlights one batch index `b`: the corresponding slice of A pairs with the matching slice of B and produces the matching slice of C. The 2-D matMul itself is identical to Section 1 — `matMulBatch` is just "do that `B` times, one per slab." On a GPU, all `B` matMuls run in parallel.*
 
@@ -233,6 +244,12 @@ Transpose swaps the axes of a tensor. For a 2-D matrix, it turns rows into colum
 > **Picture this** A spreadsheet with 4 rows and 3 columns becomes a spreadsheet with 3 rows and 4 columns. The data is the same; the reading direction changes.
 
 $$\Large \boxed{A^T[i,j] = A[j,i]}$$
+
+<p align="center">
+  <img src="../assets/ch-04/transpose-animation.svg" alt="Transpose animation showing rows of A becoming columns of Aᵀ, with flat-memory strips proving that the row-major storage order is rewritten (A.data ≠ Aᵀ.data)." />
+</p>
+
+> The two strips at the bottom are the key: `A.data = [1,2,3,4,5,6]` and `Aᵀ.data = [1,4,2,5,3,6]`. Same numbers, different order. Transpose is **not free** — the storage has to be rewritten so the new row-major view comes out right. (Contrast this with `reshape` below, where the storage stays put.)
 
 For N-D tensors, an optional `axes` argument specifies a permutation. `transpose(t, [0, 2, 1])` on a `[B, M, N]` tensor produces `[B, N, M]` — it keeps axis 0 (batch) fixed and swaps axes 1 and 2.
 
@@ -258,6 +275,12 @@ Reshape changes the shape metadata without changing which number is which. The o
 
 $$\Large \boxed{\prod \text{oldShape} = \prod \text{newShape}}$$
 
+<p align="center">
+  <img src="../assets/ch-04/reshape-animation.svg" alt="Reshape animation: the same 6 elements morph between shapes [2×3], [3×2], [6], and [-1, 2] (inferred) while the flat memory strip below stays unchanged." />
+</p>
+
+> Watch the grid above morph between three shapes while the orange strip below never moves. That strip is the truth — the `Float64Array` in memory. Everything above it is just an interpretation. Reshape never copies; it only rewrites the shape descriptor.
+
 A `-1` in `newShape` means "infer this dimension from the others."
 
 **Example:**
@@ -280,6 +303,12 @@ These two helpers add or remove size-1 dimensions. They exist to satisfy the sha
 > **Picture this** `unsqueeze` is like putting a tray into a box — the tray doesn't change, but now it has a "slot" label. `squeeze` takes it back out.
 
 $$\Large \boxed{\text{unsqueeze}(t, \text{axis}): [\ldots] \to [\ldots, 1, \ldots]}$$
+
+<p align="center">
+  <img src="../assets/ch-04/squeeze-unsqueeze-animation.svg" alt="Squeeze/unsqueeze animation: 3 cells shown first as shape [3], then with a size-1 outer axis [1, 3], then re-arranged into a column [3, 1]. Persistent flat strip below shows the data [1, 2, 3] never changes." />
+</p>
+
+> The data row at the bottom stays the same in all three frames — `[1, 2, 3]`. The only thing changing is which **axes** the shape descriptor lists. `unsqueeze` slides a size-1 axis into a chosen position; `squeeze` deletes one. No element is created or destroyed.
 
 ```typescript
 const t = createTensor([1,2,3,4], [2,2]);  // shape [2,2]
@@ -310,6 +339,12 @@ All other axes must match exactly.
 $$\Large \boxed{\text{stack}([T_1, T_2, \ldots], \text{axis}): \text{new axis of size} = \text{number of tensors}}$$
 
 All tensors must have identical shape.
+
+<p align="center">
+  <img src="../assets/ch-04/concat-stack-animation.svg" alt="Concat vs stack animation: two [2×3] tensors A (blue) and B (green) are first shown as inputs, then merged with concat axis=0 into [4, 3] (rank preserved), then with stack axis=0 into [2, 2, 3] (rank +1, A and B become parallel slabs in 3-D)." />
+</p>
+
+> Watch what happens to **`ndim`** in the indicator above the formula bar: `concat` keeps it at 2, `stack` jumps it to 3. That is the entire distinction. If you ever wonder which to use, ask *"do I want a bigger axis, or a new axis?"*
 
 ```typescript
 const a = createTensor([1,2,3], [3]);

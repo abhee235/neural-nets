@@ -117,6 +117,12 @@ describe("reshape", () => {
     const t = createTensor([1,2,3,4,5,6], [2, 3]);
     expect(() => reshape(t, [2, 4])).toThrow();
   });
+
+  it("throws when more than one dimension is -1: the system cannot infer two unknowns", () => {
+    const t = createTensor([1,2,3,4,5,6], [2, 3]);
+    // Two -1s leave the single product equation underdetermined.
+    expect(() => reshape(t, [-1, -1])).toThrow();
+  });
 });
 
 // ─── flatten ─────────────────────────────────────────────────────────────────
