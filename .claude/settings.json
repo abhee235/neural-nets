@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun test*)",
+      "Bash(bun run*)",
+      "Bash(find . *)",
+      "Bash(git status)",
+      "Bash(git log*)",
+      "Bash(git diff*)",
+      "Bash(git branch*)",
+      "Bash(ls*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash",
+            "args": [
+              "-c",
+              "FILE=$(echo $CLAUDE_TOOL_INPUT | python3 -c \"import sys,json; d=json.load(sys.stdin); print(d.get('file_path',''))\" 2>/dev/null); if [[ \"$FILE\" == *.ts && \"$FILE\" != *.test.ts && \"$FILE\" == */src/* ]]; then echo \"[hook] Edited $FILE — run: bun test $(dirname $FILE)\" >&2; fi"
+            ],
+            "async": true,
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

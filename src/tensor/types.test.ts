@@ -20,6 +20,15 @@ describe("createTensor", () => {
     expect(t.shape).toEqual([2, 3]);
   });
 
+  it("shape is defensively copied — mutating the source array does not change the tensor", () => {
+    const shape = [2, 3];
+    const t = createTensor([1, 2, 3, 4, 5, 6], shape);
+    shape[0] = 99; // mutate the caller's array
+    // tensor must be unaffected — it owns its own copy
+    expect(t.shape).toEqual([2, 3]);
+    expect(t.ndim).toBe(2);
+  });
+
   it("size equals the product of all shape dimensions", () => {
     const t = createTensor(new Array(24).fill(0), [2, 3, 4]);
     // 2 * 3 * 4 = 24 elements total

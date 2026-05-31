@@ -22,7 +22,7 @@
  *
  * REFERENCE: docs/part-1-tensor-library/ch-04-matrix-ops.md
  */
-import { createTensor, flatIndex, type Tensor } from "./types.ts";
+import { createTensor, flatIndex, type Tensor } from "./types";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -38,10 +38,37 @@ function product(arr: number[]): number {
 
 /**
  * Convert a flat index back to per-axis indices for `shape` (row-major).
- * Inverse of flatIndex from Ch 01.
+ * Inverse of `flatIndex` from Ch 01 — that is:
+ *   flatIndex(shape, unravel(flat, shape)) === flat   (always)
  *
- *   unravel(9, [3,4]) → [2, 1]
- *   Walk RIGHT to LEFT: peel off `% dim`, then `÷ dim`.
+ * ─── Why this works ─────────────────────────────────────────────────────
+ * Row-major means the rightmost axis varies fastest. So the flat index is
+ * a "mixed-radix" number whose digit weights are the shape dimensions.
+ * Just like decoding 219 in base-10 as (2, 1, 9) by peeling the last digit
+ * with `% 10` then `÷ 10`, we peel each axis with `% dim` then `÷ dim`,
+ * walking right to left.
+ *
+ * ─── Worked example ─────────────────────────────────────────────────────
+ *   unravel(9, [3, 4])  →  [2, 1]
+ *
+ *   shape = [3, 4]   means rows × cols = 3 × 4 (12 elements, flat 0..11)
+ *   flat   = 9
+ *
+ *   axis 1 (rightmost, dim = 4):
+ *     indices[1] = 9 %  4 = 1      ← column index
+ *     remainder  = 9 // 4 = 2
+ *
+ *   axis 0 (dim = 3):
+ *     indices[0] = 2 %  3 = 2      ← row index
+ *     remainder  = 2 // 3 = 0      ← consumed
+ *
+ *   result = [2, 1]   ✓   (flat 9 sits at row 2, col 1 of a 3×4 grid)
+ *
+ * ─── Sanity check ───────────────────────────────────────────────────────
+ *   flatIndex([3, 4], [2, 1])  =  2*4 + 1*1  =  9   ← round-trip succeeds
+ *
+ * Used inside transpose/reshape to map output positions back to source
+ * positions when the layout has been permuted.
  */
 function unravel(flat: number, shape: number[]): number[] {
   const indices = new Array<number>(shape.length);
