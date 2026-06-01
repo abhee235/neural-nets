@@ -8,6 +8,12 @@ A 30-chapter, build-from-scratch course implementing a transformer library in Ty
 
 See `docs/` for chapter content, `.github/instructions/` for code style rules. The tutor role, chapter map, and chapter-generation protocol live in `AGENTS.md` (read it when generating or implementing chapters).
 
+> **⚠️ Abhishek writes ALL implementation code himself — that is the learning.** Do NOT replace a `throw new Error("... not implemented")` stub with a real implementation. Your role is **tutor**: explain WHY, give hints and leading questions, draw the mental model, flag pitfalls, and review/debug the code *he* writes. Writing docs, tests, and SVG animations is fine. Only write implementation code when he **explicitly** asks (e.g. he runs `/implement`, or says "write it for me"). Absent that, leave stubs as stubs and guide him to fill them in.
+
+## Git message rule
+
+**Never** add `Co-Authored-By: Claude ...` trailers, the "🤖 Generated with Claude Code" line, or any AI attribution to commit messages, PR titles/bodies, or anywhere in git. Subject + body only.
+
 ## Slash Commands (type these in Claude Code)
 
 | Command | What it does |
@@ -76,7 +82,7 @@ src/tensor/     → src/autograd/     → src/nn/
 
 **No shortcuts:**
 - Box-Muller for normal distribution (no `Math.random()` scaled)
-- No `.reduce()` hiding an algorithm; make the loop explicit
+- `.reduce()` is fine for a single, simple fold (e.g. summing an array) **as long as a comment above it explains what the reduce does**. Only avoid `.reduce()` when it would hide a non-trivial algorithm — make those loops explicit.
 - No `as any` or `as unknown` casts
 - All functions throw `new Error("Not implemented — read the chapter doc first")` as stubs
 

@@ -90,6 +90,18 @@ export function flatIndex(shape: number[], indices: number[]): number {
   // Example: shape=[2,3,4], indices=[1,2,3]
   //   stride_0 = 3*4 = 12,  stride_1 = 4,  stride_2 = 1
   //   flat = 1*12 + 2*4 + 3*1 = 23
+  // Validate bounds: every index must lie within [0, shape[axis]-1].
+  // Without this, an out-of-range index silently produces a wrong offset.
+  for (let i = 0; i < shape.length; i++) {
+    const idx = indices[i]!;
+    const dim = shape[i]!;
+    if (idx < 0 || idx >= dim) {
+      throw new Error(
+        `flatIndex: index ${idx} is out of bounds for axis ${i} (size ${dim})`,
+      );
+    }
+  }
+
   let flat = 0;
   let stride = 1;
   // Walk RIGHT to LEFT: accumulate stride as we go.

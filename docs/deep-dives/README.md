@@ -42,3 +42,6 @@ reader might want. Never make a deep-dive a prerequisite for the next chapter.
 | Chapter | Deep Dive | Topic |
 |---|---|---|
 | 02 | [ch-02-box-muller.md](ch-02-box-muller.md) | Why Box–Muller works, buffering details, pen-and-paper exercise |
+| 04 | [ch-04-why-matmul.md](ch-04-why-matmul.md) | Proof that row × column is the unique valid definition; history; why AI chose it |
+| 05 | [ch-05-why-subtract-the-max.md](ch-05-why-subtract-the-max.md) | Shift-invariance proof for softmax; the overflow it prevents; log-sum-exp connection |
+| 05 | [ch-05-the-reduction-family.md](ch-05-the-reduction-family.md) | The reductions not detailed in the chapter — `max`, `min`, `argmin` — with their uses and the one shared algorithm |

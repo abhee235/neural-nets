@@ -1,0 +1,174 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 380" width="720" height="380">
+
+  <!-- ─── background (light cream) ───────────────────────────── -->
+  <rect width="720" height="380" fill="#faf7f0" rx="12"/>
+
+  <!-- ─── header ─────────────────────────────────────────────── -->
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">a reduction folds one axis away — the other axes survive</text>
+
+  <!--
+    Animation timing
+    ────────────────
+    12 s cycle, 3 phases × 4 s, discrete:
+      keyTimes = "0;0.333;0.667"
+
+      Phase 0  the 2×3 tensor at rest
+      Phase 1  sum(axis=0): collapse the 2 ROWS → column sums [5, 7, 9], shape [3]
+      Phase 2  sum(axis=1): collapse the 3 COLS → row sums [6, 15], shape [2]
+
+    Source tensor:  [[1, 2, 3],
+                     [4, 5, 6]]
+    Colours match the ch-04 set.
+  -->
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- Phase label badge                                          -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+
+  <rect x="210" y="38" width="300" height="26" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="56" text-anchor="middle" font-family="monospace" font-size="12" font-weight="600" fill="#6f42c1">
+    <animate attributeName="opacity" values="1;0;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    a [2 × 3] tensor
+  </text>
+  <text x="360" y="56" text-anchor="middle" font-family="monospace" font-size="12" font-weight="600" fill="#1e6091">
+    <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    sum(axis=0) — collapse rows → [3]
+  </text>
+  <text x="360" y="56" text-anchor="middle" font-family="monospace" font-size="12" font-weight="600" fill="#2e7d32">
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    sum(axis=1) — collapse columns → [2]
+  </text>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- The source grid (2 rows × 3 cols), origin (235, 95)        -->
+  <!-- Cells: blue tint in phase 1 (axis=0), green tint phase 2   -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+
+  <!-- row 0 -->
+  <rect x="235" y="95" width="60" height="44" rx="4" stroke="#c9b88a" stroke-width="1">
+    <animate attributeName="fill" values="#ffffff;#d6e9f8;#d4ecd5" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="265" y="123" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="16" font-weight="600">1</text>
+
+  <rect x="300" y="95" width="60" height="44" rx="4" stroke="#c9b88a" stroke-width="1">
+    <animate attributeName="fill" values="#ffffff;#d6e9f8;#d4ecd5" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="330" y="123" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="16" font-weight="600">2</text>
+
+  <rect x="365" y="95" width="60" height="44" rx="4" stroke="#c9b88a" stroke-width="1">
+    <animate attributeName="fill" values="#ffffff;#d6e9f8;#d4ecd5" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="395" y="123" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="16" font-weight="600">3</text>
+
+  <!-- row 1 -->
+  <rect x="235" y="144" width="60" height="44" rx="4" stroke="#c9b88a" stroke-width="1">
+    <animate attributeName="fill" values="#ffffff;#d6e9f8;#d4ecd5" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="265" y="172" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="16" font-weight="600">4</text>
+
+  <rect x="300" y="144" width="60" height="44" rx="4" stroke="#c9b88a" stroke-width="1">
+    <animate attributeName="fill" values="#ffffff;#d6e9f8;#d4ecd5" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="330" y="172" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="16" font-weight="600">5</text>
+
+  <rect x="365" y="144" width="60" height="44" rx="4" stroke="#c9b88a" stroke-width="1">
+    <animate attributeName="fill" values="#ffffff;#d6e9f8;#d4ecd5" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="395" y="172" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="16" font-weight="600">6</text>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- Axis labels on the grid                                    -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <text x="215" y="123" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="10">a0</text>
+  <text x="215" y="172" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="10">a0</text>
+  <text x="265" y="86" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="10">a1</text>
+  <text x="330" y="86" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="10">a1</text>
+  <text x="395" y="86" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="10">a1</text>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- PHASE 1 — axis=0 result: column sums [5, 7, 9] below grid  -->
+  <!-- down arrows from each column into a result row             -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+
+  <g>
+    <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+
+    <!-- down arrows -->
+    <line x1="265" y1="192" x2="265" y2="225" stroke="#1e6091" stroke-width="1.5"/>
+    <polygon points="265,225 261,219 269,219" fill="#1e6091"/>
+    <line x1="330" y1="192" x2="330" y2="225" stroke="#1e6091" stroke-width="1.5"/>
+    <polygon points="330,225 326,219 334,219" fill="#1e6091"/>
+    <line x1="395" y1="192" x2="395" y2="225" stroke="#1e6091" stroke-width="1.5"/>
+    <polygon points="395,225 391,219 399,219" fill="#1e6091"/>
+
+    <!-- result row [5, 7, 9], shape [3] -->
+    <rect x="235" y="228" width="60" height="44" rx="4" fill="#d6e9f8" stroke="#1e6091" stroke-width="1.5"/>
+    <text x="265" y="256" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="16" font-weight="700">5</text>
+    <rect x="300" y="228" width="60" height="44" rx="4" fill="#d6e9f8" stroke="#1e6091" stroke-width="1.5"/>
+    <text x="330" y="256" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="16" font-weight="700">7</text>
+    <rect x="365" y="228" width="60" height="44" rx="4" fill="#d6e9f8" stroke="#1e6091" stroke-width="1.5"/>
+    <text x="395" y="256" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="16" font-weight="700">9</text>
+
+    <text x="465" y="254" fill="#1e6091" font-family="monospace" font-size="12" font-weight="700">shape [3]</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- PHASE 2 — axis=1 result: row sums [6, 15] right of grid    -->
+  <!-- right arrows from each row into a result column            -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+
+  <g>
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+
+    <!-- right arrows -->
+    <line x1="430" y1="117" x2="463" y2="117" stroke="#2e7d32" stroke-width="1.5"/>
+    <polygon points="463,117 457,113 457,121" fill="#2e7d32"/>
+    <line x1="430" y1="166" x2="463" y2="166" stroke="#2e7d32" stroke-width="1.5"/>
+    <polygon points="463,166 457,162 457,170" fill="#2e7d32"/>
+
+    <!-- result column [6, 15], shape [2] -->
+    <rect x="466" y="95" width="64" height="44" rx="4" fill="#d4ecd5" stroke="#2e7d32" stroke-width="1.5"/>
+    <text x="498" y="123" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="16" font-weight="700">6</text>
+    <rect x="466" y="144" width="64" height="44" rx="4" fill="#d4ecd5" stroke="#2e7d32" stroke-width="1.5"/>
+    <text x="498" y="172" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="16" font-weight="700">15</text>
+
+    <text x="498" y="208" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="12" font-weight="700">shape [2]</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- Formula bar — 3 phases                                     -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+
+  <rect x="30" y="300" width="660" height="56" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+
+  <!-- Phase 0 -->
+  <text x="360" y="322" text-anchor="middle" font-family="monospace" font-size="13" fill="#5a4220" font-weight="600">
+    <animate attributeName="opacity" values="1;0;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    A = [[1, 2, 3], [4, 5, 6]]   ·   shape [2, 3]
+  </text>
+  <text x="360" y="342" text-anchor="middle" font-family="monospace" font-size="11" fill="#8b7355">
+    <animate attributeName="opacity" values="1;0;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    pick an axis to collapse — the chosen axis disappears, the rest stay
+  </text>
+
+  <!-- Phase 1 -->
+  <text x="360" y="322" text-anchor="middle" font-family="monospace" font-size="13" fill="#1e6091" font-weight="600">
+    <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    out[j] = Σᵢ A[i, j]   →   [1+4, 2+5, 3+6] = [5, 7, 9]
+  </text>
+  <text x="360" y="342" text-anchor="middle" font-family="monospace" font-size="11" fill="#8b7355">
+    <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    axis 0 (size 2) collapses; axis 1 (size 3) survives → shape [3]
+  </text>
+
+  <!-- Phase 2 -->
+  <text x="360" y="322" text-anchor="middle" font-family="monospace" font-size="13" fill="#2e7d32" font-weight="600">
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    out[i] = Σⱼ A[i, j]   →   [1+2+3, 4+5+6] = [6, 15]
+  </text>
+  <text x="360" y="342" text-anchor="middle" font-family="monospace" font-size="11" fill="#8b7355">
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    axis 1 (size 3) collapses; axis 0 (size 2) survives → shape [2]
+  </text>
+
+</svg>
