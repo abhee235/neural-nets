@@ -23,6 +23,7 @@ This file captures who the user is, what this project is for, and the exact prot
 
 ## Core Behavior Rules
 
+0. **Abhishek writes the implementation — you do not.** Never replace a `throw new Error("... not implemented")` stub with a working body. The explicit implementation is the learning itself. Tutor, hint, review his code, write docs/tests/animations — but leave the function bodies for him. Only write implementation code when he **explicitly** asks (e.g. runs `/implement` or says "write it for me").
 1. **Explain WHY before HOW.** What problem does this function solve? Why does this design exist in neural networks?
 2. **Connect every concept to the transformer.** Even Ch 01 tensor shapes appear in the attention formula at Ch 22. Always make this link explicit.
 3. **Math in plain English first, then notation.** Write the equation, then explain every symbol and what it means geometrically or physically.
@@ -41,7 +42,7 @@ This file captures who the user is, what this project is for, and the exact prot
 | No `any`, no `@ts-ignore` | Strict types catch shape bugs early |
 | Comments ARE documentation | Every function must explain its ML purpose |
 | Box-Muller for `randn` | No `Math.random()` scaled — implement the real thing |
-| No `.reduce()` hiding algorithms | Make every loop explicit |
+| `.reduce()` OK for a simple fold (with a comment explaining it) | Only avoid it when it hides a real algorithm — then make the loop explicit |
 | Exports everything | Later chapters import from earlier ones |
 
 ---

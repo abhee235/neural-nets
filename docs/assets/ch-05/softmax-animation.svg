@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" width="720" height="360">
+
+  <!-- ─── background (light cream) ───────────────────────────── -->
+  <rect width="720" height="360" fill="#faf7f0" rx="12"/>
+
+  <!-- ─── header ─────────────────────────────────────────────── -->
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">softmax: raw scores → a probability distribution that sums to 1</text>
+
+  <!--
+    Animation timing
+    ────────────────
+    10 s cycle, 4 stages revealed in sequence, discrete:
+      keyTimes = "0;0.25;0.5;0.75"
+
+      Stage 1  logits         [2, 1, 3]
+      Stage 2  − max(=3)       [-1, -2, 0]      (subtract the max → no overflow)
+      Stage 3  exp             [0.37, 0.14, 1.00]
+      Stage 4  ÷ sum(=1.50)    [0.24, 0.09, 0.67]   →  Σ = 1.00 ✓
+
+    Stages stay on screen once revealed (cumulative opacity).
+  -->
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- STAGE 1 — logits  (always visible)                         -->
+  <!-- column x = 50..140, center 95                              -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <text x="95" y="66" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="12" font-weight="700">logits</text>
+  <text x="95" y="82" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="10">x</text>
+
+  <rect x="50" y="92" width="90" height="40" rx="4" fill="#ffffff" stroke="#c9b88a" stroke-width="1"/>
+  <text x="95" y="118" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="15" font-weight="600">2</text>
+  <rect x="50" y="136" width="90" height="40" rx="4" fill="#ffffff" stroke="#c9b88a" stroke-width="1"/>
+  <text x="95" y="162" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="15" font-weight="600">1</text>
+  <!-- the max element, tinted amber -->
+  <rect x="50" y="180" width="90" height="40" rx="4" fill="#ffd166" stroke="#e0a800" stroke-width="1.5"/>
+  <text x="95" y="206" text-anchor="middle" fill="#5a3a00" font-family="monospace" font-size="15" font-weight="700">3</text>
+  <text x="95" y="238" text-anchor="middle" fill="#856404" font-family="monospace" font-size="10" font-weight="700">← max</text>
+
+  <!-- arrow 1→2 -->
+  <g>
+    <animate attributeName="opacity" values="0;1;1;1" keyTimes="0;0.25;0.5;0.75" dur="10s" calcMode="discrete" repeatCount="indefinite"/>
+    <line x1="145" y1="156" x2="195" y2="156" stroke="#8b7355" stroke-width="1.5"/>
+    <polygon points="195,156 189,152 189,160" fill="#8b7355"/>
+    <text x="170" y="148" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">− max</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- STAGE 2 — minus max  (center 245)                          -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <g>
+    <animate attributeName="opacity" values="0;1;1;1" keyTimes="0;0.25;0.5;0.75" dur="10s" calcMode="discrete" repeatCount="indefinite"/>
+    <text x="245" y="66" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="12" font-weight="700">x − max</text>
+    <text x="245" y="82" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="10">≤ 0, so exp can't overflow</text>
+
+    <rect x="200" y="92" width="90" height="40" rx="4" fill="#d6e9f8" stroke="#1e6091" stroke-width="1"/>
+    <text x="245" y="118" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="15" font-weight="600">−1</text>
+    <rect x="200" y="136" width="90" height="40" rx="4" fill="#d6e9f8" stroke="#1e6091" stroke-width="1"/>
+    <text x="245" y="162" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="15" font-weight="600">−2</text>
+    <rect x="200" y="180" width="90" height="40" rx="4" fill="#d6e9f8" stroke="#1e6091" stroke-width="1"/>
+    <text x="245" y="206" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="15" font-weight="600">0</text>
+  </g>
+
+  <!-- arrow 2→3 -->
+  <g>
+    <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.25;0.5;0.75" dur="10s" calcMode="discrete" repeatCount="indefinite"/>
+    <line x1="295" y1="156" x2="345" y2="156" stroke="#8b7355" stroke-width="1.5"/>
+    <polygon points="345,156 339,152 339,160" fill="#8b7355"/>
+    <text x="320" y="148" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">exp</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- STAGE 3 — exp  (center 395)                                -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <g>
+    <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.25;0.5;0.75" dur="10s" calcMode="discrete" repeatCount="indefinite"/>
+    <text x="395" y="66" text-anchor="middle" fill="#856404" font-family="monospace" font-size="12" font-weight="700">exp(x − max)</text>
+    <text x="395" y="82" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="10">all positive</text>
+
+    <rect x="350" y="92" width="90" height="40" rx="4" fill="#fff3cd" stroke="#e0a800" stroke-width="1"/>
+    <text x="395" y="118" text-anchor="middle" fill="#856404" font-family="monospace" font-size="14" font-weight="600">0.37</text>
+    <rect x="350" y="136" width="90" height="40" rx="4" fill="#fff3cd" stroke="#e0a800" stroke-width="1"/>
+    <text x="395" y="162" text-anchor="middle" fill="#856404" font-family="monospace" font-size="14" font-weight="600">0.14</text>
+    <rect x="350" y="180" width="90" height="40" rx="4" fill="#fff3cd" stroke="#e0a800" stroke-width="1"/>
+    <text x="395" y="206" text-anchor="middle" fill="#856404" font-family="monospace" font-size="14" font-weight="600">1.00</text>
+
+    <text x="395" y="238" text-anchor="middle" fill="#856404" font-family="monospace" font-size="10" font-weight="700">Σ = 1.50</text>
+  </g>
+
+  <!-- arrow 3→4 -->
+  <g>
+    <animate attributeName="opacity" values="0;0;0;1" keyTimes="0;0.25;0.5;0.75" dur="10s" calcMode="discrete" repeatCount="indefinite"/>
+    <line x1="445" y1="156" x2="495" y2="156" stroke="#8b7355" stroke-width="1.5"/>
+    <polygon points="495,156 489,152 489,160" fill="#8b7355"/>
+    <text x="470" y="148" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">÷ Σ</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- STAGE 4 — normalized probabilities  (center 545)          -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <g>
+    <animate attributeName="opacity" values="0;0;0;1" keyTimes="0;0.25;0.5;0.75" dur="10s" calcMode="discrete" repeatCount="indefinite"/>
+    <text x="545" y="66" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="12" font-weight="700">softmax(x)</text>
+    <text x="545" y="82" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="10">probabilities</text>
+
+    <rect x="500" y="92" width="90" height="40" rx="4" fill="#d4ecd5" stroke="#2e7d32" stroke-width="1"/>
+    <text x="545" y="118" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="14" font-weight="600">0.24</text>
+    <rect x="500" y="136" width="90" height="40" rx="4" fill="#d4ecd5" stroke="#2e7d32" stroke-width="1"/>
+    <text x="545" y="162" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="14" font-weight="600">0.09</text>
+    <!-- winner: largest logit → largest probability -->
+    <rect x="500" y="180" width="90" height="40" rx="4" fill="#a8d5aa" stroke="#2e7d32" stroke-width="2"/>
+    <text x="545" y="206" text-anchor="middle" fill="#1b5e20" font-family="monospace" font-size="14" font-weight="700">0.67</text>
+
+    <!-- Σ = 1 badge -->
+    <rect x="500" y="228" width="90" height="26" rx="6" fill="#2e7d32"/>
+    <text x="545" y="246" text-anchor="middle" fill="#ffffff" font-family="monospace" font-size="12" font-weight="700">Σ = 1.00 ✓</text>
+
+    <!-- bars to the right showing relative probability -->
+    <rect x="610" y="100" width="86" height="24" rx="3" fill="#eef7ef" stroke="#c9b88a" stroke-width="0.5"/>
+    <rect x="610" y="100" width="21" height="24" rx="3" fill="#9ccc9e"/>
+    <rect x="610" y="144" width="86" height="24" rx="3" fill="#eef7ef" stroke="#c9b88a" stroke-width="0.5"/>
+    <rect x="610" y="144" width="8" height="24" rx="3" fill="#9ccc9e"/>
+    <rect x="610" y="188" width="86" height="24" rx="3" fill="#eef7ef" stroke="#c9b88a" stroke-width="0.5"/>
+    <rect x="610" y="188" width="58" height="24" rx="3" fill="#2e7d32"/>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- Formula bar — one line per revealed stage                  -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+
+  <rect x="30" y="280" width="660" height="58" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+
+  <text x="360" y="304" text-anchor="middle" font-family="monospace" font-size="13" fill="#5a4220" font-weight="600">
+    softmax(x)ᵢ  =  exp(xᵢ − max) / Σⱼ exp(xⱼ − max)
+  </text>
+
+  <text x="360" y="326" text-anchor="middle" font-family="monospace" font-size="11" fill="#8b7355">
+    <animate attributeName="opacity" values="1;0;0;0" keyTimes="0;0.25;0.5;0.75" dur="10s" calcMode="discrete" repeatCount="indefinite"/>
+    start with raw logits — the max is highlighted in amber
+  </text>
+  <text x="360" y="326" text-anchor="middle" font-family="monospace" font-size="11" fill="#1e6091">
+    <animate attributeName="opacity" values="0;1;0;0" keyTimes="0;0.25;0.5;0.75" dur="10s" calcMode="discrete" repeatCount="indefinite"/>
+    subtract max → every value ≤ 0 → exp(...) ≤ 1, so nothing overflows
+  </text>
+  <text x="360" y="326" text-anchor="middle" font-family="monospace" font-size="11" fill="#856404">
+    <animate attributeName="opacity" values="0;0;1;0" keyTimes="0;0.25;0.5;0.75" dur="10s" calcMode="discrete" repeatCount="indefinite"/>
+    exponentiate → all positive; their sum (1.50) becomes the normaliser
+  </text>
+  <text x="360" y="326" text-anchor="middle" font-family="monospace" font-size="11" fill="#2e7d32" font-weight="600">
+    <animate attributeName="opacity" values="0;0;0;1" keyTimes="0;0.25;0.5;0.75" dur="10s" calcMode="discrete" repeatCount="indefinite"/>
+    divide by the sum → probabilities that add to 1; biggest logit wins (0.67)
+  </text>
+
+</svg>

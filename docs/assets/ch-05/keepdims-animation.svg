@@ -1,0 +1,162 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 380" width="720" height="380">
+
+  <!-- ─── background (light cream) ───────────────────────────── -->
+  <rect width="720" height="380" fill="#faf7f0" rx="12"/>
+
+  <!-- ─── header ─────────────────────────────────────────────── -->
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">keepDims=true keeps a size-1 axis so the result can broadcast back</text>
+
+  <!--
+    Animation timing
+    ────────────────
+    12 s cycle, 3 phases × 4 s, discrete:  keyTimes = "0;0.333;0.667"
+
+      Phase 0  sum(axis=1, keepDims=false) → [6, 15], shape [2]   (axis gone)
+      Phase 1  sum(axis=1, keepDims=true)  → [[6],[15]], shape [2,1] (axis kept as 1)
+      Phase 2  the [2,1] result broadcasts across the 3 columns — LayerNorm's x − mean
+
+    Source: [[1, 2, 3], [4, 5, 6]]
+  -->
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- Phase badge                                                -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+
+  <rect x="170" y="38" width="380" height="26" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="56" text-anchor="middle" font-family="monospace" font-size="12" font-weight="600" fill="#856404">
+    <animate attributeName="opacity" values="1;0;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    sum(axis=1, keepDims=false) → shape [2]
+  </text>
+  <text x="360" y="56" text-anchor="middle" font-family="monospace" font-size="12" font-weight="600" fill="#6f42c1">
+    <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    sum(axis=1, keepDims=true) → shape [2, 1]
+  </text>
+  <text x="360" y="56" text-anchor="middle" font-family="monospace" font-size="12" font-weight="600" fill="#2e7d32">
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    [2, 1] broadcasts across 3 columns ✓
+  </text>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- Source grid [2 × 3], origin (70, 100)                      -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+
+  <text x="160" y="92" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="11" font-weight="600">input [2 × 3]</text>
+
+  <rect x="70" y="100" width="60" height="44" rx="4" fill="#ffffff" stroke="#c9b88a" stroke-width="1"/>
+  <text x="100" y="128" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="16" font-weight="600">1</text>
+  <rect x="135" y="100" width="60" height="44" rx="4" fill="#ffffff" stroke="#c9b88a" stroke-width="1"/>
+  <text x="165" y="128" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="16" font-weight="600">2</text>
+  <rect x="200" y="100" width="60" height="44" rx="4" fill="#ffffff" stroke="#c9b88a" stroke-width="1"/>
+  <text x="230" y="128" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="16" font-weight="600">3</text>
+
+  <rect x="70" y="149" width="60" height="44" rx="4" fill="#ffffff" stroke="#c9b88a" stroke-width="1"/>
+  <text x="100" y="177" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="16" font-weight="600">4</text>
+  <rect x="135" y="149" width="60" height="44" rx="4" fill="#ffffff" stroke="#c9b88a" stroke-width="1"/>
+  <text x="165" y="177" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="16" font-weight="600">5</text>
+  <rect x="200" y="149" width="60" height="44" rx="4" fill="#ffffff" stroke="#c9b88a" stroke-width="1"/>
+  <text x="230" y="177" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="16" font-weight="600">6</text>
+
+  <!-- arrow to result -->
+  <line x1="270" y1="146" x2="320" y2="146" stroke="#8b7355" stroke-width="1.5"/>
+  <polygon points="320,146 314,142 314,150" fill="#8b7355"/>
+  <text x="295" y="138" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">sum a1</text>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- PHASE 0 — keepDims=false → flat [6, 15], shape [2]         -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <g>
+    <animate attributeName="opacity" values="1;0;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="345" y="124" width="64" height="44" rx="4" fill="#fff3cd" stroke="#e0a800" stroke-width="1.5"/>
+    <text x="377" y="152" text-anchor="middle" fill="#856404" font-family="monospace" font-size="16" font-weight="700">6</text>
+    <rect x="414" y="124" width="64" height="44" rx="4" fill="#fff3cd" stroke="#e0a800" stroke-width="1.5"/>
+    <text x="446" y="152" text-anchor="middle" fill="#856404" font-family="monospace" font-size="16" font-weight="700">15</text>
+    <text x="412" y="190" text-anchor="middle" fill="#856404" font-family="monospace" font-size="12" font-weight="700">shape [2] — a flat vector</text>
+    <text x="412" y="208" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="11">✗ rank 1 — cannot line up with the [2 × 3] grid</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- PHASE 1 — keepDims=true → column [[6],[15]], shape [2,1]   -->
+  <!-- aligned with the two grid rows                             -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <g>
+    <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="345" y="100" width="64" height="44" rx="4" fill="#f3edf9" stroke="#6f42c1" stroke-width="1.5"/>
+    <text x="377" y="128" text-anchor="middle" fill="#6f42c1" font-family="monospace" font-size="16" font-weight="700">6</text>
+    <rect x="345" y="149" width="64" height="44" rx="4" fill="#f3edf9" stroke="#6f42c1" stroke-width="1.5"/>
+    <text x="377" y="177" text-anchor="middle" fill="#6f42c1" font-family="monospace" font-size="16" font-weight="700">15</text>
+    <text x="430" y="138" fill="#6f42c1" font-family="monospace" font-size="12" font-weight="700">shape [2, 1]</text>
+    <text x="430" y="158" fill="#6f42c1" font-family="monospace" font-size="11">rank 2 — one value</text>
+    <text x="430" y="173" fill="#6f42c1" font-family="monospace" font-size="11">per row, kept as a</text>
+    <text x="430" y="188" fill="#6f42c1" font-family="monospace" font-size="11">size-1 column</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- PHASE 2 — broadcast: the [2,1] column stretches across the -->
+  <!-- 3 columns of the grid (ghost copies). LayerNorm x − mean.  -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <g>
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+
+    <!-- the kept column -->
+    <rect x="345" y="100" width="64" height="44" rx="4" fill="#d4ecd5" stroke="#2e7d32" stroke-width="1.5"/>
+    <text x="377" y="128" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="16" font-weight="700">6</text>
+    <rect x="345" y="149" width="64" height="44" rx="4" fill="#d4ecd5" stroke="#2e7d32" stroke-width="1.5"/>
+    <text x="377" y="177" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="16" font-weight="700">15</text>
+
+    <!-- broadcast arrows: value 6 copied across row 0's 3 columns -->
+    <line x1="345" y1="122" x2="500" y2="122" stroke="#2e7d32" stroke-width="1" stroke-dasharray="4,3"/>
+    <line x1="345" y1="171" x2="500" y2="171" stroke="#2e7d32" stroke-width="1" stroke-dasharray="4,3"/>
+
+    <!-- ghost copies row 0 -->
+    <rect x="500" y="100" width="58" height="44" rx="4" fill="#eef7ef" stroke="#2e7d32" stroke-width="1" stroke-dasharray="3,2"/>
+    <text x="529" y="128" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="14">6</text>
+    <rect x="561" y="100" width="58" height="44" rx="4" fill="#eef7ef" stroke="#2e7d32" stroke-width="1" stroke-dasharray="3,2"/>
+    <text x="590" y="128" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="14">6</text>
+    <rect x="622" y="100" width="58" height="44" rx="4" fill="#eef7ef" stroke="#2e7d32" stroke-width="1" stroke-dasharray="3,2"/>
+    <text x="651" y="128" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="14">6</text>
+
+    <!-- ghost copies row 1 -->
+    <rect x="500" y="149" width="58" height="44" rx="4" fill="#eef7ef" stroke="#2e7d32" stroke-width="1" stroke-dasharray="3,2"/>
+    <text x="529" y="177" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="14">15</text>
+    <rect x="561" y="149" width="58" height="44" rx="4" fill="#eef7ef" stroke="#2e7d32" stroke-width="1" stroke-dasharray="3,2"/>
+    <text x="590" y="177" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="14">15</text>
+    <rect x="622" y="149" width="58" height="44" rx="4" fill="#eef7ef" stroke="#2e7d32" stroke-width="1" stroke-dasharray="3,2"/>
+    <text x="651" y="177" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="14">15</text>
+
+    <text x="589" y="210" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="11" font-weight="700">one value per row, stretched to [2 × 3]</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- Formula bar — 3 phases                                     -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+
+  <rect x="30" y="300" width="660" height="56" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+
+  <text x="360" y="322" text-anchor="middle" font-family="monospace" font-size="13" fill="#856404" font-weight="600">
+    <animate attributeName="opacity" values="1;0;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    keepDims=false:  the reduced axis vanishes  →  [2, 3] becomes [2]
+  </text>
+  <text x="360" y="342" text-anchor="middle" font-family="monospace" font-size="11" fill="#8b7355">
+    <animate attributeName="opacity" values="1;0;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    compact, but you have lost the alignment with the original rows
+  </text>
+
+  <text x="360" y="322" text-anchor="middle" font-family="monospace" font-size="13" fill="#6f42c1" font-weight="600">
+    <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    keepDims=true:  the reduced axis stays as size 1  →  [2, 3] becomes [2, 1]
+  </text>
+  <text x="360" y="342" text-anchor="middle" font-family="monospace" font-size="11" fill="#8b7355">
+    <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    same numbers — but the rank is preserved for the next step
+  </text>
+
+  <text x="360" y="322" text-anchor="middle" font-family="monospace" font-size="13" fill="#2e7d32" font-weight="600">
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    LayerNorm:  x − mean   needs mean shaped [2, 1] to broadcast over [2, 3]
+  </text>
+  <text x="360" y="342" text-anchor="middle" font-family="monospace" font-size="11" fill="#8b7355">
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    that is why keepDims=true is everywhere in normalization and softmax
+  </text>
+
+</svg>
