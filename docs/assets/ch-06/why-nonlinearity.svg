@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 380" width="720" height="380">
+
+  <!-- ─── background (light cream) ───────────────────────────── -->
+  <rect width="720" height="380" fill="#faf7f0" rx="12"/>
+
+  <!-- ─── header ─────────────────────────────────────────────── -->
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">without a non-linear bend, stacking layers adds no power</text>
+
+  <!--
+    3 phases × 4 s = 12 s, discrete:  keyTimes = "0;0.333;0.667"
+      Phase 0  two linear layers stacked
+      Phase 1  …collapse into ONE matrix (still a straight line)
+      Phase 2  insert tanh between them → now it can bend into a curve
+    Left: the network diagram. Right: what the model can draw (line vs curve).
+  -->
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- Phase badge                                                -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <rect x="150" y="38" width="420" height="26" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="56" text-anchor="middle" font-family="monospace" font-size="12" font-weight="600" fill="#1e6091">
+    <animate attributeName="opacity" values="1;0;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    two linear layers:  ŷ = W₂ · (W₁ · x)
+  </text>
+  <text x="360" y="56" text-anchor="middle" font-family="monospace" font-size="12" font-weight="600" fill="#856404">
+    <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    …collapse to ONE:  ŷ = (W₂ · W₁) · x = W · x
+  </text>
+  <text x="360" y="56" text-anchor="middle" font-family="monospace" font-size="12" font-weight="600" fill="#2e7d32">
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    add a bend:  ŷ = W₂ · tanh(W₁ · x)
+  </text>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- LEFT: network diagram (3 variants toggled by phase)        -->
+  <!-- node helper layout: boxes 46 wide, 34 tall, y≈150          -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+
+  <!-- Phase 0: x → W1 → W2 → y -->
+  <g>
+    <animate attributeName="opacity" values="1;0;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="40"  y="150" width="46" height="34" rx="6" fill="#ffffff" stroke="#c9b88a"/>
+    <text x="63" y="172" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">x</text>
+    <rect x="118" y="150" width="50" height="34" rx="6" fill="#d6e9f8" stroke="#1e6091"/>
+    <text x="143" y="172" text-anchor="middle" font-family="monospace" font-size="13" fill="#1e6091" font-weight="700">W₁</text>
+    <rect x="200" y="150" width="50" height="34" rx="6" fill="#d6e9f8" stroke="#1e6091"/>
+    <text x="225" y="172" text-anchor="middle" font-family="monospace" font-size="13" fill="#1e6091" font-weight="700">W₂</text>
+    <rect x="282" y="150" width="46" height="34" rx="6" fill="#ffffff" stroke="#c9b88a"/>
+    <text x="305" y="172" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">ŷ</text>
+    <line x1="86"  y1="167" x2="116" y2="167" stroke="#8b7355" stroke-width="1.5"/><polygon points="116,167 110,163 110,171" fill="#8b7355"/>
+    <line x1="168" y1="167" x2="198" y2="167" stroke="#8b7355" stroke-width="1.5"/><polygon points="198,167 192,163 192,171" fill="#8b7355"/>
+    <line x1="250" y1="167" x2="280" y2="167" stroke="#8b7355" stroke-width="1.5"/><polygon points="280,167 274,163 274,171" fill="#8b7355"/>
+    <text x="184" y="210" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">two matrix multiplies, back to back</text>
+  </g>
+
+  <!-- Phase 1: x → W → y  (merged) -->
+  <g>
+    <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="40"  y="150" width="46" height="34" rx="6" fill="#ffffff" stroke="#c9b88a"/>
+    <text x="63" y="172" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">x</text>
+    <rect x="150" y="146" width="70" height="42" rx="6" fill="#fff3cd" stroke="#e0a800" stroke-width="2"/>
+    <text x="185" y="172" text-anchor="middle" font-family="monospace" font-size="14" fill="#856404" font-weight="700">W</text>
+    <rect x="282" y="150" width="46" height="34" rx="6" fill="#ffffff" stroke="#c9b88a"/>
+    <text x="305" y="172" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">ŷ</text>
+    <line x1="86"  y1="167" x2="148" y2="167" stroke="#8b7355" stroke-width="1.5"/><polygon points="148,167 142,163 142,171" fill="#8b7355"/>
+    <line x1="220" y1="167" x2="280" y2="167" stroke="#8b7355" stroke-width="1.5"/><polygon points="280,167 274,163 274,171" fill="#8b7355"/>
+    <text x="184" y="210" text-anchor="middle" fill="#856404" font-family="monospace" font-size="10" font-weight="700">100 linear layers = 1 linear layer</text>
+  </g>
+
+  <!-- Phase 2: x → W1 → tanh → W2 → y -->
+  <g>
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="30"  y="150" width="40" height="34" rx="6" fill="#ffffff" stroke="#c9b88a"/>
+    <text x="50" y="172" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">x</text>
+    <rect x="92"  y="150" width="44" height="34" rx="6" fill="#d6e9f8" stroke="#1e6091"/>
+    <text x="114" y="172" text-anchor="middle" font-family="monospace" font-size="12" fill="#1e6091" font-weight="700">W₁</text>
+    <rect x="158" y="150" width="64" height="34" rx="6" fill="#f3edf9" stroke="#6f42c1" stroke-width="2"/>
+    <text x="190" y="172" text-anchor="middle" font-family="monospace" font-size="12" fill="#6f42c1" font-weight="700">tanh</text>
+    <rect x="244" y="150" width="44" height="34" rx="6" fill="#d6e9f8" stroke="#1e6091"/>
+    <text x="266" y="172" text-anchor="middle" font-family="monospace" font-size="12" fill="#1e6091" font-weight="700">W₂</text>
+    <rect x="310" y="150" width="40" height="34" rx="6" fill="#ffffff" stroke="#c9b88a"/>
+    <text x="330" y="172" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">ŷ</text>
+    <line x1="70"  y1="167" x2="90"  y2="167" stroke="#8b7355" stroke-width="1.5"/><polygon points="90,167 84,163 84,171" fill="#8b7355"/>
+    <line x1="136" y1="167" x2="156" y2="167" stroke="#8b7355" stroke-width="1.5"/><polygon points="156,167 150,163 150,171" fill="#8b7355"/>
+    <line x1="222" y1="167" x2="242" y2="167" stroke="#8b7355" stroke-width="1.5"/><polygon points="242,167 236,163 236,171" fill="#8b7355"/>
+    <line x1="288" y1="167" x2="308" y2="167" stroke="#8b7355" stroke-width="1.5"/><polygon points="308,167 302,163 302,171" fill="#8b7355"/>
+    <text x="190" y="210" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="10" font-weight="700">the bend survives — it can't be collapsed away</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- RIGHT: "what shape can the model draw?" plot                -->
+  <!-- frame x 440..680, y 80..230. Target dots (a curve) always   -->
+  <!-- shown; model output is a straight line (ph0/1) or curve(ph2)-->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <rect x="430" y="78" width="262" height="170" rx="8" fill="#ffffff" stroke="#c9b88a" stroke-width="1"/>
+  <text x="561" y="96" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10" font-weight="700">what the model can fit</text>
+
+  <!-- target data (the true pattern is curved) — always visible -->
+  <circle cx="471.0" cy="207.8" r="3.5" fill="#a8956a"/>
+  <circle cx="502.5" cy="200.9" r="3.5" fill="#a8956a"/>
+  <circle cx="534.0" cy="177.7" r="3.5" fill="#a8956a"/>
+  <circle cx="555.0" cy="150.0" r="3.5" fill="#a8956a"/>
+  <circle cx="576.0" cy="122.3" r="3.5" fill="#a8956a"/>
+  <circle cx="607.5" cy="99.1"  r="3.5" fill="#a8956a"/>
+  <circle cx="639.0" cy="92.2"  r="3.5" fill="#a8956a"/>
+
+  <!-- model = straight line (phases 0 & 1): misses the curvature -->
+  <g>
+    <animate attributeName="opacity" values="1;1;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    <line x1="455" y1="212" x2="660" y2="95" stroke="#856404" stroke-width="2.5"/>
+    <text x="561" y="238" text-anchor="middle" fill="#856404" font-family="monospace" font-size="10" font-weight="700">straight line — can't fit the curve ✗</text>
+  </g>
+
+  <!-- model = curve (phase 2): follows the data -->
+  <g>
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    <path d="M450.0,209.2 L456.3,208.9 L462.6,208.5 L468.9,208.0 L475.2,207.4 L481.5,206.5 L487.8,205.3 L494.1,203.7 L500.4,201.7 L506.7,199.1 L513.0,195.7 L519.3,191.5 L525.6,186.3 L531.9,180.0 L538.2,172.8 L544.5,164.7 L550.8,156.0 L557.1,147.0 L563.4,138.2 L569.7,129.8 L576.0,122.3 L582.3,115.7 L588.6,110.2 L594.9,105.6 L601.2,102.0 L607.5,99.1 L613.8,96.9 L620.1,95.2 L626.4,93.9 L632.7,92.9 L639.0,92.2 L645.3,91.6 L651.6,91.2 L657.9,90.9"
+          fill="none" stroke="#2e7d32" stroke-width="2.5"/>
+    <text x="561" y="238" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="10" font-weight="700">curve — fits the pattern ✓</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- Formula bar — 3 phases                                     -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <rect x="30" y="300" width="660" height="58" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+
+  <text x="360" y="324" text-anchor="middle" font-family="monospace" font-size="12" fill="#1e6091" font-weight="600">
+    <animate attributeName="opacity" values="1;0;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    a "layer" is just a matrix multiply — a linear (straight-line) operation
+  </text>
+  <text x="360" y="324" text-anchor="middle" font-family="monospace" font-size="12" fill="#856404" font-weight="600">
+    <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    W₂ · W₁ is itself just another matrix W — depth bought you nothing
+  </text>
+  <text x="360" y="324" text-anchor="middle" font-family="monospace" font-size="12" fill="#2e7d32" font-weight="600">
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="12s" calcMode="discrete" repeatCount="indefinite"/>
+    a non-linear activation between layers is what lets a deep net learn curves
+  </text>
+  <text x="360" y="345" text-anchor="middle" font-family="monospace" font-size="11" fill="#8b7355">
+    this is why every neural network puts an activation function between its layers
+  </text>
+
+</svg>
