@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <!-- ─── background (light cream) ───────────────────────────── -->
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <!-- ─── header ─────────────────────────────────────────────── -->
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">activation functions squash any input into a bounded range</text>
+
+  <!--
+    Plot frame: x ∈ [-6,6] → px 90..510 (x=0 at 300);  y ∈ [-1,1] → py 250..110 (y=0 at 180).
+    A cursor sweeps left→right; dots ride each curve to show the squashed output.
+  -->
+
+  <!-- ─── gridlines + y labels ───────────────────────────────── -->
+  <line x1="90" y1="110" x2="510" y2="110" stroke="#e0d9c5" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="90" y1="145" x2="510" y2="145" stroke="#e0d9c5" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="90" y1="250" x2="510" y2="250" stroke="#e0d9c5" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="82" y="114" text-anchor="end" fill="#a8956a" font-family="monospace" font-size="10">1</text>
+  <text x="82" y="149" text-anchor="end" fill="#a8956a" font-family="monospace" font-size="10">0.5</text>
+  <text x="82" y="184" text-anchor="end" fill="#a8956a" font-family="monospace" font-size="10">0</text>
+  <text x="82" y="254" text-anchor="end" fill="#a8956a" font-family="monospace" font-size="10">-1</text>
+
+  <!-- ─── axes ───────────────────────────────────────────────── -->
+  <line x1="90" y1="180" x2="515" y2="180" stroke="#c9b88a" stroke-width="1.5"/>  <!-- x-axis (y=0) -->
+  <line x1="300" y1="100" x2="300" y2="262" stroke="#c9b88a" stroke-width="1.5"/> <!-- y-axis (x=0) -->
+  <text x="512" y="195" fill="#a8956a" font-family="monospace" font-size="10">x</text>
+  <text x="306" y="108" fill="#a8956a" font-family="monospace" font-size="10">f(x)</text>
+
+  <!-- ─── tanh curve (green) ─────────────────────────────────── -->
+  <path d="M90.0,250.0 L97.0,250.0 L104.0,250.0 L111.0,250.0 L118.0,250.0 L125.0,250.0 L132.0,250.0 L139.0,250.0 L146.0,250.0 L153.0,250.0 L160.0,250.0 L167.0,249.9 L174.0,249.9 L181.0,249.8 L188.0,249.8 L195.0,249.7 L202.0,249.5 L209.0,249.2 L216.0,248.9 L223.0,248.3 L230.0,247.5 L237.0,246.3 L244.0,244.5 L251.0,242.0 L258.0,238.4 L265.0,233.3 L272.0,226.5 L279.0,217.6 L286.0,206.6 L293.0,193.8 L300.0,180.0 L307.0,166.2 L314.0,153.4 L321.0,142.4 L328.0,133.5 L335.0,126.7 L342.0,121.6 L349.0,118.0 L356.0,115.5 L363.0,113.7 L370.0,112.5 L377.0,111.7 L384.0,111.1 L391.0,110.8 L398.0,110.5 L405.0,110.3 L412.0,110.2 L419.0,110.2 L426.0,110.1 L433.0,110.1 L440.0,110.0 L447.0,110.0 L454.0,110.0 L461.0,110.0 L468.0,110.0 L475.0,110.0 L482.0,110.0 L489.0,110.0 L496.0,110.0 L503.0,110.0 L510.0,110.0"
+        fill="none" stroke="#2e7d32" stroke-width="2.5"/>
+
+  <!-- ─── sigmoid curve (blue) ───────────────────────────────── -->
+  <path d="M90.0,179.8 L97.0,179.8 L104.0,179.7 L111.0,179.7 L118.0,179.6 L125.0,179.5 L132.0,179.4 L139.0,179.3 L146.0,179.2 L153.0,179.0 L160.0,178.7 L167.0,178.5 L174.0,178.1 L181.0,177.7 L188.0,177.3 L195.0,176.7 L202.0,176.0 L209.0,175.2 L216.0,174.2 L223.0,173.0 L230.0,171.7 L237.0,170.1 L244.0,168.2 L251.0,166.2 L258.0,163.8 L265.0,161.2 L272.0,158.3 L279.0,155.2 L286.0,151.9 L293.0,148.5 L300.0,145.0 L307.0,141.5 L314.0,138.1 L321.0,134.8 L328.0,131.7 L335.0,128.8 L342.0,126.2 L349.0,123.8 L356.0,121.8 L363.0,119.9 L370.0,118.3 L377.0,117.0 L384.0,115.8 L391.0,114.8 L398.0,114.0 L405.0,113.3 L412.0,112.7 L419.0,112.3 L426.0,111.9 L433.0,111.5 L440.0,111.3 L447.0,111.0 L454.0,110.8 L461.0,110.7 L468.0,110.6 L475.0,110.5 L482.0,110.4 L489.0,110.3 L496.0,110.3 L503.0,110.2 L510.0,110.2"
+        fill="none" stroke="#1e6091" stroke-width="2.5"/>
+
+  <!-- ─── sweeping cursor: vertical line + a dot on each curve ── -->
+  <line x1="125.0" x2="125.0" y1="105" y2="255" stroke="#6f42c1" stroke-width="1.2" stroke-dasharray="4,3">
+    <animate attributeName="x1" values="125.0;142.5;160.0;177.5;195.0;212.5;230.0;247.5;265.0;282.5;300.0;317.5;335.0;352.5;370.0;387.5;405.0;422.5;440.0;457.5;475.0" dur="7s" calcMode="linear" repeatCount="indefinite"/>
+    <animate attributeName="x2" values="125.0;142.5;160.0;177.5;195.0;212.5;230.0;247.5;265.0;282.5;300.0;317.5;335.0;352.5;370.0;387.5;405.0;422.5;440.0;457.5;475.0" dur="7s" calcMode="linear" repeatCount="indefinite"/>
+  </line>
+
+  <!-- sigmoid dot -->
+  <circle cx="125.0" cy="179.5" r="5" fill="#1e6091">
+    <animate attributeName="cx" values="125.0;142.5;160.0;177.5;195.0;212.5;230.0;247.5;265.0;282.5;300.0;317.5;335.0;352.5;370.0;387.5;405.0;422.5;440.0;457.5;475.0" dur="7s" calcMode="linear" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="179.5;179.2;178.7;177.9;176.7;174.7;171.7;167.2;161.2;153.6;145.0;136.4;128.8;122.8;118.3;115.3;113.3;112.1;111.3;110.8;110.5" dur="7s" calcMode="linear" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- tanh dot -->
+  <circle cx="125.0" cy="250.0" r="5" fill="#2e7d32">
+    <animate attributeName="cx" values="125.0;142.5;160.0;177.5;195.0;212.5;230.0;247.5;265.0;282.5;300.0;317.5;335.0;352.5;370.0;387.5;405.0;422.5;440.0;457.5;475.0" dur="7s" calcMode="linear" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="250.0;250.0;250.0;249.9;249.7;249.1;247.5;243.4;233.3;212.3;180.0;147.7;126.7;116.6;112.5;110.9;110.3;110.1;110.0;110.0;110.0" dur="7s" calcMode="linear" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- ─── curve labels + ranges (right side) ─────────────────── -->
+  <rect x="535" y="120" width="170" height="86" rx="8" fill="#ffffff" stroke="#c9b88a" stroke-width="1"/>
+  <circle cx="552" cy="142" r="5" fill="#1e6091"/>
+  <text x="564" y="146" fill="#1e6091" font-family="monospace" font-size="12" font-weight="700">sigmoid(x)</text>
+  <text x="564" y="162" fill="#8b7355" font-family="monospace" font-size="10">range (0, 1)</text>
+  <circle cx="552" cy="182" r="5" fill="#2e7d32"/>
+  <text x="564" y="186" fill="#2e7d32" font-family="monospace" font-size="12" font-weight="700">tanh(x)</text>
+  <text x="564" y="202" fill="#8b7355" font-family="monospace" font-size="10">range (-1, 1)</text>
+
+  <!-- ─── three teaching callouts ────────────────────────────── -->
+  <text x="535" y="232" fill="#8b7355" font-family="monospace" font-size="10" font-weight="700">read off the curve:</text>
+  <text x="535" y="250" fill="#2c2416" font-family="monospace" font-size="10">x ≪ 0 → squashed low</text>
+  <text x="535" y="265" fill="#2c2416" font-family="monospace" font-size="10">x = 0 → 0.5 / 0.0</text>
+  <text x="535" y="280" fill="#2c2416" font-family="monospace" font-size="10">x ≫ 0 → squashed to 1</text>
+
+  <!-- ─── formula bar ────────────────────────────────────────── -->
+  <rect x="30" y="300" width="660" height="74" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="322" text-anchor="middle" font-family="monospace" font-size="13" fill="#5a4220" font-weight="600">
+    sigmoid(x) = 1 / (1 + e⁻ˣ)        tanh(x) = (eˣ − e⁻ˣ) / (eˣ + e⁻ˣ)
+  </text>
+  <text x="360" y="343" text-anchor="middle" font-family="monospace" font-size="11" fill="#8b7355">
+    both are nearly straight near 0 and FLATTEN at the extremes — that bend is the "non-linearity"
+  </text>
+  <text x="360" y="362" text-anchor="middle" font-family="monospace" font-size="11" fill="#8b7355">
+    huge inputs barely move the output: a value of 5 and a value of 50 both map to ≈ 1
+  </text>
+
+</svg>

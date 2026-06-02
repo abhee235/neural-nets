@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" width="720" height="340">
+
+  <!-- ─── background (light cream) ───────────────────────────── -->
+  <rect width="720" height="340" fill="#faf7f0" rx="12"/>
+
+  <!-- ─── header ─────────────────────────────────────────────── -->
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">an element-wise function is "stamped" on every cell — shape never changes</text>
+
+  <!--
+    4 phases × 2 s = 8 s, discrete:  keyTimes = "0;0.25;0.5;0.75"
+    Each phase stamps tanh onto one input cell (amber) and reveals its output (green).
+    Order: [0,0] → [0,1] → [1,0] → [1,1]   (row-major)
+  -->
+
+  <!-- ─── labels ─────────────────────────────────────────────── -->
+  <text x="175" y="86" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="11" font-weight="700">input  [2 × 2]</text>
+  <text x="545" y="86" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="11" font-weight="700">tanh(input)  [2 × 2]</text>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- INPUT grid (origin 110,100; cell 60×48; stride 65×53)      -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- in[0,0] = -2 -->
+  <rect x="110" y="100" width="60" height="48" rx="4" stroke="#c9b88a" stroke-width="1">
+    <animate attributeName="fill" values="#ffd166;#ffffff;#ffffff;#ffffff" keyTimes="0;0.25;0.5;0.75" dur="8s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="140" y="130" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="15" font-weight="600">-2</text>
+  <!-- in[0,1] = 0.5 -->
+  <rect x="175" y="100" width="60" height="48" rx="4" stroke="#c9b88a" stroke-width="1">
+    <animate attributeName="fill" values="#ffffff;#ffd166;#ffffff;#ffffff" keyTimes="0;0.25;0.5;0.75" dur="8s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="205" y="130" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="15" font-weight="600">0.5</text>
+  <!-- in[1,0] = 5 -->
+  <rect x="110" y="153" width="60" height="48" rx="4" stroke="#c9b88a" stroke-width="1">
+    <animate attributeName="fill" values="#ffffff;#ffffff;#ffd166;#ffffff" keyTimes="0;0.25;0.5;0.75" dur="8s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="140" y="183" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="15" font-weight="600">5</text>
+  <!-- in[1,1] = -3 -->
+  <rect x="175" y="153" width="60" height="48" rx="4" stroke="#c9b88a" stroke-width="1">
+    <animate attributeName="fill" values="#ffffff;#ffffff;#ffffff;#ffd166" keyTimes="0;0.25;0.5;0.75" dur="8s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+  <text x="205" y="183" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="15" font-weight="600">-3</text>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- Central "tanh()" stamp                                     -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <line x1="245" y1="150" x2="300" y2="150" stroke="#8b7355" stroke-width="1.5"/>
+  <polygon points="300,150 294,146 294,154" fill="#8b7355"/>
+  <rect x="305" y="128" width="110" height="44" rx="10" fill="#f3edf9" stroke="#6f42c1" stroke-width="2"/>
+  <text x="360" y="156" text-anchor="middle" fill="#6f42c1" font-family="monospace" font-size="16" font-weight="700">tanh( · )</text>
+  <line x1="420" y1="150" x2="475" y2="150" stroke="#8b7355" stroke-width="1.5"/>
+  <polygon points="475,150 469,146 469,154" fill="#8b7355"/>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- OUTPUT grid (origin 480,100) — cells appear as stamped      -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- out[0,0] = -0.96 -->
+  <g>
+    <animate attributeName="opacity" values="1;1;1;1" keyTimes="0;0.25;0.5;0.75" dur="8s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="480" y="100" width="64" height="48" rx="4" fill="#d4ecd5" stroke="#2e7d32" stroke-width="1.5"/>
+    <text x="512" y="130" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="14" font-weight="700">-0.96</text>
+  </g>
+  <!-- out[0,1] = 0.46 -->
+  <g>
+    <animate attributeName="opacity" values="0;1;1;1" keyTimes="0;0.25;0.5;0.75" dur="8s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="549" y="100" width="64" height="48" rx="4" fill="#d4ecd5" stroke="#2e7d32" stroke-width="1.5"/>
+    <text x="581" y="130" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="14" font-weight="700">0.46</text>
+  </g>
+  <!-- out[1,0] = 1.00 -->
+  <g>
+    <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.25;0.5;0.75" dur="8s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="480" y="153" width="64" height="48" rx="4" fill="#d4ecd5" stroke="#2e7d32" stroke-width="1.5"/>
+    <text x="512" y="183" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="14" font-weight="700">1.00</text>
+  </g>
+  <!-- out[1,1] = -0.995 -->
+  <g>
+    <animate attributeName="opacity" values="0;0;0;1" keyTimes="0;0.25;0.5;0.75" dur="8s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="549" y="153" width="64" height="48" rx="4" fill="#d4ecd5" stroke="#2e7d32" stroke-width="1.5"/>
+    <text x="581" y="183" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="13" font-weight="700">-0.995</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- Formula bar — one line per stamped cell                    -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <rect x="30" y="240" width="660" height="58" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+
+  <text x="360" y="264" text-anchor="middle" font-family="monospace" font-size="13" fill="#5a4220" font-weight="600">
+    <animate attributeName="opacity" values="1;0;0;0" keyTimes="0;0.25;0.5;0.75" dur="8s" calcMode="discrete" repeatCount="indefinite"/>
+    tanh(-2) = -0.96
+  </text>
+  <text x="360" y="264" text-anchor="middle" font-family="monospace" font-size="13" fill="#5a4220" font-weight="600">
+    <animate attributeName="opacity" values="0;1;0;0" keyTimes="0;0.25;0.5;0.75" dur="8s" calcMode="discrete" repeatCount="indefinite"/>
+    tanh(0.5) = 0.46
+  </text>
+  <text x="360" y="264" text-anchor="middle" font-family="monospace" font-size="13" fill="#5a4220" font-weight="600">
+    <animate attributeName="opacity" values="0;0;1;0" keyTimes="0;0.25;0.5;0.75" dur="8s" calcMode="discrete" repeatCount="indefinite"/>
+    tanh(5) = 1.00   (a big input squashes to ≈ 1)
+  </text>
+  <text x="360" y="264" text-anchor="middle" font-family="monospace" font-size="13" fill="#5a4220" font-weight="600">
+    <animate attributeName="opacity" values="0;0;0;1" keyTimes="0;0.25;0.5;0.75" dur="8s" calcMode="discrete" repeatCount="indefinite"/>
+    tanh(-3) = -0.995
+  </text>
+  <text x="360" y="285" text-anchor="middle" font-family="monospace" font-size="11" fill="#8b7355">
+    every cell handled independently · no cell sees its neighbours · [2 × 2] in → [2 × 2] out
+  </text>
+
+</svg>
