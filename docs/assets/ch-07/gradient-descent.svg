@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <!-- ─── background (light cream) ───────────────────────────── -->
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <!-- ─── header ─────────────────────────────────────────────── -->
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">gradient descent: step downhill (the −gradient direction) until the slope is flat</text>
+
+  <!--
+    Loss L(θ) = θ².  Update θ ← θ − η·L′(θ),  η = 0.2,  start θ = 3.
+    The ball visits θ = 3, 1.8, 1.08, 0.648, 0.389, 0.233 — converging to the
+    minimum at θ = 0.  6 steps, discrete, keyTimes evenly spaced.
+  -->
+
+  <!-- ─── loss bowl L(θ)=θ² (static) ─────────────────────────── -->
+  <path d="M69.0,16.9 L76.0,33.8 L83.0,50.1 L90.0,66.0 L97.0,81.3 L104.0,96.2 L111.0,110.5 L118.0,124.2 L125.0,137.5 L132.0,150.2 L139.0,162.5 L146.0,174.2 L153.0,185.3 L160.0,196.0 L167.0,206.1 L174.0,215.8 L181.0,224.9 L188.0,233.4 L195.0,241.5 L202.0,249.0 L209.0,256.1 L216.0,262.6 L223.0,268.5 L230.0,274.0 L237.0,278.9 L244.0,283.4 L251.0,287.3 L258.0,290.6 L265.0,293.5 L272.0,295.8 L279.0,297.7 L286.0,299.0 L293.0,299.7 L300.0,300.0 L307.0,299.7 L314.0,299.0 L321.0,297.7 L328.0,295.8 L335.0,293.5 L342.0,290.6 L349.0,287.3 L356.0,283.4 L363.0,278.9 L370.0,274.0 L377.0,268.5 L384.0,262.6 L391.0,256.1 L398.0,249.0 L405.0,241.5 L412.0,233.4 L419.0,224.9 L426.0,215.8 L433.0,206.1 L440.0,196.0 L447.0,185.3 L454.0,174.2 L461.0,162.5 L468.0,150.2 L475.0,137.5 L482.0,124.2 L489.0,110.5 L496.0,96.2 L503.0,81.3 L510.0,66.0 L517.0,50.1 L524.0,33.8 L531.0,16.9"
+        fill="none" stroke="#c9b88a" stroke-width="2"/>
+  <text x="120" y="120" fill="#a8956a" font-family="monospace" font-size="12" font-weight="700">L(θ) = θ²  (the loss)</text>
+
+  <!-- axis baseline -->
+  <line x1="60" y1="300" x2="540" y2="300" stroke="#e0d9c5" stroke-width="1"/>
+  <text x="300" y="318" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="10">θ (a parameter / weight)</text>
+
+  <!-- ─── minimum marker ─────────────────────────────────────── -->
+  <circle cx="300.0" cy="300.0" r="4" fill="#2e7d32"/>
+  <text x="300" y="338" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="10" font-weight="700">minimum: slope = 0, stop</text>
+
+  <!-- ─── faint step markers (where the ball lands) ──────────── -->
+  <circle cx="510.0" cy="66.0"  r="3" fill="#e0d9c5"/>
+  <circle cx="426.0" cy="215.8" r="3" fill="#e0d9c5"/>
+  <circle cx="375.6" cy="269.7" r="3" fill="#e0d9c5"/>
+  <circle cx="345.4" cy="289.1" r="3" fill="#e0d9c5"/>
+  <circle cx="327.2" cy="296.1" r="3" fill="#e0d9c5"/>
+
+  <!-- ─── the rolling ball ───────────────────────────────────── -->
+  <circle r="9" fill="#1e6091">
+    <animate attributeName="cx" values="510.0;426.0;375.6;345.4;327.2;316.3" keyTimes="0;0.2;0.4;0.6;0.8;1" dur="6s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="66.0;215.8;269.7;289.1;296.1;298.6" keyTimes="0;0.2;0.4;0.6;0.8;1" dur="6s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <text x="525" y="60" fill="#1e6091" font-family="monospace" font-size="10" font-weight="700">start</text>
+
+  <!-- ─── update rule panel ──────────────────────────────────── -->
+  <rect x="560" y="120" width="140" height="120" rx="8" fill="#ffffff" stroke="#c9b88a" stroke-width="1"/>
+  <text x="630" y="142" text-anchor="middle" fill="#6f42c1" font-family="monospace" font-size="12" font-weight="700">the update</text>
+  <text x="630" y="166" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="12" font-weight="700">θ ← θ − η·∇L</text>
+  <text x="630" y="190" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">η = 0.2 (step size,</text>
+  <text x="630" y="204" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">the "learning rate")</text>
+  <text x="630" y="226" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">∇L = slope here</text>
+
+  <!-- ─── formula bar ────────────────────────────────────────── -->
+  <rect x="30" y="350" width="660" height="40" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="368" text-anchor="middle" font-family="monospace" font-size="12" fill="#5a4220" font-weight="600">
+    the gradient points UPHILL — so step the opposite way to go DOWN; big slope → big step, flat → tiny step
+  </text>
+  <text x="360" y="383" text-anchor="middle" font-family="monospace" font-size="10" fill="#8b7355">
+    this single rule is how every weight in the network gets trained (Ch 09, Ch 14)
+  </text>
+
+</svg>
