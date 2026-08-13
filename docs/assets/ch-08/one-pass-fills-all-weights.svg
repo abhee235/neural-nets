@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <!-- ─── background (light cream) ───────────────────────────── -->
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <!-- ─── header ─────────────────────────────────────────────── -->
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">why autograd's cost ignores N: ONE backward sweep deposits a gradient into every weight</text>
+
+  <!-- ════════════ TOP: AUTOGRAD — one sweep, all weights ═══════ -->
+  <text x="40" y="58" fill="#2e7d32" font-family="monospace" font-size="12" font-weight="700">AUTOGRAD — 1 forward + 1 backward (no matter how many weights)</text>
+
+  <!-- weight leaves -->
+  <rect x="40" y="74" width="60" height="26" rx="6" fill="#ffffff" stroke="#c9b88a"/><text x="70" y="92" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="11">w₁</text>
+  <rect x="40" y="108" width="60" height="26" rx="6" fill="#ffffff" stroke="#c9b88a"/><text x="70" y="126" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="11">w₂</text>
+  <rect x="40" y="142" width="60" height="26" rx="6" fill="#ffffff" stroke="#c9b88a"/><text x="70" y="160" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="11">w₃</text>
+  <text x="70" y="190" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="14" font-weight="700">⋮</text>
+  <rect x="40" y="196" width="60" height="26" rx="6" fill="#ffffff" stroke="#c9b88a"/><text x="70" y="214" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="11">w_N</text>
+
+  <!-- the network blob -->
+  <rect x="170" y="78" width="150" height="144" rx="14" fill="#eef3f8" stroke="#1e6091" stroke-width="1.5"/>
+  <text x="245" y="146" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="11" font-weight="700">the network</text>
+  <text x="245" y="164" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">(M operations)</text>
+
+  <!-- L -->
+  <rect x="360" y="136" width="56" height="28" rx="6" fill="#d4ecd5" stroke="#2e7d32" stroke-width="2"/><text x="388" y="155" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="12" font-weight="700">L</text>
+
+  <!-- forward edges (faint) -->
+  <line x1="100" y1="87"  x2="170" y2="120" stroke="#d8cdb0" stroke-width="1.2"/>
+  <line x1="100" y1="121" x2="170" y2="135" stroke="#d8cdb0" stroke-width="1.2"/>
+  <line x1="100" y1="155" x2="170" y2="150" stroke="#d8cdb0" stroke-width="1.2"/>
+  <line x1="100" y1="209" x2="170" y2="170" stroke="#d8cdb0" stroke-width="1.2"/>
+  <line x1="320" y1="150" x2="358" y2="150" stroke="#d8cdb0" stroke-width="1.2"/>
+
+  <!-- ONE backward sweep: L → blob, then blob → all weights light up together -->
+  <line x1="358" y1="150" x2="322" y2="150" stroke="#b00020" stroke-width="2.5" stroke-dasharray="5,3"/>
+  <polygon points="322,150 329,146 329,154" fill="#b00020"/>
+  <g>
+    <animate attributeName="opacity" values="0;1" keyTimes="0;0.5" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
+    <line x1="170" y1="120" x2="102" y2="87"  stroke="#b00020" stroke-width="2" stroke-dasharray="5,3"/>
+    <line x1="170" y1="135" x2="102" y2="121" stroke="#b00020" stroke-width="2" stroke-dasharray="5,3"/>
+    <line x1="170" y1="150" x2="102" y2="155" stroke="#b00020" stroke-width="2" stroke-dasharray="5,3"/>
+    <line x1="170" y1="170" x2="102" y2="209" stroke="#b00020" stroke-width="2" stroke-dasharray="5,3"/>
+    <text x="118" y="80"  fill="#b00020" font-family="monospace" font-size="9" font-weight="700">grad ✓</text>
+    <text x="118" y="114" fill="#b00020" font-family="monospace" font-size="9" font-weight="700">grad ✓</text>
+    <text x="118" y="148" fill="#b00020" font-family="monospace" font-size="9" font-weight="700">grad ✓</text>
+    <text x="118" y="202" fill="#b00020" font-family="monospace" font-size="9" font-weight="700">grad ✓</text>
+  </g>
+
+  <!-- badge -->
+  <rect x="470" y="74" width="220" height="120" rx="10" fill="#d4ecd5" stroke="#2e7d32" stroke-width="1.5"/>
+  <text x="580" y="98" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="12" font-weight="700">total: 2 passes</text>
+  <text x="580" y="120" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="10">1 forward + 1 backward</text>
+  <text x="580" y="142" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="10">→ ALL N gradients at once</text>
+  <text x="580" y="170" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="11" font-weight="700">work ∝ M  (not N)</text>
+  <text x="580" y="186" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">the sweep visits each edge once</text>
+
+  <!-- divider -->
+  <line x1="30" y1="234" x2="690" y2="234" stroke="#e0d9c5" stroke-width="1"/>
+
+  <!-- ════════════ BOTTOM: NUMERICAL — one run per weight ═══════ -->
+  <text x="40" y="256" fill="#b00020" font-family="monospace" font-size="12" font-weight="700">NUMERICAL — redo the WHOLE network for each weight (others frozen)</text>
+
+  <!-- three run chips revealed one per phase -->
+  <g>
+    <rect x="40" y="268" width="200" height="56" rx="8" fill="#fdeef0" stroke="#b00020" stroke-width="1.2"/>
+    <text x="140" y="288" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="10" font-weight="700">run 1: nudge w₁ (freeze rest)</text>
+    <text x="140" y="306" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">2× full forward (2M ops)</text>
+    <text x="140" y="319" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="9">→ only ∂L/∂w₁</text>
+  </g>
+  <g>
+    <animate attributeName="opacity" values="0.25;1;1" keyTimes="0;0.5;1" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="250" y="268" width="200" height="56" rx="8" fill="#fdeef0" stroke="#b00020" stroke-width="1.2"/>
+    <text x="350" y="288" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="10" font-weight="700">run 2: nudge w₂ (freeze rest)</text>
+    <text x="350" y="306" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">2× full forward (2M ops)</text>
+    <text x="350" y="319" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="9">→ only ∂L/∂w₂</text>
+  </g>
+  <g>
+    <rect x="460" y="268" width="200" height="56" rx="8" fill="#fdeef0" stroke="#b00020" stroke-width="1.2"/>
+    <text x="560" y="288" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="10" font-weight="700">… run N: nudge w_N</text>
+    <text x="560" y="306" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">2× full forward (2M ops)</text>
+    <text x="560" y="319" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="9">→ only ∂L/∂w_N</text>
+  </g>
+  <text x="360" y="344" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="11" font-weight="700">total: 2 × N passes  ·  work ∝ N</text>
+
+  <!-- ─── punchline ──────────────────────────────────────────── -->
+  <rect x="30" y="356" width="660" height="34" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="377" text-anchor="middle" fill="#5a4220" font-family="monospace" font-size="12" font-weight="700">
+    want one more weight's gradient?   autograd: +0 passes (same sweep)   ·   numerical: +2 whole passes
+  </text>
+
+</svg>

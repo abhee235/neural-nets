@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <!-- ─── background (light cream) ───────────────────────────── -->
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <!-- ─── header ─────────────────────────────────────────────── -->
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">three independent routes to ∂f/∂b for f = b·sin(a) + b²  ·  a = π/2, b = 3</text>
+
+  <!--
+    Each panel reveals its result in turn (keyTimes 0;0.333;0.667), then the
+    bottom banner confirms all three agree on 7.
+  -->
+
+  <!-- ════════════ PANEL 1 — by hand (symbolic) ═════════════════ -->
+  <rect x="20" y="44" width="216" height="266" rx="10" fill="#ffffff" stroke="#c9b88a" stroke-width="1.5"/>
+  <text x="128" y="68" text-anchor="middle" fill="#856404" font-family="monospace" font-size="12" font-weight="700">1 · by hand (symbolic)</text>
+  <text x="128" y="104" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="12">f = b·sin(a) + b²</text>
+  <text x="128" y="132" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="12">∂f/∂b = sin(a) + 2b</text>
+  <text x="128" y="160" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11">(product rule, then</text>
+  <text x="128" y="176" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11">power rule)</text>
+  <text x="128" y="206" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="12">= 1 + 6</text>
+  <g>
+    <animate attributeName="opacity" values="1;1;1" keyTimes="0;0.333;0.667" dur="9s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="58" y="240" width="140" height="40" rx="8" fill="#fff3cd" stroke="#e0a800" stroke-width="1.5"/>
+    <text x="128" y="266" text-anchor="middle" fill="#856404" font-family="monospace" font-size="16" font-weight="700">= 7 ✓</text>
+  </g>
+
+  <!-- ════════════ PANEL 2 — autograd (record+replay) ══════════ -->
+  <rect x="252" y="44" width="216" height="266" rx="10" fill="#ffffff" stroke="#c9b88a" stroke-width="1.5"/>
+  <text x="360" y="68" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="12" font-weight="700">2 · autograd (replay graph)</text>
+  <text x="360" y="100" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">tape: u=1  v=3  w=9  f=12</text>
+  <text x="360" y="128" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="11">seed f.grad = 1</text>
+  <text x="360" y="150" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="11">+ copies 1 → v, w</text>
+  <text x="360" y="172" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="11">× sends 1·u = 1 to b</text>
+  <text x="360" y="194" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="11">b² sends 2b = 6 to b</text>
+  <text x="360" y="218" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="11" font-weight="700">b.grad = 1 + 6 (+=)</text>
+  <g>
+    <animate attributeName="opacity" values="0;1;1" keyTimes="0;0.333;0.667" dur="9s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="290" y="240" width="140" height="40" rx="8" fill="#fff3cd" stroke="#e0a800" stroke-width="1.5"/>
+    <text x="360" y="266" text-anchor="middle" fill="#856404" font-family="monospace" font-size="16" font-weight="700">= 7 ✓</text>
+  </g>
+
+  <!-- ════════════ PANEL 3 — numerical (nudge) ═════════════════ -->
+  <rect x="484" y="44" width="216" height="266" rx="10" fill="#ffffff" stroke="#c9b88a" stroke-width="1.5"/>
+  <text x="592" y="68" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="12" font-weight="700">3 · numerical (nudge b)</text>
+  <text x="592" y="100" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">freeze a, wiggle only b</text>
+  <text x="592" y="128" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="11">f(3.001) = 12.007001</text>
+  <text x="592" y="150" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="11">f(2.999) = 11.993001</text>
+  <text x="592" y="178" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="11">Δf / Δb</text>
+  <text x="592" y="200" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="11">= 0.014 / 0.002</text>
+  <g>
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="9s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="522" y="240" width="140" height="40" rx="8" fill="#fff3cd" stroke="#e0a800" stroke-width="1.5"/>
+    <text x="592" y="266" text-anchor="middle" fill="#856404" font-family="monospace" font-size="16" font-weight="700">= 7.000 ✓</text>
+  </g>
+
+  <!-- ════════════ agreement banner ═════════════════════════════ -->
+  <g>
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="9s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="20" y="330" width="680" height="46" rx="8" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+    <text x="360" y="352" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="13" font-weight="700">three independent routes — one answer:  ∂f/∂b = 7</text>
+    <text x="360" y="369" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">routes 1 and 2 are the same math (one by you, one by the machine); route 3 shares nothing with them</text>
+  </g>
+
+</svg>

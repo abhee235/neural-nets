@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" width="720" height="340">
+
+  <!-- ─── background (light cream) ───────────────────────────── -->
+  <rect width="720" height="340" fill="#faf7f0" rx="12"/>
+
+  <!-- ─── header ─────────────────────────────────────────────── -->
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">two local rules run all of backprop: + copies the gradient, × scales it by the other input</text>
+
+  <!--
+    2 phases × 2.5 s, discrete:  keyTimes "0;0.5"
+      Phase 0  an incoming gradient (1) arrives at the op node
+      Phase 1  it is distributed to the parents by the local rule
+  -->
+
+  <!-- divider -->
+  <line x1="360" y1="48" x2="360" y2="300" stroke="#e0d9c5" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ════════════════ LEFT: ADD (router) ═══════════════════════ -->
+  <text x="180" y="64" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="13" font-weight="700">+  is a gradient ROUTER</text>
+  <text x="180" y="80" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">z = x + y  ·  local grads = 1, 1</text>
+
+  <!-- parents + op -->
+  <rect x="40" y="110" width="80" height="40" rx="8" fill="#ffffff" stroke="#c9b88a"/>
+  <text x="80" y="135" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="12" font-weight="700">x</text>
+  <rect x="40" y="190" width="80" height="40" rx="8" fill="#ffffff" stroke="#c9b88a"/>
+  <text x="80" y="215" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="12" font-weight="700">y</text>
+  <rect x="210" y="150" width="90" height="40" rx="8" fill="#d4ecd5" stroke="#2e7d32" stroke-width="1.5"/>
+  <text x="255" y="175" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="14" font-weight="700">z = x+y</text>
+  <!-- forward edges (faint) -->
+  <line x1="120" y1="130" x2="208" y2="163" stroke="#d8cdb0" stroke-width="1.2"/>
+  <line x1="120" y1="210" x2="208" y2="177" stroke="#d8cdb0" stroke-width="1.2"/>
+
+  <!-- incoming gradient -->
+  <line x1="345" y1="170" x2="303" y2="170" stroke="#b00020" stroke-width="2"/>
+  <polygon points="303,170 309,166 309,174" fill="#b00020"/>
+  <text x="330" y="160" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="11" font-weight="700">grad=1</text>
+
+  <!-- outgoing gradients (phase 1) -->
+  <g>
+    <animate attributeName="opacity" values="0;1" keyTimes="0;0.5" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+    <line x1="208" y1="160" x2="122" y2="132" stroke="#b00020" stroke-width="2" stroke-dasharray="5,3"/>
+    <polygon points="122,132 129,131 126,139" fill="#b00020"/>
+    <line x1="208" y1="180" x2="122" y2="212" stroke="#b00020" stroke-width="2" stroke-dasharray="5,3"/>
+    <polygon points="122,212 129,205 126,213" fill="#b00020"/>
+    <text x="165" y="120" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="11" font-weight="700">×1 → 1</text>
+    <text x="165" y="235" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="11" font-weight="700">×1 → 1</text>
+  </g>
+
+  <!-- ════════════════ RIGHT: MUL (switch) ══════════════════════ -->
+  <text x="540" y="64" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="13" font-weight="700">×  is a gradient SWITCH</text>
+  <text x="540" y="80" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">z = a · b  ·  local grads = b, a</text>
+
+  <rect x="400" y="110" width="80" height="40" rx="8" fill="#ffffff" stroke="#c9b88a"/>
+  <text x="440" y="135" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="12" font-weight="700">a = 2</text>
+  <rect x="400" y="190" width="80" height="40" rx="8" fill="#ffffff" stroke="#c9b88a"/>
+  <text x="440" y="215" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="12" font-weight="700">b = -3</text>
+  <rect x="570" y="150" width="90" height="40" rx="8" fill="#d6e9f8" stroke="#1e6091" stroke-width="1.5"/>
+  <text x="615" y="175" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="14" font-weight="700">z = a·b</text>
+  <line x1="480" y1="130" x2="568" y2="163" stroke="#d8cdb0" stroke-width="1.2"/>
+  <line x1="480" y1="210" x2="568" y2="177" stroke="#d8cdb0" stroke-width="1.2"/>
+
+  <line x1="700" y1="170" x2="663" y2="170" stroke="#b00020" stroke-width="2"/>
+  <polygon points="663,170 669,166 669,174" fill="#b00020"/>
+  <text x="688" y="160" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="11" font-weight="700">grad=1</text>
+
+  <g>
+    <animate attributeName="opacity" values="0;1" keyTimes="0;0.5" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+    <!-- a gets grad × b = 1 × (-3) = -3 -->
+    <line x1="568" y1="160" x2="482" y2="132" stroke="#b00020" stroke-width="2" stroke-dasharray="5,3"/>
+    <polygon points="482,132 489,131 486,139" fill="#b00020"/>
+    <text x="525" y="120" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="11" font-weight="700">× b(-3) → -3</text>
+    <!-- b gets grad × a = 1 × 2 = 2 -->
+    <line x1="568" y1="180" x2="482" y2="212" stroke="#b00020" stroke-width="2" stroke-dasharray="5,3"/>
+    <polygon points="482,212 489,205 486,213" fill="#b00020"/>
+    <text x="525" y="235" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="11" font-weight="700">× a(2) → 2</text>
+  </g>
+
+  <!-- ─── formula bar ────────────────────────────────────────── -->
+  <rect x="30" y="296" width="660" height="36" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="313" text-anchor="middle" font-family="monospace" font-size="11" fill="#5a4220" font-weight="600">
+    each parent's grad +=  (incoming grad) × (local derivative on that edge)
+  </text>
+  <text x="360" y="327" text-anchor="middle" font-family="monospace" font-size="10" fill="#8b7355">
+    + sends the gradient through unchanged · × sends it to each parent scaled by the OTHER parent's value
+  </text>
+
+</svg>
