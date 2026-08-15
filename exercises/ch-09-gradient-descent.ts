@@ -12,7 +12,7 @@ import { SGD }   from "../src/optim/sgd.ts";
 
 // ─── E1: Minimise a quadratic ─────────────────────────────────────────────────
 // f(w) = (w - 5)²  →  minimum at w=5, f=0
-let w = new Value(0.0, "w");
+let w = new Value(0.0);
 const sgd = new SGD([w], 0.1);
 
 for (let step = 0; step < 100; step++) {
@@ -44,7 +44,7 @@ console.log("lr=0.9  →", minimise(0.9,  100).toFixed(3), "  (oscillates but co
 // ─── E3: SGD with momentum ────────────────────────────────────────────────────
 import { SGDMomentum } from "../src/optim/sgd.ts";
 
-let wm = new Value(0.0, "wm");
+let wm = new Value(0.0);
 const optM = new SGDMomentum([wm], 0.1, 0.9);
 for (let step = 0; step < 50; step++) {
   const loss = wm.add(new Value(-5)).pow(2);
@@ -59,8 +59,8 @@ console.log("\nSGD+momentum after 50 steps:", wm.data.toFixed(4), "  expected: �
 // Model: y_hat = slope*x + intercept   (linear regression via autograd)
 const xs = [0, 1, 2, 3, 4];
 const ys = [1, 3, 5, 7, 9];
-let slope     = new Value(0.0, "slope");
-let intercept = new Value(0.0, "intercept");
+let slope     = new Value(0.0);
+let intercept = new Value(0.0);
 const linReg = new SGD([slope, intercept], 0.01);
 
 for (let step = 0; step < 500; step++) {
