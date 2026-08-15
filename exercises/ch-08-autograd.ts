@@ -12,9 +12,9 @@ import { Value } from "../src/autograd/value.ts";
 // ─── E1: Forward pass — simple expression ────────────────────────────────────
 // f = (a + b) * c
 // forward: a=2, b=3, c=4  →  f = (2+3)*4 = 20
-const a = new Value(2, "a");
-const b = new Value(3, "b");
-const c = new Value(4, "c");
+const a = new Value(2);
+const b = new Value(3);
+const c = new Value(4);
 const sum = a.add(b);           // node: a+b = 5
 const f   = sum.mul(c);         // node: (a+b)*c = 20
 console.log("f.data:", f.data, "  expected: 20");
@@ -33,9 +33,9 @@ console.log("df/dc:", c.grad, "  expected: 5");
 // Verify gradient numerically using finite differences.
 import { numericalGradient } from "../src/utils/numerical.ts";
 
-const w = new Value(0.5, "w");
-const x = new Value(1.0, "x");
-const bv = new Value(0.2, "b");
+const w = new Value(0.5);
+const x = new Value(1.0);
+const bv = new Value(0.2);
 const y  = w.mul(x).add(bv).tanh();
 y.backward();
 
@@ -50,7 +50,7 @@ console.log("match:", Math.abs(w.grad - numGrad) < 1e-5, "  expected: true");
 // ─── E4: Gradient accumulation ───────────────────────────────────────────────
 // When a value is used twice, gradients accumulate (sum).
 // z = a * a   →   dz/da = 2a
-const av = new Value(3, "a");
+const av = new Value(3);
 const z = av.mul(av);
 z.backward();
 console.log("\ndz/d(a) where z=a*a, a=3:", av.grad, "  expected: 6");
