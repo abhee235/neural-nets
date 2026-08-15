@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 460" width="820" height="460">
+
+  <!-- ─── background (light cream) ───────────────────────────── -->
+  <rect width="820" height="460" fill="#faf7f0" rx="12"/>
+
+  <!-- ─── header ─────────────────────────────────────────────── -->
+  <text x="410" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">forward mode, Run 2 — reseed ȧ = 0, ḃ = 1 — the SAME graph, re-run in full, for ∂f/∂b</text>
+
+  <!--
+    Same graph as Run 1, numbers plugged in at a = π/2, b = 3; only the seeds changed.
+    b ACTIVE (ḃ=1), a FROZEN (ȧ=0). Result: f = (12, 7), ∂f/∂b = sin(a) + 2b = 7.
+    b reaches f along TWO paths (bold blue); their rates add at the + junction: 1 + 6 = 7.
+  -->
+
+  <!-- ─── forward edges with arrowheads (b's two paths bold blue) ── -->
+  <g stroke="#b8a87e" stroke-width="1.8" fill="#b8a87e">
+    <line x1="180" y1="90"  x2="238" y2="90"/>  <polygon points="240,90 231,86 231,94"/>
+    <line x1="410" y1="95"  x2="468" y2="147"/> <polygon points="470,148 460,146 465,139"/>
+    <line x1="640" y1="168" x2="684" y2="226"/> <polygon points="686,228 677,223 684,218"/>
+    <line x1="410" y1="346" x2="626" y2="263"/> <polygon points="628,262 621,269 618,261"/>
+  </g>
+  <g stroke="#1e6091" stroke-width="2.4" fill="#1e6091">
+    <line x1="180" y1="262" x2="468" y2="171"/> <polygon points="470,170 462,177 460,169"/>
+    <line x1="180" y1="288" x2="238" y2="331"/> <polygon points="240,332 230,330 235,323"/>
+  </g>
+  <text x="300" y="222" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="9" font-weight="700">b's TWO paths — they meet at +</text>
+
+  <!-- ═══ input a — FROZEN this run ═══ -->
+  <rect x="30" y="64" width="150" height="52" rx="8" fill="#ffffff" stroke="#9e9e9e" stroke-width="2" stroke-dasharray="6,3"/>
+  <text x="105" y="86" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="13" font-weight="700">a = π/2</text>
+  <text x="105" y="106" text-anchor="middle" fill="#757575" font-family="monospace" font-size="11" font-weight="700">ȧ = 0</text>
+  <text x="105" y="56" text-anchor="middle" fill="#757575" font-family="monospace" font-size="9" font-style="italic">FROZEN this run</text>
+
+  <!-- ═══ input b — ACTIVE this run ═══ -->
+  <rect x="30" y="250" width="150" height="52" rx="8" fill="#ffffff" stroke="#2e7d32" stroke-width="2.5"/>
+  <text x="105" y="272" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="13" font-weight="700">b = 3</text>
+  <text x="105" y="292" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="11" font-weight="700">ḃ = 1</text>
+  <text x="105" y="322" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="9" font-weight="700">ACTIVE — the question is ∂f/∂b</text>
+
+  <!-- ═══ u = sin(a) ═══ -->
+  <rect x="240" y="64" width="170" height="52" rx="8" fill="#d6e9f8" stroke="#1e6091" stroke-width="1.5"/>
+  <text x="325" y="86" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="13" font-weight="700">u = sin(a) = 1</text>
+  <text x="325" y="106" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="11" font-weight="700">u̇ = cos(π/2)·0 = 0</text>
+
+  <!-- ═══ v = b·u ═══ -->
+  <rect x="470" y="140" width="170" height="52" rx="8" fill="#d6e9f8" stroke="#1e6091" stroke-width="1.5"/>
+  <text x="555" y="162" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="13" font-weight="700">v = b·u = 3</text>
+  <text x="555" y="182" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="11" font-weight="700">v̇ = 3·0 + 1·1 = 1</text>
+
+  <!-- ═══ w = b² ═══ -->
+  <rect x="240" y="320" width="170" height="52" rx="8" fill="#d6e9f8" stroke="#1e6091" stroke-width="1.5"/>
+  <text x="325" y="342" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="13" font-weight="700">w = b² = 9</text>
+  <text x="325" y="362" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="11" font-weight="700">ẇ = 3·1 + 3·1 = 6</text>
+
+  <!-- ═══ f = v + w ═══ -->
+  <rect x="630" y="230" width="160" height="56" rx="8" fill="#d4ecd5" stroke="#2e7d32" stroke-width="2"/>
+  <text x="710" y="252" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="13" font-weight="700">f = v + w = 12</text>
+  <text x="710" y="272" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="11" font-weight="700">ḟ = 1 + 6 = 7</text>
+  <text x="710" y="222" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="10" font-weight="700">∂f/∂b = ḟ = 7 ✓</text>
+
+  <!-- ═══ result bar ═══ -->
+  <rect x="30" y="396" width="760" height="52" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="410" y="418" text-anchor="middle" font-family="monospace" font-size="12" fill="#b00020" font-weight="700">ḟ = 1 + 6 = 7  →  ∂f/∂b = 7 = sin(a) + 2b ✓  —  b's two paths MEET at + and their rates ADD</text>
+  <text x="410" y="438" text-anchor="middle" font-family="monospace" font-size="10" fill="#8b7355">
+    nothing changed between runs except two seed numbers — yet every junction re-ran. N variables ⇒ N runs.
+  </text>
+
+</svg>

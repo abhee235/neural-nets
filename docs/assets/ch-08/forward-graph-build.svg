@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 380" width="720" height="380">
+
+  <!-- ─── background (light cream) ───────────────────────────── -->
+  <rect width="720" height="380" fill="#faf7f0" rx="12"/>
+
+  <!-- ─── header ─────────────────────────────────────────────── -->
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">the forward pass BUILDS the graph: each operation records a new node</text>
+
+  <!--
+    Expression  L = (a · b) + d   with  a=2, b=-3, d=10  →  c=-6, L=4
+    3 build phases × 3 s, discrete:  keyTimes "0;0.333;0.667"
+      Phase 0  leaves appear: a, b, d
+      Phase 1  c = a · b  node + edges appear
+      Phase 2  L = c + d  node + edges appear  (graph complete)
+  -->
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- Leaf nodes (always visible)                                -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <g>
+    <rect x="40" y="78" width="120" height="46" rx="8" fill="#ffffff" stroke="#c9b88a" stroke-width="1.5"/>
+    <text x="100" y="98" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="13" font-weight="700">a</text>
+    <text x="100" y="115" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11">data = 2</text>
+  </g>
+  <g>
+    <rect x="40" y="158" width="120" height="46" rx="8" fill="#ffffff" stroke="#c9b88a" stroke-width="1.5"/>
+    <text x="100" y="178" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="13" font-weight="700">b</text>
+    <text x="100" y="195" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11">data = -3</text>
+  </g>
+  <g>
+    <rect x="40" y="268" width="120" height="46" rx="8" fill="#ffffff" stroke="#c9b88a" stroke-width="1.5"/>
+    <text x="100" y="288" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="13" font-weight="700">d</text>
+    <text x="100" y="305" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11">data = 10</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- c = a · b  (appears phase 1)                               -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <g>
+    <animate attributeName="opacity" values="0;1;1" keyTimes="0;0.333;0.667" dur="9s" calcMode="discrete" repeatCount="indefinite"/>
+    <!-- edges a→c, b→c -->
+    <line x1="160" y1="101" x2="318" y2="135" stroke="#1e6091" stroke-width="1.5"/>
+    <polygon points="318,135 311,132 313,140" fill="#1e6091"/>
+    <line x1="160" y1="181" x2="318" y2="151" stroke="#1e6091" stroke-width="1.5"/>
+    <polygon points="318,151 311,150 314,158" fill="#1e6091"/>
+    <!-- c node -->
+    <rect x="320" y="122" width="130" height="50" rx="8" fill="#d6e9f8" stroke="#1e6091" stroke-width="1.5"/>
+    <text x="385" y="142" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="13" font-weight="700">c  (op: ×)</text>
+    <text x="385" y="160" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="11">data = -6</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- L = c + d  (appears phase 2)                               -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <g>
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="9s" calcMode="discrete" repeatCount="indefinite"/>
+    <!-- edges c→L, d→L -->
+    <line x1="450" y1="147" x2="548" y2="205" stroke="#2e7d32" stroke-width="1.5"/>
+    <polygon points="548,205 541,201 543,209" fill="#2e7d32"/>
+    <line x1="160" y1="291" x2="548" y2="223" stroke="#2e7d32" stroke-width="1.5"/>
+    <polygon points="548,223 541,222 544,230" fill="#2e7d32"/>
+    <!-- L node -->
+    <rect x="550" y="192" width="130" height="50" rx="8" fill="#d4ecd5" stroke="#2e7d32" stroke-width="2"/>
+    <text x="615" y="212" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="13" font-weight="700">L  (op: +)</text>
+    <text x="615" y="230" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="11">data = 4</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- node-anatomy callout (what every node records)             -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <rect x="470" y="70" width="220" height="92" rx="8" fill="#ffffff" stroke="#c9b88a" stroke-width="1"/>
+  <text x="580" y="88" text-anchor="middle" fill="#6f42c1" font-family="monospace" font-size="11" font-weight="700">every node records:</text>
+  <text x="484" y="106" fill="#2c2416" font-family="monospace" font-size="10">• data   (the forward value)</text>
+  <text x="484" y="122" fill="#2c2416" font-family="monospace" font-size="10">• _inputs (its parent nodes)</text>
+  <text x="484" y="138" fill="#2c2416" font-family="monospace" font-size="10">• _op    (which operation)</text>
+  <text x="484" y="154" fill="#2c2416" font-family="monospace" font-size="10">• _backward (empty for now →8b)</text>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- Formula bar (3 phases)                                     -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <rect x="30" y="328" width="660" height="44" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="349" text-anchor="middle" font-family="monospace" font-size="12" fill="#5a4220" font-weight="600">
+    expression:  L = (a · b) + d        with  a = 2,  b = -3,  d = 10
+  </text>
+  <text x="360" y="366" text-anchor="middle" font-family="monospace" font-size="11" fill="#8b7355">
+    <animate attributeName="opacity" values="1;0;0" keyTimes="0;0.333;0.667" dur="9s" calcMode="discrete" repeatCount="indefinite"/>
+    start with the leaf inputs — plain numbers wrapped in Value nodes
+  </text>
+  <text x="360" y="366" text-anchor="middle" font-family="monospace" font-size="11" fill="#1e6091">
+    <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.333;0.667" dur="9s" calcMode="discrete" repeatCount="indefinite"/>
+    a.mul(b) computes -6 AND records a new node c with parents [a, b], op "×"
+  </text>
+  <text x="360" y="366" text-anchor="middle" font-family="monospace" font-size="11" fill="#2e7d32">
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="9s" calcMode="discrete" repeatCount="indefinite"/>
+    c.add(d) computes 4 and records L — the graph emerged just by running the math
+  </text>
+
+</svg>

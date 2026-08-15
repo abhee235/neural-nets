@@ -33,6 +33,8 @@ bun test --watch                           # watch mode
 bun run exercises/ch-04-matrix-ops.ts      # run an exercise file directly
 ```
 
+There is no build or lint step — Bun runs the `.ts` files directly, and `tsc` is only used for type-checking via the editor. `bun:test` is the sole test runner.
+
 ## Architecture
 
 The library is built in strict dependency order:
@@ -55,6 +57,13 @@ src/tensor/     → src/autograd/     → src/nn/
 **`src/tokenizer/`** — `char.ts` (character-level), `bpe.ts` (byte-pair encoding), `masks.ts` (causal mask, padding mask).
 
 **`src/utils/`** — `numerical.ts` (numerical gradient check helpers), `data.ts` (batch/shuffle utilities).
+
+### Other top-level directories
+
+- **`docs/part-N-*/`** — the chapter book, one `.md` per chapter (read like a book in VS Code Markdown Preview, see Simulations rule below).
+- **`docs/deep-dives/`** — standalone conceptual essays that go deeper than a chapter (e.g. `ch-08-why-reverse-mode.md`, `ch-05-why-subtract-the-max.md`). Optional reading, cross-linked from chapters.
+- **`exercises/ch-NN-*.ts`** — one runnable exercise file per chapter (`bun run exercises/ch-NN-*.ts`).
+- **`scripts/`** — Python scaffold generators (`scaffold_*.py`) used to author the course and the SVG media pipeline in `scripts/media/`. Not part of the TypeScript library; do not run unless explicitly asked.
 
 ## Code Style (from `.github/instructions/chapter-code.instructions.md`)
 
@@ -111,7 +120,7 @@ Each chapter lives on its own branch:
 - `starter/ch-NN-*` — stubs + tests (student starting point)
 - `solution/ch-NN-*` — reference solution
 
-Current branch: `starter/ch-04-matrix-ops`
+Chapter branches are named `starter/ch-NN-*` (and `solution/ch-NN-*` for reference solutions). Run `git branch --show-current` to see which chapter you are on — do not assume from this file.
 
 ### Branch sync protocol — MUST follow to avoid divergence
 

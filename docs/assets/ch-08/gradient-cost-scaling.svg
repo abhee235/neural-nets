@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <!-- ─── background (light cream) ───────────────────────────── -->
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <!-- ─── header ─────────────────────────────────────────────── -->
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">the pain of numerical scales with the number of weights N — autograd does not</text>
+
+  <!--
+    3 phases × 3 s, discrete (keyTimes 0;0.333;0.667): N grows 4 → 1,000 → 1,000,000.
+    Numerical bar = 2·N full forward passes (climbs). Autograd bar ≈ 2 passes (flat).
+    Bar heights are schematic (the real numbers can't share a linear axis) — the point
+    is the SHAPE: numerical grows, autograd stays put.
+  -->
+
+  <!-- baseline -->
+  <line x1="120" y1="300" x2="620" y2="300" stroke="#c9b88a" stroke-width="1.5"/>
+  <text x="370" y="320" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="10">total work for ONE gradient step (full forward-passes)</text>
+
+  <!-- N label (top) -->
+  <rect x="250" y="40" width="220" height="26" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="58" text-anchor="middle" fill="#6f42c1" font-family="monospace" font-size="12" font-weight="700">
+    <animate attributeName="opacity" values="1;0;0" keyTimes="0;0.333;0.667" dur="9s" calcMode="discrete" repeatCount="indefinite"/>
+    N = 4 weights  (a toy)
+  </text>
+  <text x="360" y="58" text-anchor="middle" fill="#6f42c1" font-family="monospace" font-size="12" font-weight="700">
+    <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.333;0.667" dur="9s" calcMode="discrete" repeatCount="indefinite"/>
+    N = 1,000 weights
+  </text>
+  <text x="360" y="58" text-anchor="middle" fill="#6f42c1" font-family="monospace" font-size="12" font-weight="700">
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="9s" calcMode="discrete" repeatCount="indefinite"/>
+    N = 1,000,000 weights  (real)
+  </text>
+
+  <!-- ════════════ NUMERICAL bar (grows each phase) ═════════════ -->
+  <text x="245" y="338" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="12" font-weight="700">numerical</text>
+  <text x="245" y="352" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">2·N passes</text>
+
+  <!-- phase 0: 8 -->
+  <g>
+    <animate attributeName="opacity" values="1;0;0" keyTimes="0;0.333;0.667" dur="9s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="190" y="272" width="110" height="28" fill="#f3b6bf" stroke="#b00020" stroke-width="1.5"/>
+    <text x="245" y="262" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="13" font-weight="700">8</text>
+  </g>
+  <!-- phase 1: 2,000 -->
+  <g>
+    <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.333;0.667" dur="9s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="190" y="140" width="110" height="160" fill="#ec8a98" stroke="#b00020" stroke-width="1.5"/>
+    <text x="245" y="130" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="13" font-weight="700">2,000</text>
+  </g>
+  <!-- phase 2: 2,000,000 (off the chart) -->
+  <g>
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="9s" calcMode="discrete" repeatCount="indefinite"/>
+    <rect x="190" y="84" width="110" height="216" fill="#b00020" stroke="#7a0016" stroke-width="1.5"/>
+    <line x1="245" y1="84" x2="245" y2="72" stroke="#b00020" stroke-width="2"/>
+    <polygon points="245,68 240,78 250,78" fill="#b00020"/>
+    <text x="245" y="106" text-anchor="middle" fill="#ffffff" font-family="monospace" font-size="12" font-weight="700">2,000,000</text>
+    <text x="245" y="60" text-anchor="middle" fill="#b00020" font-family="monospace" font-size="10" font-weight="700">off the chart</text>
+  </g>
+
+  <!-- ════════════ AUTOGRAD bar (flat, ~2) ══════════════════════ -->
+  <text x="475" y="338" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="12" font-weight="700">autograd</text>
+  <text x="475" y="352" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">1 fwd + 1 bwd</text>
+  <rect x="420" y="286" width="110" height="14" fill="#9ccc9e" stroke="#2e7d32" stroke-width="1.5"/>
+  <text x="475" y="278" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="13" font-weight="700">~2</text>
+  <!-- a "stays flat" marker across phases -->
+  <line x1="420" y1="284" x2="530" y2="284" stroke="#2e7d32" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <!-- ─── caption (3 phases) ─────────────────────────────────── -->
+  <rect x="30" y="356" width="660" height="34" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="377" text-anchor="middle" font-family="monospace" font-size="11" fill="#856404" font-weight="600">
+    <animate attributeName="opacity" values="1;0;0" keyTimes="0;0.333;0.667" dur="9s" calcMode="discrete" repeatCount="indefinite"/>
+    at N=4 the two bars are almost equal — THIS is why the tiny example fools you
+  </text>
+  <text x="360" y="377" text-anchor="middle" font-family="monospace" font-size="11" fill="#b00020" font-weight="600">
+    <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.333;0.667" dur="9s" calcMode="discrete" repeatCount="indefinite"/>
+    at N=1,000 numerical already does 1,000× the work for the same gradients
+  </text>
+  <text x="360" y="377" text-anchor="middle" font-family="monospace" font-size="11" fill="#b00020" font-weight="700">
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.333;0.667" dur="9s" calcMode="discrete" repeatCount="indefinite"/>
+    at N=1,000,000 numerical is hopeless; autograd still does just ~2 passes
+  </text>
+
+</svg>
