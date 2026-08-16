@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">gradient descent on Ch 08's own graph:  f(a,b) = b·sin(a) + b²</text>
+
+  <!--
+    Both parameters descend together from (a,b) = (1.0, 3.0), eta = 0.1.
+    Trajectory computed, not sketched:
+      step   0  (1.000,  3.000)   f = 11.524
+      step   1  (0.838,  2.316)   f =  7.084
+      step   2  (0.683,  1.778)   f =  4.285
+      step   3  (0.545,  1.360)   f =  2.553
+      step   5  (0.335,  0.787)   f =  0.878
+      step  10  (0.099,  0.193)   f =  0.057
+      step  25  (0.031, -0.009)   f = -0.000    ← near the saddle, crawling
+      step  50  (0.083, -0.034)   f = -0.002    ← 25 steps, barely moved
+      step 100  (0.574, -0.234)   f = -0.072    ← escaping
+      step 200  (1.560, -0.500)   f = -0.250    ← the minimum
+    Axes: x = 80 + a·300,  y = 300 − (b+0.6)·70
+  -->
+
+  <!-- axes -->
+  <line x1="80" y1="300" x2="660" y2="300" stroke="#e0d9c5" stroke-width="1"/>
+  <line x1="80" y1="34"  x2="80"  y2="300" stroke="#e0d9c5" stroke-width="1"/>
+  <text x="370" y="322" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="10">a  (parameter behind the sin)</text>
+  <text x="30" y="170" fill="#a8956a" font-family="monospace" font-size="10" transform="rotate(-90 30 170)">b  (two paths to f)</text>
+
+  <!-- the path -->
+  <path d="M380,48 L331,96 L285,133 L244,163 L181,203 L110,244 L89,259 L105,260 L252,274 L548,293"
+        fill="none" stroke="#1e6091" stroke-width="2" stroke-opacity="0.35"/>
+
+  <!-- saddle region marker -->
+  <circle cx="80" cy="258" r="26" fill="#a94442" fill-opacity="0.07" stroke="#a94442" stroke-width="1" stroke-dasharray="3 3"/>
+  <circle cx="80" cy="258" r="3.5" fill="#a94442"/>
+  <text x="112" y="330" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="9" font-weight="700">saddle (0,0)</text>
+  <text x="112" y="341" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="8">both gradients = 0, f = 0</text>
+
+  <!-- minimum marker -->
+  <circle cx="551" cy="293" r="4.5" fill="#2e7d32"/>
+  <text x="551" y="286" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="9" font-weight="700">minimum</text>
+  <text x="597" y="316" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="9">(π/2, −0.5), f = −0.25</text>
+
+  <!-- visited points -->
+  <circle cx="331" cy="96"  r="2.5" fill="#c9b88a"/>
+  <circle cx="285" cy="133" r="2.5" fill="#c9b88a"/>
+  <circle cx="244" cy="163" r="2.5" fill="#c9b88a"/>
+  <circle cx="181" cy="203" r="2.5" fill="#c9b88a"/>
+  <circle cx="110" cy="244" r="2.5" fill="#c9b88a"/>
+  <circle cx="89"  cy="259" r="2.5" fill="#c9b88a"/>
+  <circle cx="105" cy="260" r="2.5" fill="#c9b88a"/>
+  <circle cx="252" cy="274" r="2.5" fill="#c9b88a"/>
+
+  <!-- the moving point -->
+  <circle r="8" fill="#1e6091">
+    <animate attributeName="cx" values="380;331;285;244;181;110;89;105;252;548" keyTimes="0;0.111;0.222;0.333;0.444;0.555;0.666;0.777;0.888;1" dur="7s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="48;96;133;163;203;244;259;260;274;293"  keyTimes="0;0.111;0.222;0.333;0.444;0.555;0.666;0.777;0.888;1" dur="7s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+
+  <text x="392" y="44" fill="#1e6091" font-family="monospace" font-size="10" font-weight="700">start (1.0, 3.0), f = 11.52</text>
+
+  <!-- the stall callout -->
+  <path d="M124,262 L188,268" stroke="#a94442" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>
+  <text x="196" y="266" fill="#a94442" font-family="monospace" font-size="9" font-weight="700">steps 25 → 50 land almost on top of each other:</text>
+  <text x="196" y="277" fill="#8b7355" font-family="monospace" font-size="9">25 iterations of near-zero gradient, then it escapes</text>
+
+  <!-- gradient panel -->
+  <rect x="452" y="44" width="238" height="104" rx="8" fill="#ffffff" stroke="#c9b88a" stroke-width="1"/>
+  <text x="571" y="62" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="11" font-weight="700">the two gradients, from Ch 08b</text>
+  <text x="466" y="84" fill="#6f42c1" font-family="monospace" font-size="11" font-weight="700">∂f/∂a = b·cos(a)</text>
+  <text x="466" y="97" fill="#8b7355" font-family="monospace" font-size="9">a chain THROUGH the sin node</text>
+  <text x="466" y="117" fill="#6f42c1" font-family="monospace" font-size="11" font-weight="700">∂f/∂b = sin(a) + 2b</text>
+  <text x="466" y="130" fill="#8b7355" font-family="monospace" font-size="9">a SUM over b's two paths — the 1 + 6 = 7</text>
+  <text x="466" y="141" fill="#8b7355" font-family="monospace" font-size="9">you computed by hand in 08b</text>
+
+  <!-- formula bar -->
+  <rect x="30" y="352" width="660" height="38" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="369" text-anchor="middle" font-family="monospace" font-size="11" fill="#5a4220" font-weight="600">
+    one gradient came through a chain, the other through a sum — and step() applies the identical line to both
+  </text>
+  <text x="360" y="383" text-anchor="middle" font-family="monospace" font-size="9" fill="#8b7355">
+    a −= 0.1 · a.grad ;  b −= 0.1 · b.grad
+  </text>
+
+</svg>

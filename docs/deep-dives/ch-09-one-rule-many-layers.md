@@ -7,164 +7,200 @@ Chapter 09 teaches the update rule on a single parameter:
 
 $$w_{\text{new}} = w_{\text{old}} - \eta \cdot \text{gradient}$$
 
-That is honest, and it is genuinely the whole algorithm — but it leaves a fair question unanswered. A real network has parameters buried several layers deep, whose influence on the loss passes through other parameters, a nonlinearity, and possibly forty more layers on the way. **Does one line really cover that too?**
+and then asserts it scales to a network. That is a lot to take on trust. A real model has parameters buried several operations deep, whose effect on the loss travels through other parameters and through nonlinearities. **Does one subtraction really cover that?**
 
-It does, and the reason is worth seeing rather than being told. So let's do the smallest thing that is honestly a *network* — two layers, four parameters, a nonlinearity in the middle — and run one complete step with every number worked out.
-
-Every figure below was computed with the `Value` class you built in Ch 08. None of it is estimated.
+Rather than argue, let's run it — on a graph you have already differentiated three separate ways.
 
 ---
 
-## The network
+## The graph you already know
 
-One input, one hidden unit, one output:
+Chapter 08 used one running example throughout: forward mode walked it twice, backward mode walked it once, and you hand-derived every gradient on it.
 
-$$z_1 = w_1 x + b_1, \qquad h = \tanh(z_1), \qquad z_2 = w_2 h + b_2, \qquad L = (z_2 - y)^2$$
+$$f(a, b) = b\sin(a) + b^2$$
 
-Four parameters — `w1, b1, w2, b2` — and this time they are genuinely at different depths. `b2` sits right next to the loss. `w1` is at the far end, with a multiply, a tanh and another multiply between it and `L`.
+Split into one operation per line, exactly as in 08b:
 
-In code, using nothing beyond Ch 08:
+$$u = \sin(a), \qquad v = b\,u, \qquad w = b^2, \qquad f = v + w$$
 
-```typescript
-const z1   = w1.mul(x).add(b1);
-const h    = z1.tanh();
-const z2   = w2.mul(h).add(b2);
-const loss = z2.add(new Value(-y)).pow(2);
+```
+a ──► [sin] ──► u ──┐
+                    ├──► [×] ──► v ──┐
+b ──────────────────┘                ├──► [+] ──► f
+│                                    │
+└────────► [b·b] ─────────────► w ───┘
 ```
 
-Starting values: `w1 = 0.5`, `b1 = 0`, `w2 = 1.0`, `b2 = 0`, with input `x = 1` and target `y = 1`. Learning rate `η = 0.1`.
+Until now this was something to differentiate. Now it becomes something to **minimise** — `a` and `b` stop being inputs and become *parameters*, the two numbers we are allowed to change.
+
+And notice that this graph is a better test than it first appears, because its two parameters reach the output in genuinely different ways:
+
+| Parameter | Gradient (you derived these in 08b) | How it got there |
+|---|---|---|
+| `a` | `∂f/∂a = b·cos(a)` | a **chain** — the gradient passes *through* the `sin` node and picks up its local derivative |
+| `b` | `∂f/∂b = sin(a) + 2b` | a **sum** — `b` reaches `f` by two separate paths, and their contributions add |
+
+That is exactly the pair of complications a deep network presents: gradients that travel through intermediate operations, and parameters that are used more than once. If one update rule handles both here, the question is settled.
 
 ---
 
-## Step 1 — forward
+## Where does this thing even have a minimum?
 
-```
-z1 = 0.5 × 1 + 0    =  0.5
-h  = tanh(0.5)      =  0.4621
-z2 = 1.0 × 0.4621+0 =  0.4621
-L  = (0.4621 − 1)²  =  0.2893
-```
+Worth pinning down before descending, because `b·sin(a) + b²` is not obviously bowl-shaped.
 
-The model predicts `0.4621`; the target is `1`. It is wrong, and the loss says by how much.
+Set both gradients to zero:
+
+$$b\cos(a) = 0 \qquad\text{and}\qquad \sin(a) + 2b = 0$$
+
+The interesting solutions come from `cos(a) = 0`, i.e. `a = π/2`, which forces `b = −sin(a)/2 = −0.5`:
+
+$$f(\pi/2,\; -0.5) = (-0.5)(1) + 0.25 = \boxed{-0.25}$$
+
+There is also a solution at `a = 0, b = 0`, where `f = 0` and **both gradients vanish** — but it is not a minimum. It is a saddle point, and it is about to cause visible trouble.
 
 ---
 
-## Step 2 — backward, and the part that actually matters
+## One step, in full
+
+Start at `a = 1.0`, `b = 3.0`, with `η = 0.1`.
+
+*(Why not the 08b starting point `a = π/2, b = 3`? Because it is a special case worth seeing separately — see the box at the end. Starting a little to the side lets both parameters move.)*
+
+**Forward:**
+
+```
+u = sin(1.0)          =  0.8415
+v = 3 × 0.8415        =  2.5244
+w = 3²                =  9
+f = 2.5244 + 9        = 11.5244
+```
+
+**Backward** — one call, both gradients:
+
+```
+∂f/∂a = b·cos(a)     = 3 × 0.5403        =  1.6209     ← through the chain
+∂f/∂b = sin(a) + 2b  = 0.8415 + 6        =  6.8415     ← two paths, summed
+```
+
+**Update** — and here is the entire point of this document:
+
+```
+a  ←  1.0  −  0.1 × 1.6209  =  0.8379
+b  ←  3.0  −  0.1 × 6.8415  =  2.3159
+```
+
+New `f = 7.0844`. The loss fell from 11.52 to 7.08 in one step.
+
+Now read those two update lines again and notice what is **not** in them. One of those gradients was assembled by chaining through a `sin` node; the other by summing two independent paths. The update does not know that, and could not act on it if it did. Both parameters arrive at `step()` as exactly two numbers — a value and a gradient — and get the same single line applied.
+
+> **`backward()` handles structure. `step()` handles movement. Neither knows what the other is doing.**
+
+That separation is the whole answer to "does the one-parameter rule scale?". Depth and reuse make the *gradient* harder to compute. They do not make the *update* harder at all.
+
+---
+
+## Twenty steps, then two hundred
 
 <p align="center">
-  <img src="../assets/ch-09/gradient-through-layers.svg" alt="A two-layer network drawn left to right: parameters w1 and b1 feed z1 = w1·x + b1 which equals 0.5; z1 feeds h = tanh(z1) which equals 0.4621; parameters w2 and b2 feed z2 = w2·h + b2 which equals 0.4621; and z2 feeds the loss L = (z2−y)² which equals 0.2893. Below it, a backward row shows a pulse travelling right to left, seeded at 1 on the loss and picking up a factor at each node: ×2(z2−y) gives −1.0758 at z2, ×w2 = 1.0 leaves −1.0758 at h, ×(1−h²) = 0.7864 gives −0.8460 at z1, and ×x = 1.0 leaves −0.8460 at w1. Two panels compare: the gradients reach the parameters through different chain lengths — ∂L/∂b2 = −1.0758 in one factor, ∂L/∂w2 = −0.4971 in two, ∂L/∂w1 = −0.8460 in four — but a single loop, p.data -= 0.1 * p.grad, updates all of them, because step() never learns how deep a parameter was." />
+  <img src="../assets/ch-09/bsin-descent.svg" alt="The (a,b) parameter plane with the descent path for f(a,b) = b·sin(a) + b², starting at (1.0, 3.0) with learning rate 0.1. The point sweeps down and to the left through (0.838, 2.316), (0.683, 1.778), (0.545, 1.360), (0.335, 0.787) and (0.099, 0.193), approaching a dashed red circle marking the saddle point at (0,0) where both gradients are zero and f = 0. At step 25 it reaches (0.031, −0.009) and at step 50 it has only crawled to (0.083, −0.034) — twenty-five iterations that barely move, annotated as near-zero gradient. It then escapes, curving right and down through (0.574, −0.234) at step 100 to reach the green minimum marker at (π/2, −0.5) where f = −0.25 by step 200. A side panel recalls the two gradients from Chapter 08b: ∂f/∂a = b·cos(a), a chain through the sin node, and ∂f/∂b = sin(a) + 2b, a sum over b's two paths — the 1 + 6 = 7 computed by hand in that chapter." />
 </p>
 
-One call to `loss.backward()` fills in all four gradients:
-
-| Parameter | Gradient | How many factors got multiplied together |
-|---|---:|---|
-| `b2` | `−1.0758` | 1 |
-| `w2` | `−0.4971` | 2 |
-| `b1` | `−0.8460` | 3 |
-| `w1` | `−0.8460` | 4 |
-
-`b2` is adjacent to the loss, so its gradient is just `∂L/∂z2 = 2(z2 − y) = −1.0758`. Nothing else happens to it.
-
-`w1` is four operations away, so its gradient is a **product of four local derivatives** — exactly the chain rule from Ch 07, applied by the machinery from Ch 08b:
-
-$$\frac{\partial L}{\partial w_1} = \underbrace{\frac{\partial L}{\partial z_2}}_{-1.0758} \times \underbrace{\frac{\partial z_2}{\partial h}}_{w_2 = 1.0} \times \underbrace{\frac{\partial h}{\partial z_1}}_{1 - h^2 = 0.7864} \times \underbrace{\frac{\partial z_1}{\partial w_1}}_{x = 1.0} = -0.8460$$
-
-Follow the pulse in the diagram: it starts at `1` on the loss and picks up one factor per node on the way back. Each node contributes only its own local derivative — the `tanh` node knows `1 − h²` and nothing else — and the accumulated product is the gradient.
-
-**This is the answer to "does the simple rule scale?"** The complexity of being deep is real, but it is entirely contained inside `backward()`. Depth means *more factors in the product*, and nothing else.
-
----
-
-## Step 3 — the update, which does not care about any of that
-
-Here is the whole of `step()`, applied to all four parameters:
+*Figure: both parameters descending together. Every point computed, not sketched.*
 
 ```
-w1:  0.5  −  0.1 × (−0.8460)  =  0.5846
-b1:  0.0  −  0.1 × (−0.8460)  =  0.0846
-w2:  1.0  −  0.1 × (−0.4971)  =  1.0497
-b2:  0.0  −  0.1 × (−1.0758)  =  0.1076
+step   0    f = 11.524413    a = 1.0000   b =  3.0000
+step   1    f =  7.084423    a = 0.8379   b =  2.3159
+step   2    f =  4.284883    a = 0.6830   b =  1.7784
+step   3    f =  2.553307    a = 0.5450   b =  1.3596
+step   5    f =  0.877934    a = 0.3346   b =  0.7871
+step  10    f =  0.056520    a = 0.0991   b =  0.1934
+step  25    f = -0.000204    a = 0.0313   b = -0.0093     ← ???
+step  50    f = -0.001655    a = 0.0827   b = -0.0342     ← 25 steps, almost nothing
+step 100    f = -0.072337    a = 0.5744   b = -0.2335
+step 200    f = -0.249968    a = 1.5595   b = -0.4999     ← arrived
 ```
 
-Read those four lines again and notice what is **not** there:
+Both parameters descend together, from one `backward()` call per step, with nothing in the code aware that there are two of them or that they reach `f` by different routes. They move by *different amounts* every step, because their gradients differ — and nobody assigned those rates. They fall out of the chain rule.
 
-- No mention of layers.
-- No special handling for the parameter that was four operations deep.
-- No knowledge of `tanh`, or of the network's shape, or of which parameter feeds which.
-- No ordering requirement — you could update them in any order, or in parallel.
+### The stall in the middle is not a bug
 
-By the time `step()` runs, every parameter is exactly two numbers: a value and a gradient. That is the entire interface. The loop in your `SGD.step()` is:
+Look at steps 25 to 50. The loss goes from `-0.000204` to `-0.001655`. Twenty-five full iterations produce almost no progress.
 
-```
-for (const p of this.params) {
-  p.data -= this.learningRate * p.grad;
-}
-```
+That is the **saddle point at `(0, 0)`** — the second critical point we found earlier. The trajectory heads almost straight into it, and near it both gradients are tiny, so the updates are tiny. `step()` is behaving perfectly; it is faithfully multiplying a learning rate by a gradient of roughly `0.01`.
 
-and it is *already* the version that trains a transformer. Not a simplified version of it — the same code. Going from four parameters to four billion changes the length of `this.params` and nothing else.
+Then it escapes. `a = 0` is unstable — the surface still falls away in the `a` direction — so the small residual gradient slowly pushes the point off the ridge, the gradient grows, and it accelerates down to the true minimum.
 
-That separation is the piece worth taking away:
+This is worth having seen once, because it is exactly the failure mode that Chapter 09 §12 claims is the realistic one in high dimensions. Here it is, in a two-parameter function, on the course's own running example:
 
-> **`backward()` handles depth. `step()` handles movement. Neither knows what the other is doing.**
-
-It is why you were able to write a working optimizer in Chapter 09 without knowing what a transformer looks like — and why, in Chapter 30, you will not have to revisit it.
-
----
-
-## Step 4 — repeat, and watch all four descend together
-
-Running the same five stages twenty times:
-
-```
-step   0    loss 0.289318    w1=0.5000  b1=0.0000  w2=1.0000  b2=0.0000
-step   1    loss 0.077791    w1=0.5846  b1=0.0846  w2=1.0497  b2=0.1076
-step   2    loss 0.022981    w1=0.6232  b1=0.1232  w2=1.0823  b2=0.1634
-step   3    loss 0.007023    w1=0.6428  b1=0.1428  w2=1.1015  b2=0.1937
-step   4    loss 0.002179    w1=0.6533  b1=0.1533  w2=1.1125  b2=0.2104
-step   5    loss 0.000681    w1=0.6591  b1=0.1591  w2=1.1187  b2=0.2198
-step  10    loss 0.000002    w1=0.6659  b1=0.1659  w2=1.1263  b2=0.2310
-step  20    loss 0.000000    w1=0.6663  b1=0.1663  w2=1.1268  b2=0.2317
-```
-
-Four parameters, all moving at once, from one `backward()` call per step, with nothing in the code aware that there is more than one of them. The loss falls from `0.289` to essentially zero in about ten steps.
-
-Worth noticing: they move by **different amounts**, because they have different gradients. `b2` moves fastest at first (its gradient is the largest) and `w2` slowest. Nobody assigned those rates — they fall out of the chain rule, which is precisely what makes gradient descent an *algorithm* rather than a set of hand-tuned rules.
+- A loss curve that flattens **does not** mean you have converged.
+- It may mean you are near a saddle, and patience will get you out.
+- Momentum helps here for precisely the reason §10 gives: accumulated velocity carries the point across a flat region that instantaneous gradients cannot.
 
 ---
 
 ## What this predicts about deeper networks
 
-Two consequences follow directly from "depth means more factors in the product", and both are things you will meet later in this course.
+The graph above has one nonlinearity. Stack more and one term in that chain repeats.
 
-### Gradients shrink with depth when the factors are small
+`∂f/∂a` picked up a factor of `cos(a)` on its way through the `sin` node. That factor is at most 1, and near `a = π/2` it is close to **zero** — which is why the gradient reaching `a` can be far smaller than the gradient reaching `b`, even though both parameters matter equally to the answer.
 
-Compare `b2`'s gradient with `w1`'s: `−1.0758` versus `−0.8460`. The far parameter's is smaller, and you can see exactly where it went — the `tanh` node contributed a factor of `1 − h² = 0.7864`.
+Now imagine ten such nodes in a row, as a ten-layer network has. The gradient reaching the first layer is a product of ten local derivatives. If each is around `0.79` — the value `1 − tanh²` takes at a typical activation — then
 
-That factor is **always at most 1** for tanh, and it approaches 0 as `|z|` grows. One layer costs you 21% here. Ten layers of it multiply out to `0.7864¹⁰ ≈ 0.09`. Forty layers give `≈ 0.00003`. The early layers of a deep network would receive gradients so small that `step()` — correctly applying the rule — moves them by essentially nothing, and they never learn.
+$$0.79^{10} \approx 0.09, \qquad 0.79^{40} \approx 0.00003$$
 
-This is the **vanishing gradient problem**, and note that nothing is broken: `backward()` is right, `step()` is right, the chain rule is right. The product is simply small. The fixes are architectural — activations whose derivative doesn't shrink (ReLU, Ch 11), normalisation (Ch 20), and residual connections that give the gradient a path around the multiplications entirely (Ch 26). All three exist because of the arithmetic on this page.
+The earliest layers receive gradients thousands of times smaller than the last ones, and `step()` — correctly applying the rule — barely moves them. This is the **vanishing gradient problem**, and note that nothing is broken: `backward()` is right, `step()` is right, the chain rule is right. The product is simply small.
 
-### A parameter used twice collects both contributions
+Three later chapters exist because of that multiplication:
 
-In this network each parameter is used once. In a real one — weight sharing, a token embedding referenced at several positions — a parameter appears in more than one path to the loss, and the chain rule says its total gradient is the **sum** over paths.
+- **ReLU (Ch 11)** — a derivative of exactly `1` on the active side, so the factor stops shrinking.
+- **LayerNorm (Ch 20)** — keeps activations in the range where derivatives are healthy.
+- **Residual connections (Ch 26)** — give the gradient a path *around* the multiplications entirely.
 
-You already implemented that: it is the `+=` in every `_backward` closure from Ch 08b, and the reason `x.mul(x)` gives `x.grad = 2x` rather than `x`. Nothing in `step()` changes for it either. The parameter still arrives holding one number; that number was just assembled from more places.
+You now know what all three are for before meeting any of them.
+
+---
+
+## The 08b starting point is a special case
+
+If you start exactly where Chapter 08b did — `a = π/2`, `b = 3` — something instructive happens. The gradients there are the ones you hand-derived:
+
+```
+f      = 12
+∂f/∂a  = 3·cos(π/2) = 0
+∂f/∂b  = sin(π/2) + 6 = 1 + 6 = 7
+```
+
+`a`'s gradient is exactly zero. So `step()` leaves `a` completely alone — and since `∂f/∂a = b·cos(π/2) = 0` for *any* value of `b`, it stays zero forever. **`a` never moves again.** Only `b` descends:
+
+```
+step   0    f = 12.000000    a = π/2    b =  3.0000
+step   1    f =  7.590000    a = π/2    b =  2.3000
+step   2    f =  4.767600    a = π/2    b =  1.7400
+step   3    f =  2.961264    a = π/2    b =  1.2920
+step  30    f = -0.249981    a = π/2    b = -0.4957
+step  60    f = -0.250000    a = π/2    b = -0.5000
+```
+
+It still reaches `f = −0.25`, because `a = π/2` happened to be the right value already. But it got there with one parameter frozen throughout.
+
+That is a real phenomenon and not a quirk of this function: **a parameter with zero gradient does not move, and if its gradient stays zero it never learns anything.** You will meet the same thing under a different name in Chapter 11, when a ReLU unit lands on its inactive side and receives exactly zero gradient forever — the "dying ReLU". Same mechanism, same consequence.
 
 ---
 
 ## Try it yourself
 
-Two experiments that take a minute each and pay for themselves:
+The one obstacle: `Value` has no `sin()` method — Chapter 08a's operation table stops at `add`, `mul`, `pow`, `exp`, `log`, `tanh`, `relu`. Adding it is a five-line exercise following the `exp` pattern exactly, with local derivative `∂/∂x sin(x) = cos(x)`. Do that and the whole of this document runs through your own autograd engine.
 
-1. **Change `w2` from `1.0` to `0.1`** and re-run one backward pass. `w1`'s gradient drops by a factor of ten, because `∂z2/∂h = w2` is one of the four factors. This is the mechanism behind initialisation schemes (Ch 13): the scale of *later* weights directly controls how much gradient reaches *earlier* ones.
+Then:
 
-2. **Add a second hidden layer** — another `mul`, `add` and `tanh` — and print all six gradients. The parameters in the new first layer will have the smallest gradients of all, and the chain for them will be six factors long. Your `SGD` will need no changes whatsoever, which is the point of this whole document.
+1. **Start at `a = π/2, b = 3`** and confirm `a.grad` is `0` on every single step. Print it — watching a parameter sit still while the loss falls is worth seeing.
+2. **Start at `a = 1.0, b = 3`** and print the loss every 10 steps. Find the stall yourself, then try `SGDMomentum` with `β = 0.9` on the same start and see how many steps it saves crossing it.
+3. **Start at `a = 3.0, b = -2`** and see which of the two minima it finds. There is another at `(3π/2, 0.5)`, also with `f = −0.25`. Which one you reach depends entirely on where you begin — that is the local-minimum story from §12, in a function small enough to hold in your head.
 
 ---
 
 ## Further reading
 
 - [Deep dive: how big a step can you take?](ch-09-how-big-a-step.md) — the other half: given these gradients, how large may `η` be before the loop diverges.
-- [Deep dive: why reverse-mode wins](ch-08-why-reverse-mode.md) — why one backward pass fills all four gradients, rather than four passes filling one each.
-- [Goodfellow et al. — Deep Learning, §8.2](https://www.deeplearningbook.org/contents/optimization.html) — the formal treatment of what makes deep optimisation hard.
+- [Deep dive: why reverse-mode wins](ch-08-why-reverse-mode.md) — why one backward pass fills both gradients rather than one pass each.
+- [Goodfellow et al. — Deep Learning, §8.2](https://www.deeplearningbook.org/contents/optimization.html) — saddle points, plateaus, and why they dominate local minima in high dimensions.

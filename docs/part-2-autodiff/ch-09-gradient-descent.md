@@ -104,7 +104,7 @@ That is already the complete algorithm. If you understand this line, you underst
 >
 > It does, and this is the right moment to be suspicious of it. The resolution is that **all the difficulty of being deep lives inside `backward()`, not inside the update.** A parameter sitting four operations away from the loss has a gradient that is a *product of four local derivatives* — but the chain rule assembles that product during the backward pass, and by the time the update runs, that parameter is holding one number just like every other.
 >
-> If you would rather see that than take it on trust, [**one rule, many layers**](../deep-dives/ch-09-one-rule-many-layers.md) runs a complete step of an actual two-layer network — four parameters, a `tanh` in the middle, every number computed — and shows that the update loop is character-for-character the one you are about to write. It is worth reading once this chapter's `SGD` works.
+> If you would rather see that than take it on trust, [**one rule, many layers**](../deep-dives/ch-09-one-rule-many-layers.md) runs gradient descent on the graph you already know — Chapter 08's own `f = b·sin(a) + b²`. One of its parameters gets its gradient through a chain (`∂f/∂a = b·cos(a)`, passing through the `sin`), the other as a sum over two paths (`∂f/∂b = sin(a) + 2b`, the `1 + 6 = 7` you derived by hand). Those are exactly the two complications a deep network presents — and the same single update line moves both. Worth reading once this chapter's `SGD` works.
 
 **Layer 3 — the notation you'll meet everywhere else.** Papers and libraries write the same equation like this:
 
@@ -545,7 +545,7 @@ The error is multiplied by the same constant every step. That immediately explai
 
 [**Deep dive: how big a step can you take?**](../deep-dives/ch-09-how-big-a-step.md) derives that, then extends it: why the general threshold is `1/curvature`, how much speed momentum can actually build up, and why summing a loss instead of averaging it makes your safe learning rate shrink as you add training data — which is the reason the exercise needs `0.01` for the linear fit but `0.1` for the bowl.
 
-And the question this whole chapter has been deferring — *does a one-parameter rule really train a network?* — gets answered concretely in [**one rule, many layers**](../deep-dives/ch-09-one-rule-many-layers.md). It takes a real two-layer network with four parameters and a `tanh`, runs one full step with every number worked out, and shows where the depth actually goes: into the length of the product that `backward()` builds, and nowhere near `step()`. It also shows what that predicts — why gradients shrink as networks get deeper, and why ReLU (Ch 11), LayerNorm (Ch 20) and residual connections (Ch 26) all exist to fight the same multiplication.
+And the question this whole chapter has been deferring — *does a one-parameter rule really train a network?* — gets answered in [**one rule, many layers**](../deep-dives/ch-09-one-rule-many-layers.md), by descending on Chapter 08's own graph, `f = b·sin(a) + b²`. It shows where the depth actually goes: into the product that `backward()` builds, and nowhere near `step()`. Along the way it catches a genuine saddle-point stall — twenty-five iterations that barely move — which is §12's story happening in a two-parameter function you can hold in your head. And it explains why gradients shrink with depth, and why ReLU (Ch 11), LayerNorm (Ch 20) and residual connections (Ch 26) all exist to fight the same multiplication.
 
 ---
 
