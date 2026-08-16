@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <!-- ─── background (light cream) ───────────────────────────── -->
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <!-- ─── header ─────────────────────────────────────────────── -->
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">one training step — the loop every model in this course runs, from here to GPT</text>
+
+  <!--
+    Five stages around a ring. The highlight ring advances one stage every
+    1.2s so the reader can follow the cycle; each stage names the chapter
+    that built it, so the loop doubles as a map of Part 2.
+  -->
+
+  <!-- ─── the ring ───────────────────────────────────────────── -->
+  <circle cx="360" cy="200" r="118" fill="none" stroke="#e0d9c5" stroke-width="1.5" stroke-dasharray="3 4"/>
+
+  <!-- direction arrows on the ring -->
+  <path d="M470,168 l6,10 l-11,2 z" fill="#c9b88a"/>
+  <path d="M250,232 l-6,-10 l11,-2 z" fill="#c9b88a"/>
+
+  <!-- ═══ stage 1 — FORWARD (top) ════════════════════════════ -->
+  <g>
+    <rect x="288" y="52" width="144" height="52" rx="8" fill="#ffffff" stroke="#c9b88a" stroke-width="1.5"/>
+    <text x="360" y="72" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="12" font-weight="700">1. forward</text>
+    <text x="360" y="88" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">build the graph — Ch 08a</text>
+  </g>
+
+  <!-- ═══ stage 2 — LOSS (right) ═════════════════════════════ -->
+  <g>
+    <rect x="512" y="168" width="144" height="52" rx="8" fill="#ffffff" stroke="#c9b88a" stroke-width="1.5"/>
+    <text x="584" y="188" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="12" font-weight="700">2. loss</text>
+    <text x="584" y="204" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">one number: how wrong</text>
+  </g>
+
+  <!-- ═══ stage 3 — BACKWARD (bottom right) ══════════════════ -->
+  <g>
+    <rect x="430" y="300" width="152" height="52" rx="8" fill="#ffffff" stroke="#c9b88a" stroke-width="1.5"/>
+    <text x="506" y="320" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="12" font-weight="700">3. backward()</text>
+    <text x="506" y="336" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">fill every .grad — Ch 08b</text>
+  </g>
+
+  <!-- ═══ stage 4 — STEP (bottom left) ═══════════════════════ -->
+  <g>
+    <rect x="138" y="300" width="152" height="52" rx="8" fill="#ffffff" stroke="#6f42c1" stroke-width="2"/>
+    <text x="214" y="320" text-anchor="middle" fill="#6f42c1" font-family="monospace" font-size="12" font-weight="700">4. opt.step()</text>
+    <text x="214" y="336" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">θ ← θ − η·∇L — Ch 09</text>
+  </g>
+
+  <!-- ═══ stage 5 — ZEROGRAD (left) ══════════════════════════ -->
+  <g>
+    <rect x="64" y="168" width="152" height="52" rx="8" fill="#ffffff" stroke="#a94442" stroke-width="2"/>
+    <text x="140" y="188" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="12" font-weight="700">5. opt.zeroGrad()</text>
+    <text x="140" y="204" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">or the next step is wrong</text>
+  </g>
+
+  <!-- ─── travelling highlight: one dot orbiting the five stages ─── -->
+  <circle r="9" fill="#6f42c1" opacity="0.85">
+    <animate attributeName="cx" values="360;584;506;214;140;360" keyTimes="0;0.2;0.4;0.6;0.8;1" dur="6s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="118;154;286;286;154;118" keyTimes="0;0.2;0.4;0.6;0.8;1" dur="6s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- ─── centre note ────────────────────────────────────────── -->
+  <text x="360" y="192" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="13" font-weight="700">repeat</text>
+  <text x="360" y="210" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11">until the loss stops falling</text>
+
+  <!-- ─── the trap callout ───────────────────────────────────── -->
+  <rect x="30" y="238" width="196" height="46" rx="6" fill="#f7ecea" stroke="#a94442" stroke-width="1"/>
+  <text x="128" y="255" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="10" font-weight="700">steps 3–4 must not be split</text>
+  <text x="128" y="269" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">zeroGrad between them erases</text>
+  <text x="128" y="279" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">the gradients before step() reads them</text>
+
+  <!-- ─── formula bar ────────────────────────────────────────── -->
+  <rect x="30" y="366" width="660" height="24" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="382" text-anchor="middle" font-family="monospace" font-size="11" fill="#5a4220" font-weight="600">
+    a fresh graph is built every iteration — you never re-run backward() on last step's graph
+  </text>
+
+</svg>

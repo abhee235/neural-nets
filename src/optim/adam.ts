@@ -17,12 +17,14 @@
 import type { Value } from "../autograd/value.ts";
 
 export class Adam {
+  readonly params: Value[];
   readonly learningRate: number;
   readonly beta1: number;
   readonly beta2: number;
   readonly epsilon: number;
 
   constructor(
+    params: Value[],
     learningRate?: number,
     beta1?: number,
     beta2?: number,
@@ -34,12 +36,12 @@ export class Adam {
   }
 
   /** Apply one Adam step to all parameters. */
-  step(params: Value[]): void {
+  step(): void {
     throw new Error("Adam.step not implemented");
   }
 
   /** Zero gradients on all parameters. */
-  zeroGrad(params: Value[]): void {
+  zeroGrad(): void {
     throw new Error("Adam.zeroGrad not implemented");
   }
 }

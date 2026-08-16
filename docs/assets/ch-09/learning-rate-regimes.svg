@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <!-- ─── background (light cream) ───────────────────────────── -->
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <!-- ─── header ─────────────────────────────────────────────── -->
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">the learning rate decides everything: same bowl, same start, three values of η</text>
+
+  <!--
+    All three panels: L(w) = (w−5)², start w = 0, minimum at w = 5.
+    The error e = w−5 obeys  e ← e·(1−2η)  exactly, so:
+      η = 0.05 → factor  0.90  crawls
+      η = 0.20 → factor  0.60  converges smoothly
+      η = 1.10 → factor −1.20  flips sign AND grows — diverges
+    Positions below are that recurrence evaluated, not sketched.
+  -->
+
+  <!-- ══════ PANEL 1 — η too small ══════════════════════════════ -->
+  <g transform="translate(40,0)">
+    <path d="M0,156 L16.7,200 L33.3,236 L50,264 L66.7,284 L83.3,296 L100,300 L116.7,296 L133.3,284 L150,264 L166.7,236 L183.3,200 L200,156"
+          fill="none" stroke="#c9b88a" stroke-width="2"/>
+    <line x1="0" y1="300" x2="200" y2="300" stroke="#e0d9c5" stroke-width="1"/>
+    <circle cx="100" cy="300" r="3.5" fill="#2e7d32"/>
+
+    <!-- faint trail of visited positions -->
+    <circle cx="16.7" cy="200"   r="2.5" fill="#e0d9c5"/>
+    <circle cx="25"   cy="219"   r="2.5" fill="#e0d9c5"/>
+    <circle cx="32.5" cy="234.4" r="2.5" fill="#e0d9c5"/>
+    <circle cx="39.3" cy="246.9" r="2.5" fill="#e0d9c5"/>
+    <circle cx="45.3" cy="257"   r="2.5" fill="#e0d9c5"/>
+
+    <circle r="7" fill="#1e6091">
+      <animate attributeName="cx" values="16.7;25;32.5;39.3;45.3;50.8" keyTimes="0;0.2;0.4;0.6;0.8;1" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="200;219;234.4;246.9;257;265.2" keyTimes="0;0.2;0.4;0.6;0.8;1" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+    </circle>
+
+    <text x="100" y="332" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="12" font-weight="700">η = 0.05  — too small</text>
+    <text x="100" y="348" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="10">6 steps and barely moved:</text>
+    <text x="100" y="361" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="10">w = 0 → 2.05, target 5</text>
+  </g>
+
+  <!-- ══════ PANEL 2 — η well tuned ═════════════════════════════ -->
+  <g transform="translate(260,0)">
+    <path d="M0,156 L16.7,200 L33.3,236 L50,264 L66.7,284 L83.3,296 L100,300 L116.7,296 L133.3,284 L150,264 L166.7,236 L183.3,200 L200,156"
+          fill="none" stroke="#c9b88a" stroke-width="2"/>
+    <line x1="0" y1="300" x2="200" y2="300" stroke="#e0d9c5" stroke-width="1"/>
+    <circle cx="100" cy="300" r="3.5" fill="#2e7d32"/>
+
+    <circle cx="16.7" cy="200"   r="2.5" fill="#e0d9c5"/>
+    <circle cx="50"   cy="264"   r="2.5" fill="#e0d9c5"/>
+    <circle cx="70"   cy="287"   r="2.5" fill="#e0d9c5"/>
+    <circle cx="82"   cy="295.3" r="2.5" fill="#e0d9c5"/>
+    <circle cx="89.2" cy="298.3" r="2.5" fill="#e0d9c5"/>
+
+    <circle r="7" fill="#2e7d32">
+      <animate attributeName="cx" values="16.7;50;70;82;89.2;93.5" keyTimes="0;0.2;0.4;0.6;0.8;1" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="200;264;287;295.3;298.3;299.4" keyTimes="0;0.2;0.4;0.6;0.8;1" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+    </circle>
+
+    <text x="100" y="332" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="12" font-weight="700">η = 0.2  — well tuned</text>
+    <text x="100" y="348" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="10">big steps first, small near</text>
+    <text x="100" y="361" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="10">the bottom: 0 → 4.61</text>
+  </g>
+
+  <!-- ══════ PANEL 3 — η too large ══════════════════════════════ -->
+  <g transform="translate(480,0)">
+    <path d="M0,156 L16.7,200 L33.3,236 L50,264 L66.7,284 L83.3,296 L100,300 L116.7,296 L133.3,284 L150,264 L166.7,236 L183.3,200 L200,156"
+          fill="none" stroke="#c9b88a" stroke-width="2"/>
+    <line x1="0" y1="300" x2="200" y2="300" stroke="#e0d9c5" stroke-width="1"/>
+    <circle cx="100" cy="300" r="3.5" fill="#2e7d32"/>
+
+    <circle cx="16.7" cy="200" r="2.5" fill="#e0d9c5"/>
+
+    <!-- the ball overshoots the minimum entirely and lands HIGHER than it started -->
+    <circle r="7" fill="#a94442">
+      <animate attributeName="cx" values="16.7;200" keyTimes="0;1" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="200;156" keyTimes="0;1" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- escaping arrow -->
+    <path d="M196,150 L214,120" stroke="#a94442" stroke-width="2" stroke-dasharray="4 3" fill="none"/>
+    <path d="M214,120 l-7,2 l3,5 z" fill="#a94442"/>
+    <text x="150" y="112" fill="#a94442" font-family="monospace" font-size="10" font-weight="700">then −2.2, 13.6, …</text>
+
+    <text x="100" y="332" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="12" font-weight="700">η = 1.1  — too large</text>
+    <text x="100" y="348" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="10">one step lands FURTHER up</text>
+    <text x="100" y="361" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="10">the far wall. loss → ∞</text>
+  </g>
+
+  <!-- ─── formula bar ────────────────────────────────────────── -->
+  <rect x="30" y="372" width="660" height="22" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="387" text-anchor="middle" font-family="monospace" font-size="11" fill="#5a4220" font-weight="600">
+    on this bowl the error shrinks by exactly |1 − 2η| each step — so it converges iff η &lt; 1, and η = 0.5 lands on the answer in ONE step
+  </text>
+
+</svg>
