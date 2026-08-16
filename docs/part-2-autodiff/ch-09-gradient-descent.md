@@ -110,6 +110,16 @@ Nothing changed except the symbols:
 - $\eta$ ("eta") — the learning rate. In code, `learningRate`.
 - $\partial L/\partial \theta$ — the gradient of the loss with respect to that parameter. In code, `param.grad`, put there by `backward()`.
 
+> **Three symbols, one idea.** The derivative gets written three ways in this course. For our purposes they all mean the same thing, and it is worth getting that straight now rather than being tripped by it later:
+>
+> | Symbol | Read it as | Used when |
+> |---|---|---|
+> | $\dfrac{dL}{dw}$ | "the derivative of L with respect to w" | there is only one variable — ordinary calculus |
+> | $\dfrac{\partial L}{\partial w}$ | "the **partial** derivative of L with respect to w" | there are several variables. It means: differentiate with respect to `w` and hold everything else still |
+> | $\nabla L$ | "grad L" | shorthand for *all* the partials at once, one per parameter, bundled together |
+>
+> A model has thousands of parameters, so `∂` is the honest symbol and `∇L` is just a way of saying "all of them" without listing them. **In code there is no distinction at all**: every parameter carries its own `.grad`, and `∇L` is simply those numbers across the whole list. If partial derivatives are new to you, nothing here needs more than: *the slope in one parameter's direction, with the others frozen.*
+
 So the whole of vanilla gradient descent, in the code you are about to write, is:
 
 ```
@@ -179,7 +189,16 @@ The update is **proportional to the gradient**. That single fact gives the algor
 
 Far from the minimum the slope is steep, the gradient is large, and the steps are big. Close to the minimum the slope flattens, the gradient shrinks, and the steps become small automatically. The method takes big strides when it is confident and creeps when it is close — with no braking logic anywhere.
 
-In the trace above each step was exactly `0.8×` the one before it. That ratio is not a coincidence, and section 13 points at where it comes from.
+In the trace above each step was exactly `0.8×` the one before it. That is not a coincidence, and you can see why without any new mathematics. Look at how far `w` is from the minimum at each point:
+
+```
+w        :  0     1.0    1.8    2.44
+5 − w    :  5     4      3.2    2.56     ← each one 0.8× the last
+gradient : -10   -8     -6.4   -5.12     ← gradient = 2 × (w − 5), so also 0.8×
+step     :  1.0   0.8    0.64            ← step = 0.1 × gradient, so also 0.8×
+```
+
+The distance shrinks by a factor, so the gradient shrinks by the same factor, so the step does too. Everything rides on one number. Where that number comes from — and why it happens to be `0.8` at `η = 0.1` — is §13.
 
 The learning rate is the one thing *you* choose. It scales every step:
 
@@ -250,6 +269,36 @@ Two practical notes now, and the reasoning behind them in §8.
 
 **The loss must be a single number.** `backward()` starts from the node you call it on and works backward from there, so there has to be one node that *is* the loss. This is why every loss function in Ch 12 ends in a sum or a mean.
 
+### Wait — where is the prediction in `(w−5)²`?
+
+If you just read "make a prediction, measure how wrong it is" and thought *"but the example has no prediction, and no data either"* — good. That is the right question, and it deserves an answer before you write code.
+
+`L(w) = (w−5)²` has no dataset, no prediction and no target. That is deliberate. It is a bare function of one variable, chosen so that **nothing stands between you and the update rule**. You already know the answer is `w = 5`, so if your optimizer walks there, it works; and if it doesn't, the bug is in the four lines you just wrote, not somewhere in a model.
+
+But the loop really is the same loop. Here is an actual prediction problem, about as small as one can get — a model `ŷ = w · x`, with a single training example `x = 2`, `y = 10`:
+
+| Step | On the bowl | On the tiny model |
+|---|---|---|
+| predict | *(nothing to predict)* | `ŷ = w × 2` |
+| measure how wrong | `L = (w − 5)²` | `L = (ŷ − 10)²` |
+| assign blame | `L.backward()` | `L.backward()` |
+| change | `w.data -= η × w.grad` | identical |
+| clean up | `w.zeroGrad()` | identical |
+
+Now substitute the prediction into the loss and watch what happens:
+
+$$L = (\hat y - 10)^2 = (2w - 10)^2 = 4(w-5)^2$$
+
+It **is** the bowl. The same shape, with its minimum at exactly the same `w = 5`, just four times as steep. So `(w−5)²` was never a toy stand-in for a learning problem — it is a learning problem with the prediction already substituted in and the arithmetic already done.
+
+This is worth holding onto, because it is what "the loss" always means:
+
+> **A single number that is large when the model is wrong and small when it is right.**
+
+Where that number comes from — squared error here, cross-entropy in Ch 12 — gradient descent genuinely does not care. It needs one number, and the gradients leading back from it. That indifference is why the same five lines train a one-parameter bowl and a GPT.
+
+(Do notice the "four times as steep", though. Steepness changes which learning rates are safe — the model version diverges above `η = 0.25` where the plain bowl tolerates up to `1.0`. §13 is where that gets pinned down.)
+
 ---
 
 ## 7. Build it — `SGD`
@@ -267,6 +316,42 @@ opt.zeroGrad();
 ```
 
 This mirrors PyTorch's `torch.optim.SGD(model.parameters(), lr=0.1)`, so what you learn here transfers directly. (§11 shows why owning the list is not merely cosmetic.)
+
+### One full iteration, line by line
+
+The five stages have been described in words and drawn as a ring. Here they are as actual calls, with the value of everything after each line. These are the numbers from step 1 of the §3 trace:
+
+```
+const w   = new Value(0);                  // the parameter, starting at 0
+const opt = new SGD([w], 0.1);             // the optimizer now owns w
+
+// ── 1 & 2 — predict, and measure how wrong ────────────────────────
+const loss = w.add(new Value(-5)).pow(2);  // (w − 5)²
+//   w.data    = 0
+//   loss.data = (0 − 5)² = 25
+
+// ── 3 — assign blame ──────────────────────────────────────────────
+loss.backward();
+//   w.grad = -10        ← "increase w and the loss falls, ~10 per unit"
+
+// ── 4 — change the parameter ──────────────────────────────────────
+opt.step();
+//   w.data = 0 − 0.1 × (-10) = 1.0
+
+// ── 5 — clean up ──────────────────────────────────────────────────
+opt.zeroGrad();
+//   w.grad = 0          ← ready for the next iteration
+```
+
+Run that same block again and it produces `w = 1.8`. A third time, `2.44`. The training loop is literally these five lines wrapped in a `for` — there is nothing else to it.
+
+Two details in there are easy to miss and both matter:
+
+**The loss is built *inside* the loop, not before it.** `w.add(new Value(-5)).pow(2)` creates brand-new nodes every iteration. That is what "a fresh graph each step" means in practice — you are not reusing last iteration's graph, you are constructing a new one around the parameter's new value.
+
+**`w` is the only thing that survives between iterations.** The graph is thrown away and rebuilt; the parameter persists. That is exactly the split from §9: the graph is scratch work, the parameter is state.
+
+### The milestones
 
 **Milestone 1 — the constructor.** Store the parameter list and the learning rate.
 ✅ *Checkpoint:* `new SGD([w], 0.1).params[0]` is the *same object* as `w`, not a copy. If you copy the numbers out, every method below will run correctly on the copies and the model will never change.
@@ -294,7 +379,18 @@ The side effect is that gradients from an old step are still sitting there when 
 -3,  then  -9,  then  -18
 ```
 
-Note it does not simply double. The root is re-seeded each time, but every interior node keeps accumulating, so the contamination compounds with the depth of the graph — and a real network is very deep.
+Notice it does not simply double — and the reason is worth spelling out, because it explains why this gets rapidly worse in a bigger network. That graph was `L = (a·b) + d` with `a = 2`, `b = −3`, so `a.grad` should be `−3` every time. Watch what actually happens across three calls:
+
+```
+                  interior node c        the parameter a
+1st backward():   c.grad = 1             a.grad =  0 + (1 × -3)  =  -3   ✓ correct
+2nd backward():   c.grad = 1 + 1 = 2     a.grad = -3 + (2 × -3)  =  -9
+3rd backward():   c.grad = 2 + 1 = 3     a.grad = -9 + (3 × -3)  = -18
+```
+
+`backward()` **sets** the root's gradient to 1 each time, so the root itself never drifts. But `c` is an *interior* node, and nothing resets it — so it climbs 1, 2, 3. And `a` doesn't just accumulate its own error; it accumulates `c`'s inflated gradient, which is why `a` grows faster than `c` does.
+
+That is the mechanism: every layer sitting between a parameter and the loss adds another multiplier to the contamination. A three-node graph gets mildly wrong answers. A twelve-layer transformer gets catastrophically wrong ones.
 
 Inside a training loop that inflated gradient goes straight into `step()`, so the effective step size grows every iteration and the loss climbs. **The symptom is identical to a learning rate that is too large**, which is why this one costs people so much time: they lower the learning rate, it appears to help briefly, and then it diverges anyway.
 
@@ -479,6 +575,37 @@ bun test src/optim/sgd
 ```bash
 bun run exercises/ch-09-gradient-descent.ts
 ```
+
+### What a healthy run looks like
+
+Print the loss every ten steps while minimising `(w−5)²` from `w = 0` at `η = 0.1`, and you should see this:
+
+```
+step   0    loss 25.000000
+step  10    loss  0.288230
+step  20    loss  0.003323
+step  30    loss  0.000038
+step  40    loss  0.000000
+```
+
+That shape — a steep drop, then a long flattening tail — is what convergence looks like, and it is worth knowing by sight. The loss falls by a constant *factor* per step, not a constant amount, so most of the visible progress happens early and the rest is refinement.
+
+Compare with the two failure modes on the same bowl, printed at the same intervals:
+
+```
+η = 0.01  (too small)         η = 1.1  (too large)
+step   0    loss 25.000000    step   0    loss 25.000000
+step  10    loss 16.690199    step  10    loss 958.44
+step  20    loss 11.142510    step  20    loss 36744.29
+step  30    loss  7.438829    step  30    loss 1.41e+6
+step  40    loss  4.966221    step  40    loss 5.40e+7
+```
+
+The left run is *working* — it is genuinely descending, just far too slowly to be useful. Give it a few thousand steps and it would arrive. The right run is not converging at all, and running it longer only makes the number bigger; eventually it reaches `Infinity`, and then `NaN` once an infinity meets a subtraction.
+
+Learning to tell those two apart on sight saves a lot of time. **Falling slowly and rising are different problems with opposite fixes**: the first wants a larger learning rate, the second a smaller one. Reaching for the same knob in the same direction for both is the most common way to spend an afternoon getting nowhere.
+
+### Predict before you run
 
 The exercise is the real gate, and it is worth using properly: **predict every printed number before you run it.**
 
