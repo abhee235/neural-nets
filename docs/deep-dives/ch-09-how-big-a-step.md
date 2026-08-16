@@ -100,6 +100,48 @@ Dividing by `N` divides the curvature by `N` too, which makes the usable learnin
 
 ---
 
+## How much speed can momentum build?
+
+Chapter 09 claims that momentum's steps grow "up to about ten times" vanilla SGD's at `β = 0.9`. That number is not a rule of thumb — it drops out of a geometric series.
+
+Momentum's velocity update is
+
+$$v \leftarrow \beta v - \eta g.$$
+
+Suppose for a moment the gradient is roughly constant at $g_0$ — which is what happens on a long, steady slope. Starting from $v_0 = 0$ and unrolling:
+
+$$v_1 = -\eta g_0$$
+$$v_2 = -\eta g_0(1 + \beta)$$
+$$v_3 = -\eta g_0(1 + \beta + \beta^2)$$
+
+so after $n$ steps
+
+$$v_n = -\eta g_0 \sum_{k=0}^{n-1}\beta^k = -\eta g_0\,\frac{1-\beta^n}{1-\beta}.$$
+
+As $n$ grows, $\beta^n \to 0$ and the velocity settles at
+
+$$\boxed{v_\infty = -\frac{\eta g_0}{1-\beta}}$$
+
+A vanilla SGD step on the same slope is $-\eta g_0$. So momentum's steady-state step is larger by exactly
+
+$$\frac{1}{1-\beta}$$
+
+| β | speed-up | in words |
+|---|---|---|
+| 0 | 1× | no memory — vanilla SGD exactly |
+| 0.9 | 10× | the usual default |
+| 0.99 | 100× | used with correspondingly tiny learning rates |
+
+Two things follow, and the second one bites.
+
+**The build-up is not instant.** The $(1-\beta^n)$ factor means it takes roughly $1/(1-\beta)$ steps to get most of the way to top speed — about 10 steps at `β = 0.9`. Momentum is not fast on step one; it is fast once it has been going the same way for a while. That is exactly the behaviour you want, and it is why Figure 3 in the chapter shows momentum *behind* vanilla after one step and far ahead by step three.
+
+**The effective learning rate is `η/(1−β)`, not `η`.** This is the practical trap. Turning momentum up from `0` to `0.9` multiplies your real step size by ten. If `η` was already near the divergence threshold derived above, adding momentum will push you straight past it — and the failure looks like "momentum is broken" rather than "the learning rate is now effectively 10× larger". The fix is to lower `η` when you raise `β`.
+
+And the mirror image, the damping case: if the gradient *alternates* sign each step (the narrow-valley oscillation), then consecutive terms in that sum subtract rather than add. The series no longer accumulates — it partly cancels — and the oscillation is suppressed. Same formula, opposite outcome, decided entirely by whether the gradient keeps agreeing with itself.
+
+---
+
 ## Where this stops being exact
 
 Real loss surfaces are not single quadratics, and the clean threshold generalises only locally:
