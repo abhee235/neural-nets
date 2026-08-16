@@ -70,7 +70,8 @@ export class SGD {
   readonly learningRate: number;
 
   constructor(params: Value[], learningRate: number) {
-    throw new Error("SGD constructor not implemented");
+     this.params = params;
+     this.learningRate = learningRate;
   }
 
   /**
@@ -112,7 +113,9 @@ export class SGD {
    * three numbers to print.
    */
   step(): void {
-    throw new Error("SGD.step not implemented");
+     this.params.forEach(param => {
+       param.data -= this.learningRate * param.grad;
+     });
   }
 
   /**
@@ -142,7 +145,9 @@ export class SGD {
    * move at all. Everything runs, the loss just sits there.
    */
   zeroGrad(): void {
-    throw new Error("SGD.zeroGrad not implemented");
+    this.params.forEach(param => {
+      param.grad = 0;
+    });
   }
 }
 
@@ -204,7 +209,10 @@ export class SGDMomentum {
   readonly velocities: number[];
 
   constructor(params: Value[], learningRate: number, momentum?: number) {
-    throw new Error("SGDMomentum constructor not implemented — default momentum=0.9");
+    this.params = params;
+    this.learningRate = learningRate;
+    this.momentum = momentum !== undefined ? momentum : 0.9;
+    this.velocities = new Array(params.length).fill(0);
   }
 
   /**
@@ -219,11 +227,18 @@ export class SGDMomentum {
    * bowl. Check against the three hand-computed steps above.
    */
   step(): void {
-    throw new Error("SGDMomentum.step not implemented");
+     this.params.forEach((param, i) => {
+       // `!` because noUncheckedIndexedAccess types the READ as number | undefined;
+     // velocities was sized to params.length in the constructor, so i is in range.
+     this.velocities[i] = this.momentum * this.velocities[i]! - this.learningRate * param.grad;
+       param.data += this.velocities[i];
+     });
   }
 
   /** Zero gradients on all parameters. Identical in spirit to SGD.zeroGrad. */
   zeroGrad(): void {
-    throw new Error("SGDMomentum.zeroGrad not implemented");
+    this.params.forEach(param => {
+      param.grad = 0;
+    });
   }
-}
+} 
