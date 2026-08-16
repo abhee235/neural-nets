@@ -38,6 +38,7 @@ By the end of this chapter you can:
 - Read a gradient as a sentence about what happens to the loss, not just as a number.
 - Write the five-stage training loop from memory, and say what breaks if you reorder it.
 - Explain why the parameter update must happen *outside* the computation graph.
+- Say what a neural network is in terms of the operations you have already built, and why Ch 08's test functions were never meant to be models.
 - Predict — not just observe — whether a given learning rate will converge, oscillate, or diverge.
 - Explain what momentum remembers between steps, and why that memory shapes the API.
 - Diagnose the three classic failures: a loss that climbs, a loss that never moves, and a model that trains but never improves.
@@ -104,7 +105,9 @@ That is already the complete algorithm. If you understand this line, you underst
 >
 > It does, and this is the right moment to be suspicious of it. The resolution is that **all the difficulty of being deep lives inside `backward()`, not inside the update.** A parameter sitting four operations away from the loss has a gradient that is a *product of four local derivatives* — but the chain rule assembles that product during the backward pass, and by the time the update runs, that parameter is holding one number just like every other.
 >
-> If you would rather see that than take it on trust, [**one rule, many layers**](../deep-dives/ch-09-one-rule-many-layers.md) runs gradient descent on the graph you already know — Chapter 08's own `f = b·sin(a) + b²`. One of its parameters gets its gradient through a chain (`∂f/∂a = b·cos(a)`, passing through the `sin`), the other as a sum over two paths (`∂f/∂b = sin(a) + 2b`, the `1 + 6 = 7` you derived by hand). Those are exactly the two complications a deep network presents — and the same single update line moves both. Worth reading once this chapter's `SGD` works.
+> And if the question underneath yours is *"none of these examples look like a neural network — is any of this actually going anywhere?"*, that one is answered head-on in **§6, "So where is the neural network?"**, with a real neuron trained by this chapter's loop.
+>
+> If you would rather see the scaling claim demonstrated than take it on trust, [**one rule, many layers**](../deep-dives/ch-09-one-rule-many-layers.md) runs gradient descent on the graph you already know — Chapter 08's own `f = b·sin(a) + b²`. One of its parameters gets its gradient through a chain (`∂f/∂a = b·cos(a)`, passing through the `sin`), the other as a sum over two paths (`∂f/∂b = sin(a) + 2b`, the `1 + 6 = 7` you derived by hand). Those are exactly the two complications a deep network presents — and the same single update line moves both. Worth reading once this chapter's `SGD` works.
 
 **Layer 3 — the notation you'll meet everywhere else.** Papers and libraries write the same equation like this:
 
@@ -304,6 +307,66 @@ This is worth holding onto, because it is what "the loss" always means:
 Where that number comes from — squared error here, cross-entropy in Ch 12 — gradient descent genuinely does not care. It needs one number, and the gradients leading back from it. That indifference is why the same five lines train a one-parameter bowl and a GPT.
 
 (Do notice the "four times as steep", though. Steepness changes which learning rates are safe — the model version diverges above `η = 0.25` where the plain bowl tolerates up to `1.0`. §13 is where that gets pinned down.)
+
+### So where is the neural network?
+
+A fair follow-up, and one worth answering directly, because it applies to Chapter 08 too. `(w−5)²` is not a neural network. Neither was `f = b·sin(a) + b²`, the expression you differentiated over and over in Ch 08. So what were those for, and when does an actual network turn up?
+
+**Those were test functions, not models.** They were chosen to be small enough to differentiate by hand, so you could check your engine against ordinary calculus and *know* it was right. That is their whole job. Once `backward()` is trustworthy, they have done it and can be thrown away.
+
+**The engine is the thing you were building.** `Value` has no idea what a neural network is. It knows seven operations — `add`, `mul`, `pow`, `exp`, `log`, `tanh`, `relu` — and how to differentiate any expression assembled from them. That generality is not an accident; it is the entire design.
+
+**And a neural network is exactly such an expression.** Here is a single neuron, the smallest real unit of one:
+
+$$\hat y = \text{relu}(w_1 x_1 + w_2 x_2 + b)$$
+
+Written with the methods you already implemented:
+
+```typescript
+const pre  = w1.mul(x1).add(w2.mul(x2)).add(bias);
+const yHat = pre.relu();
+```
+
+`mul`, `add`, `relu`. No new class, no new node type, no new mathematics. A **layer** is several of those side by side. A **network** is layers fed into each other. A **loss** is `(ŷ − y)²` — one more `add` and one `pow`. The finished thing is one large `Value` expression, and `backward()` differentiates it for precisely the reason it differentiated `b·sin(a) + b²`: it does not care what the expression *means*.
+
+So, to answer the question as asked — *will that equation be used anywhere?*
+
+> **The equation: no. The machinery you built to solve it: everywhere.**
+
+Here is the same point as a table:
+
+| | Ch 08's test function | A real neural network |
+|---|---|---|
+| built from | `mul`, `add`, `sin` | `mul`, `add`, `relu` |
+| parameters | `a`, `b` | `w₁, w₂, b, …` thousands to billions |
+| graph size | about 6 nodes | thousands to billions of nodes |
+| written by | you, by hand | layer code, in a loop |
+| differentiated by | `backward()` | `backward()` — unchanged |
+| optimised by | the update rule | the update rule — unchanged |
+
+The bottom two rows are the payoff. Nothing in Chapters 08 or 09 gets rewritten when a real network arrives; it just gets called with a bigger expression.
+
+And this is not a promise — it already works. Take the three-parameter neuron above, four training examples of `y = 2x₁ + 3x₂`, and run the exact five-stage loop from this chapter:
+
+```
+step    0    loss 19.987500    w1=0.1000  w2=0.1000  b=0.0000
+step   10    loss  0.464676    w1=1.7882  w2=1.4672  b=1.3197
+step  100    loss  0.065725    w1=1.8600  w2=2.4708  b=0.5953
+step  500    loss  0.000020    w1=1.9973  w2=2.9908  b=0.0106
+step 2000    loss  0.000000    w1=2.0000  w2=3.0000  b=0.0000
+```
+
+It recovers `w₁ = 2`, `w₂ = 3`, `b = 0` — the function the data came from. That is a neural network being trained, by the `Value` class from Ch 08 and the `SGD` you are about to write, with nothing else involved. (The loss for those four examples is a graph of 48 `Value` nodes. A GPT is the same picture with more zeros.)
+
+What genuinely changes later is narrower than it looks:
+
+- **Ch 10** swaps one number per node for one *tensor* per node, because a million scalar nodes is unbearably slow. Same graph, same chain rule, same update.
+- **Ch 13** writes a `Linear` class so you stop typing `w1.mul(x1).add(w2.mul(x2))` by hand.
+- **Ch 12** provides losses with better numerical behaviour than a raw squared error.
+
+None of those is a new idea. They are ergonomics and speed on top of what you have.
+
+If you want to see this for yourself before Ch 13, the STRETCH at the bottom of [`exercises/ch-09-gradient-descent.ts`](../../exercises/ch-09-gradient-descent.ts) is exactly that neuron.
 
 ---
 
