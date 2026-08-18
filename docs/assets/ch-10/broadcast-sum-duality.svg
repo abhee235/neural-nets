@@ -1,112 +1,112 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" width="720" height="420">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 440" width="720" height="440">
 
-  <rect width="720" height="420" fill="#faf7f0" rx="12"/>
+  <rect width="720" height="440" fill="#faf7f0" rx="12"/>
 
-  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">a bias used in 2 rows collects 2 gradients — broadcasting forward means summing backward</text>
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">Chapter 08's graph L = (a·b) + d, with tensors — three gradients unchanged, one different</text>
 
   <!--
-    X [2,3] = [[1,2,3],[4,5,6]]   b [1,3] = [10,20,30]
-    Z = X + b = [[11,22,33],[14,25,36]]   L = sum(Z) = 141
-    backward: dZ = ones([2,3]),  db = sum(dZ, axis 0, keepDims) = [[2,2,2]]
-    Every number here was produced by the course's own tensor library.
-    The column highlight sweeps 0 -> 1 -> 2 on both halves at once.
+    Ch 08 scalar:  a=2, b=-3, d=10  ->  c=-6, L=4
+                   grads: c=1, a=-3, b=2, d=1
+    Ch 10 tensor:  A,B are [2,3] of 2 and -3;  d is [1,3] of 10, broadcast.
+                   C = -6 everywhere, Z = 4 everywhere, L = sum(Z) = 24
+                   grads: C=1, A=-3, B=2  (identical)   d = [2,2,2]  (summed)
+    All values produced by the course's own tensor library.
   -->
 
-  <!-- divider -->
-  <line x1="360" y1="46" x2="360" y2="346" stroke="#e0d9c5" stroke-width="1" stroke-dasharray="4 4"/>
+  <!-- ══════ column headers ══════════════════════════════════════ -->
+  <rect x="30" y="40" width="316" height="26" rx="6" fill="#eceff4" stroke="#8fa3bf"/>
+  <text x="188" y="58" text-anchor="middle" fill="#3d5a80" font-family="monospace" font-size="12" font-weight="700">Ch 08 — one number per node</text>
 
-  <!-- ══════════ LEFT: FORWARD ══════════════════════════════════ -->
-  <text x="180" y="62" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="12" font-weight="700">FORWARD — one row copied down</text>
+  <rect x="374" y="40" width="316" height="26" rx="6" fill="#f0f6f0" stroke="#2e7d32"/>
+  <text x="532" y="58" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="12" font-weight="700">Ch 10 — one [2,3] per node</text>
 
-  <!-- b row -->
-  <text x="52" y="98" text-anchor="end" fill="#6f42c1" font-family="monospace" font-size="11" font-weight="700">b</text>
-  <text x="52" y="110" text-anchor="end" fill="#8b7355" font-family="monospace" font-size="9">[1,3]</text>
-  <g font-family="monospace" font-size="13" font-weight="700" text-anchor="middle">
-    <rect x="64"  y="84" width="52" height="30" rx="4" fill="#ffffff" stroke="#6f42c1" stroke-width="1.5"/>
-    <text x="90"  y="104" fill="#6f42c1">10</text>
-    <rect x="122" y="84" width="52" height="30" rx="4" fill="#ffffff" stroke="#6f42c1" stroke-width="1.5"/>
-    <text x="148" y="104" fill="#6f42c1">20</text>
-    <rect x="180" y="84" width="52" height="30" rx="4" fill="#ffffff" stroke="#6f42c1" stroke-width="1.5"/>
-    <text x="206" y="104" fill="#6f42c1">30</text>
+  <line x1="360" y1="72" x2="360" y2="330" stroke="#e0d9c5" stroke-width="1" stroke-dasharray="4 4"/>
+
+  <!-- ══════ LEFT: the scalar version ════════════════════════════ -->
+  <g font-family="monospace" text-anchor="middle">
+    <text x="70"  y="96" fill="#6f42c1" font-size="11" font-weight="700">a</text>
+    <rect x="46" y="102" width="48" height="26" rx="4" fill="#ffffff" stroke="#6f42c1"/>
+    <text x="70"  y="120" fill="#2c2416" font-size="12">2</text>
+
+    <text x="140" y="96" fill="#6f42c1" font-size="11" font-weight="700">b</text>
+    <rect x="116" y="102" width="48" height="26" rx="4" fill="#ffffff" stroke="#6f42c1"/>
+    <text x="140" y="120" fill="#2c2416" font-size="12">-3</text>
+
+    <text x="250" y="96" fill="#6f42c1" font-size="11" font-weight="700">d</text>
+    <rect x="226" y="102" width="48" height="26" rx="4" fill="#ffffff" stroke="#a94442" stroke-width="1.5"/>
+    <text x="250" y="120" fill="#2c2416" font-size="12">10</text>
+
+    <text x="105" y="150" fill="#8b7355" font-size="11">c = a×b = -6</text>
+    <text x="188" y="168" fill="#3d5a80" font-size="12" font-weight="700">L = c + d = 4</text>
   </g>
 
-  <!-- copy arrows -->
-  <path d="M148,116 L148,140" stroke="#c9b88a" stroke-width="1.5"/>
-  <path d="M148,140 l-4,-6 l8,0 z" fill="#c9b88a"/>
-  <text x="250" y="134" fill="#a8956a" font-family="monospace" font-size="10">copied into every row</text>
-
-  <!-- Z grid -->
-  <text x="52" y="170" text-anchor="end" fill="#1e6091" font-family="monospace" font-size="11" font-weight="700">Z</text>
-  <text x="52" y="182" text-anchor="end" fill="#8b7355" font-family="monospace" font-size="9">[2,3]</text>
-  <g font-family="monospace" font-size="12" text-anchor="middle" fill="#2c2416">
-    <rect x="64"  y="150" width="52" height="30" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="90"  y="170">11</text>
-    <rect x="122" y="150" width="52" height="30" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="148" y="170">22</text>
-    <rect x="180" y="150" width="52" height="30" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="206" y="170">33</text>
-    <rect x="64"  y="186" width="52" height="30" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="90"  y="206">14</text>
-    <rect x="122" y="186" width="52" height="30" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="148" y="206">25</text>
-    <rect x="180" y="186" width="52" height="30" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="206" y="206">36</text>
+  <text x="188" y="196" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="11" font-weight="700">backward</text>
+  <g font-family="monospace" font-size="12" text-anchor="start" fill="#2c2416">
+    <text x="72" y="218">c.grad = 1</text>
+    <text x="72" y="238">a.grad = -3</text>
+    <text x="72" y="258">b.grad = 2</text>
+    <text x="72" y="278" fill="#a94442" font-weight="700">d.grad = 1</text>
   </g>
 
-  <text x="148" y="242" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">Z = X + b   where X = [[1,2,3],[4,5,6]]</text>
-  <text x="148" y="258" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="11" font-weight="700">L = sum(Z) = 141</text>
+  <!-- ══════ RIGHT: the tensor version ═══════════════════════════ -->
+  <g font-family="monospace" text-anchor="middle">
+    <text x="424" y="96" fill="#6f42c1" font-size="11" font-weight="700">A [2,3]</text>
+    <rect x="392" y="102" width="64" height="26" rx="4" fill="#ffffff" stroke="#6f42c1"/>
+    <text x="424" y="120" fill="#2c2416" font-size="11">all 2</text>
 
-  <!-- forward column highlight -->
-  <rect y="80" width="56" height="140" rx="5" fill="#6f42c1" fill-opacity="0.10" stroke="#6f42c1" stroke-width="1.5">
-    <animate attributeName="x" values="62;120;178" keyTimes="0;0.333;0.666" dur="4.5s" calcMode="discrete" repeatCount="indefinite"/>
+    <text x="500" y="96" fill="#6f42c1" font-size="11" font-weight="700">B [2,3]</text>
+    <rect x="468" y="102" width="64" height="26" rx="4" fill="#ffffff" stroke="#6f42c1"/>
+    <text x="500" y="120" fill="#2c2416" font-size="11">all -3</text>
+
+    <text x="614" y="96" fill="#a94442" font-size="11" font-weight="700">d [1,3]  ← one row</text>
+    <rect x="576" y="102" width="76" height="26" rx="4" fill="#ffffff" stroke="#a94442" stroke-width="2"/>
+    <text x="614" y="120" fill="#2c2416" font-size="11">10 10 10</text>
+
+    <text x="462" y="150" fill="#8b7355" font-size="11">C = A×B = all -6</text>
+    <text x="532" y="168" fill="#2e7d32" font-size="12" font-weight="700">Z = C + d = all 4    L = sum(Z) = 24</text>
+  </g>
+
+  <!-- the broadcast arrow, animated -->
+  <path d="M614,130 L614,144" stroke="#a94442" stroke-width="1.5" stroke-dasharray="3 3">
+    <animate attributeName="stroke-opacity" values="0.25;1;0.25" dur="2.6s" repeatCount="indefinite"/>
+  </path>
+  <text x="668" y="142" fill="#a94442" font-family="monospace" font-size="9">copied into</text>
+  <text x="668" y="152" fill="#a94442" font-family="monospace" font-size="9">both rows</text>
+
+  <text x="532" y="196" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="11" font-weight="700">backward</text>
+  <g font-family="monospace" font-size="12" text-anchor="start" fill="#2c2416">
+    <text x="404" y="218">C.grad = every entry 1</text>
+    <text x="404" y="238">A.grad = every entry -3</text>
+    <text x="404" y="258">B.grad = every entry 2</text>
+    <text x="404" y="278" fill="#a94442" font-weight="700">d.grad = [ 2  2  2 ]</text>
+  </g>
+
+  <!-- "same" ticks -->
+  <g font-family="monospace" font-size="11" font-weight="700" text-anchor="middle">
+    <text x="366" y="218" fill="#2e7d32">=</text>
+    <text x="366" y="238" fill="#2e7d32">=</text>
+    <text x="366" y="258" fill="#2e7d32">=</text>
+    <text x="366" y="278" fill="#a94442">≠</text>
+  </g>
+
+  <!-- the one-difference highlight, pulsing -->
+  <rect x="66" y="264" width="596" height="24" rx="5" fill="none" stroke="#a94442" stroke-width="2">
+    <animate attributeName="stroke-opacity" values="0.2;1;0.2" dur="2.6s" repeatCount="indefinite"/>
   </rect>
 
-  <!-- ══════════ RIGHT: BACKWARD ═══════════════════════════════ -->
-  <text x="540" y="62" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="12" font-weight="700">BACKWARD — that column summed</text>
+  <text x="360" y="308" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="12" font-weight="700">three gradients identical — one changed</text>
+  <text x="360" y="324" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">and that single difference is what Chapter 10 is about</text>
 
-  <!-- db row -->
-  <text x="424" y="98" text-anchor="end" fill="#a94442" font-family="monospace" font-size="11" font-weight="700">b.grad</text>
-  <text x="424" y="110" text-anchor="end" fill="#8b7355" font-family="monospace" font-size="9">[1,3]</text>
-  <g font-family="monospace" font-size="13" font-weight="700" text-anchor="middle">
-    <rect x="436" y="84" width="52" height="30" rx="4" fill="#ffffff" stroke="#a94442" stroke-width="1.5"/>
-    <text x="462" y="104" fill="#a94442">2</text>
-    <rect x="494" y="84" width="52" height="30" rx="4" fill="#ffffff" stroke="#a94442" stroke-width="1.5"/>
-    <text x="520" y="104" fill="#a94442">2</text>
-    <rect x="552" y="84" width="52" height="30" rx="4" fill="#ffffff" stroke="#a94442" stroke-width="1.5"/>
-    <text x="578" y="104" fill="#a94442">2</text>
-  </g>
+  <!-- ══════ the why ═════════════════════════════════════════════ -->
+  <rect x="30" y="340" width="660" height="54" rx="8" fill="#ffffff" stroke="#a94442" stroke-width="1.5"/>
+  <text x="360" y="358" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="11" font-weight="700">why only d?  because only d was shared</text>
+  <text x="360" y="374" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="11">A, B and C had their own gradient slot per element — nothing to merge</text>
+  <text x="360" y="388" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="11">d was ONE row used in TWO rows, so its gradient is 1 + 1 = 2</text>
 
-  <!-- sum arrow (upward) -->
-  <path d="M520,140 L520,116" stroke="#a94442" stroke-width="1.5"/>
-  <path d="M520,116 l-4,6 l8,0 z" fill="#a94442"/>
-  <text x="612" y="134" fill="#a94442" font-family="monospace" font-size="10">1 + 1 = 2</text>
-
-  <!-- dZ grid -->
-  <text x="424" y="170" text-anchor="end" fill="#a94442" font-family="monospace" font-size="11" font-weight="700">Z.grad</text>
-  <text x="424" y="182" text-anchor="end" fill="#8b7355" font-family="monospace" font-size="9">[2,3]</text>
-  <g font-family="monospace" font-size="12" text-anchor="middle" fill="#2c2416">
-    <rect x="436" y="150" width="52" height="30" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="462" y="170">1</text>
-    <rect x="494" y="150" width="52" height="30" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="520" y="170">1</text>
-    <rect x="552" y="150" width="52" height="30" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="578" y="170">1</text>
-    <rect x="436" y="186" width="52" height="30" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="462" y="206">1</text>
-    <rect x="494" y="186" width="52" height="30" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="520" y="206">1</text>
-    <rect x="552" y="186" width="52" height="30" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="578" y="206">1</text>
-  </g>
-
-  <text x="520" y="242" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">every position of Z gets gradient 1</text>
-  <text x="520" y="258" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="11" font-weight="700">sumToShape(Z.grad, [1,3]) = [2,2,2]</text>
-
-  <!-- backward column highlight, in step with the left one -->
-  <rect y="80" width="56" height="140" rx="5" fill="#a94442" fill-opacity="0.10" stroke="#a94442" stroke-width="1.5">
-    <animate attributeName="x" values="434;492;550" keyTimes="0;0.333;0.666" dur="4.5s" calcMode="discrete" repeatCount="indefinite"/>
-  </rect>
-
-  <!-- ══════════ the rule ══════════════════════════════════════ -->
-  <rect x="30" y="282" width="660" height="60" rx="8" fill="#ffffff" stroke="#c9b88a" stroke-width="1"/>
-  <text x="360" y="302" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="12" font-weight="700">the same rule, read both ways</text>
-  <text x="360" y="320" text-anchor="middle" fill="#6f42c1" font-family="monospace" font-size="11">forward BROADCASTS a shape up   →   backward SUMS the gradient down</text>
-  <text x="360" y="335" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="11">forward SUMS a shape down   →   backward BROADCASTS the gradient up</text>
-
-  <rect x="30" y="354" width="660" height="42" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
-  <text x="360" y="372" text-anchor="middle" font-family="monospace" font-size="11" fill="#5a4220" font-weight="600">
-    it is Ch 08's rule, unchanged: a value used in several places collects the SUM of their gradients
-  </text>
-  <text x="360" y="387" text-anchor="middle" font-family="monospace" font-size="9" fill="#8b7355">
-    b was used twice — once per row — so each of its gradients is 1 + 1 = 2
+  <!-- formula bar -->
+  <rect x="30" y="404" width="660" height="26" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="421" text-anchor="middle" font-family="monospace" font-size="11" fill="#5a4220" font-weight="600">
+    Ch 08's rule, unchanged: a value used in several places collects the SUM of their gradients
   </text>
 
 </svg>

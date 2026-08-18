@@ -89,61 +89,81 @@ A tensor collapses all of that into a single node over a single flat buffer. The
 
 ---
 
-## 2. One example, by hand — before any theory
+## 2. Chapter 08's own graph, with tensors in the nodes
 
-Everything in this chapter comes out of one small example. Do it on paper before reading any further; it takes three minutes, and the rest of the chapter is commentary on it.
+The only honest way to show what this chapter changes is to take something you have **already differentiated by hand** and redo it — changing what is inside the nodes and *nothing else*. Any other example would be changing two things at once, and you would not be able to tell which difference was the point.
 
-Two rows of activations, and a bias added to both:
-
-```
-X = [ 1  2  3 ]            b = [ 10  20  30 ]
-    [ 4  5  6 ]
-
-    shape [2,3]                shape [1,3]
-```
-
-**Forward.** The bias has only one row, so it gets copied into both rows of `X` — that is broadcasting, from Ch 03:
+So we use Chapter 08b's running example. You have seen this graph three times already:
 
 ```
-Z = X + b = [ 11  22  33 ]        shape [2,3]
-            [ 14  25  36 ]
+    a ──┐
+        ├──► [×] ──► c ──┐
+    b ──┘                ├──► [+] ──► L
+                         │
+    d ────────────────────┘
 
-L = sum(Z) = 141                  shape []  — a single number
+    L = (a · b) + d          a = 2,  b = -3,  d = 10
 ```
 
-**Backward.** Seed `L.grad = 1` and walk back one node at a time.
-
-**Step 1 — through `sum`.** `L` is the sum of all six entries of `Z`, so nudging any one of them moves `L` by exactly that much: `∂L/∂Zᵢⱼ = 1` for every entry.
+And you already know every number in it, because you computed them in Ch 08b:
 
 ```
-Z.grad = [ 1  1  1 ]              shape [2,3]
-         [ 1  1  1 ]
+forward :  c = -6      L = 4
+backward:  L.grad = 1   c.grad = 1   d.grad = 1   a.grad = -3   b.grad = 2
 ```
 
-**Step 2 — through `add`, into `X`.** Addition is still the router from Ch 08: it passes the gradient through unchanged. `X` has the same shape as `Z`, so nothing else is needed.
+### The same graph, one tensor per node
+
+Now the only change: every node holds a **`[2,3]` block** instead of one number. Same names, same values, same operations. `d` stays a **single row** — one bias shared by both rows, which is how a bias is always used:
 
 ```
-X.grad = [ 1  1  1 ]              shape [2,3]   ✓ matches X
-         [ 1  1  1 ]
+A = [  2   2   2 ]        B = [ -3  -3  -3 ]        d = [ 10  10  10 ]
+    [  2   2   2 ]            [ -3  -3  -3 ]
+
+    shape [2,3]                shape [2,3]              shape [1,3]  ← one row
 ```
 
-**Step 3 — through `add`, into `b`. This step is the entire chapter.**
-
-`b` has shape `[1,3]`, but the gradient arriving is `[2,3]`. Those do not match, and they cannot — `b` only has three numbers, and six gradients turned up.
-
-So ask the Chapter 08 question instead. **How many times was `b[0]` — the number 10 — actually used?** Twice: once in row 0, once in row 1. And Ch 08 already told you what happens to a value used in several places — *its gradient is the sum of the contributions.*
+**Forward** — every operation is the tensor version of the one Ch 08 used:
 
 ```
-b.grad[0] = Z.grad[0][0] + Z.grad[1][0] = 1 + 1 = 2
-b.grad[1] = Z.grad[0][1] + Z.grad[1][1] = 1 + 1 = 2
-b.grad[2] = Z.grad[0][2] + Z.grad[1][2] = 1 + 1 = 2
+C = A × B  =  [ -6  -6  -6 ]     ✓ Ch 08's c = -6, six times over
+              [ -6  -6  -6 ]
 
-b.grad = [ 2  2  2 ]              shape [1,3]   ✓ matches b
+Z = C + d  =  [  4   4   4 ]     ✓ Ch 08's L = 4, six times over
+              [  4   4   4 ]        (d's single row is copied into both)
+
+L = sum(Z) =  24                 ← collapse to one number, so backward()
+                                    has a single thing to start from
 ```
 
-That is it. That summing-down-the-copies is `sumToShape`, the one genuinely new idea in the first half of this chapter — and you just did it by hand, with no new mathematics, using a rule you already had.
+**Backward** — now compare each gradient against the one you already know:
 
-> Those exact numbers are the first thing to check once `add` and `sum` work. If `b.grad` comes back `[2,2,2]` with shape `[1,3]`, the hard part is done.
+| node | Ch 08 gradient | Ch 10 gradient | |
+|---|---|---|---|
+| `C` | `1` | every entry `1` | **same** |
+| `A` | `-3` (that is `b`) | every entry `-3` | **same** |
+| `B` | `2` (that is `a`) | every entry `2` | **same** |
+| `d` | `1` | **`[ 2  2  2 ]`** | **different** |
+
+Read that table slowly, because it is the entire chapter.
+
+**Three of the four are unchanged.** Not "analogous" — identical, element for element. `A.grad` is `-3` in every position exactly as the scalar `a.grad` was `-3`. The multiply still routes each operand its sibling's value; the add still copies its gradient to both parents. Every rule you wrote in Ch 08 carried over without modification, because every one of those nodes had its own gradient slot for every one of its numbers.
+
+**One is different, and only one.** `d` was a single row, but it was *used in two rows*. So ask the Chapter 08 question: **how many times was `d[0]` — the number 10 — actually used?** Twice. And Ch 08 already told you what happens to a value used in several places:
+
+> *its gradient is the sum of the contributions.*
+
+```
+d.grad[0] = Z.grad[0][0] + Z.grad[1][0] = 1 + 1 = 2
+d.grad[1] = Z.grad[0][1] + Z.grad[1][1] = 1 + 1 = 2
+d.grad[2] = Z.grad[0][2] + Z.grad[1][2] = 1 + 1 = 2
+```
+
+That summing-down-the-copies is `sumToShape` — the one genuinely new idea in the first half of the chapter, and you have just done it by hand using a rule you already had. No new mathematics appears anywhere in this section.
+
+> **Why every entry is the same number here.** So the comparison with Ch 08 is exact, line for line. In a real tensor the entries differ from each other and the gradients differ with them — but not one rule changes. If you want to see that, change `A` to `[[1,2,3],[4,5,6]]` and re-run; `A.grad` stays all `-3`, and `d.grad` stays `[2,2,2]`.
+
+> **Check this first.** Once `mul`, `add` and `sum` work, this is the first thing to run. Three gradients matching Ch 08 and `d.grad = [2,2,2]` with shape `[1,3]` means the hard part is done.
 
 ---
 
@@ -201,15 +221,15 @@ It is also a new *category* of bug. In Ch 08 a wrong gradient was a wrong number
 
 ## 4. The same rule, running the other way
 
-Before moving on, here is section 2 as a picture — the bias going down in the forward pass, its gradients coming back up in the backward pass. Same numbers, nothing new:
+Before moving on, here is section 2's comparison as a picture — Chapter 08's graph on the left, the same graph with tensors on the right, gradients lined up so you can see which ones moved:
 
 <p align="center">
-  <img src="../assets/ch-10/broadcast-sum-duality.svg" alt="Section 2's example drawn as two halves of one operation. The left half, labelled FORWARD, shows the bias b of shape [1,3] holding 10, 20, 30 with an arrow down labelled copied into every row, producing Z of shape [2,3] holding 11, 22, 33 on the first row and 14, 25, 36 on the second, where Z = X + b and X is [[1,2,3],[4,5,6]], giving L = sum(Z) = 141. The right half, labelled BACKWARD, shows Z.grad of shape [2,3] with every one of its six entries equal to 1, and an arrow pointing up labelled 1 + 1 = 2 producing b.grad of shape [1,3] holding 2, 2, 2, annotated sumToShape(Z.grad, [1,3]) = [2,2,2]. A highlighted column sweeps across positions 0, 1 and 2 on both halves at the same time, so each bias entry lines up with the column of gradients that sums into it. A panel below states the rule read both ways: forward broadcasts a shape up so backward sums the gradient down, and forward sums a shape down so backward broadcasts the gradient up, because b was used twice — once per row — so each of its gradients is 1 + 1 = 2." />
+  <img src="../assets/ch-10/broadcast-sum-duality.svg" alt="A side-by-side comparison of the same computation graph. The left column, headed Ch 08 one number per node, shows a = 2, b = -3 and d = 10, with c = a times b = -6 and L = c + d = 4, and below it the backward results c.grad = 1, a.grad = -3, b.grad = 2 and d.grad = 1. The right column, headed Ch 10 one [2,3] per node, shows A holding 2 in every position and B holding -3 in every position, both shape [2,3], while d remains a single row of shape [1,3] holding 10 10 10, marked one row with a pulsing dashed arrow labelled copied into both rows. It gives C = A times B = all -6, Z = C + d = all 4 and L = sum(Z) = 24, and below it the backward results C.grad = every entry 1, A.grad = every entry -3, B.grad = every entry 2, and d.grad = the row 2 2 2. Equals signs sit between the first three pairs of gradients and a not-equals sign between the last, with a pulsing highlight around the d row. A panel explains that only d changed because only d was shared: A, B and C each had their own gradient slot per element so there was nothing to merge, whereas d was one row used in two rows, so its gradient is 1 + 1 = 2. A caption repeats Chapter 08's rule unchanged — a value used in several places collects the sum of their gradients." />
 </p>
 
-*Figure 2: section 2, drawn. The sweeping column shows which gradients sum into which bias entry.*
+*Figure 2: section 2, drawn. Three gradients identical, one changed — and the changed one is the chapter.*
 
-That is one direction. There is exactly one more, and it is the mirror image.
+That is one direction: forward broadcast `d` up, so backward summed its gradient down. There is exactly one more situation, and it is the mirror image.
 
 **When forward sums, backward broadcasts.** Take a reduction instead of a broadcast — `sum` along axis 1, collapsing three numbers into one:
 
@@ -253,7 +273,7 @@ Do (1) first. Once the ranks agree, one pass comparing axes pairwise handles (2)
 
 And the no-op case matters: when `grad.shape` already equals `targetShape`, return it unchanged. Every caller depends on that being safe, which is why none of them checks first.
 
-**One note on the numbers, so they don't look like two different stories.** section 2 used two rows and got `[2,2,2]`. The exercise uses the same setup with **four** rows, so `sumToShape(ones([4,3]), [1,3])` gives `[4,4,4]` — one gradient per row, summed. It is the identical rule with a taller tensor, and your implementation should produce both without any special-casing.
+**One note on the numbers.** Section 2 used two rows and got `d.grad` = `[2,2,2]`. The exercise uses the same setup with **four** rows, so `sumToShape(ones([4,3]), [1,3])` gives `[4,4,4]` — one gradient per row, summed. It is the identical rule with a taller tensor, and your implementation should produce both without any special-casing.
 
 ---
 
