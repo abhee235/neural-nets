@@ -199,47 +199,50 @@ It is also a new *category* of bug. In Ch 08 a wrong gradient was a wrong number
 
 ---
 
-## 4. The duality: broadcast one way, sum the other
+## 4. The same rule, running the other way
 
-You have already done half of this by hand. §2's step 3 — six gradients summed down into three — is the left-hand panel below. The right-hand panel is the same rule running the other way, and seeing them together is what makes the rest of the chapter fall out.
+Before moving on, here is §2 as a picture — the bias going down in the forward pass, its gradients coming back up in the backward pass. Same numbers, nothing new:
 
 <p align="center">
-  <img src="../assets/ch-10/broadcast-sum-duality.svg" alt="Two panels showing mirrored operations. Left panel, broadcasting: a bias tensor of shape [1,3] holding the values 5, 6, 7 is copied down four rows in the forward pass to shape [4,3]; in the backward pass the twelve gradients arriving at shape [4,3] are summed down each column back to shape [1,3], so with every gradient equal to 1 the result is 4, 4, 4. Right panel, reduction: a tensor of shape [2,3] is summed along axis 1 in the forward pass to shape [2,1]; in the backward pass each single upstream gradient is copied back across all three positions of its row to recover shape [2,3]. A caption states that broadcasting forward means summing backward and summing forward means broadcasting backward, because an element copied into many places collects the sum of their gradients." />
+  <img src="../assets/ch-10/broadcast-sum-duality.svg" alt="Section 2's example drawn as two halves of one operation. The left half, labelled FORWARD, shows the bias b of shape [1,3] holding 10, 20, 30 with an arrow down labelled copied into every row, producing Z of shape [2,3] holding 11, 22, 33 on the first row and 14, 25, 36 on the second, where Z = X + b and X is [[1,2,3],[4,5,6]], giving L = sum(Z) = 141. The right half, labelled BACKWARD, shows Z.grad of shape [2,3] with every one of its six entries equal to 1, and an arrow pointing up labelled 1 + 1 = 2 producing b.grad of shape [1,3] holding 2, 2, 2, annotated sumToShape(Z.grad, [1,3]) = [2,2,2]. A highlighted column sweeps across positions 0, 1 and 2 on both halves at the same time, so each bias entry lines up with the column of gradients that sums into it. A panel below states the rule read both ways: forward broadcasts a shape up so backward sums the gradient down, and forward sums a shape down so backward broadcasts the gradient up, because b was used twice — once per row — so each of its gradients is 1 + 1 = 2." />
 </p>
 
-*Figure 1: the same rule seen from both ends.*
+*Figure 2: §2, drawn. The sweeping column shows which gradients sum into which bias entry.*
 
-**Forward broadcasts → backward sums.** A bias of shape `[1,3]` added to activations of shape `[4,3]` gets *copied* into four rows. Each original bias number was therefore used four times — and Chapter 08 already told you what happens to a value used in several places: its gradient is the **sum** of the contributions. Summing across the broadcast axis is that rule, applied to a whole axis at once.
+That is one direction. There is exactly one more, and it is the mirror image.
 
-**Forward sums → backward broadcasts.** Reducing `[2,3]` to `[2,1]` collapses three numbers into one. Each contributed with a coefficient of exactly 1, so `∂out/∂inputᵢ = 1` for every one of them, and each receives the *same* upstream gradient. Copying one number into many positions is exactly what broadcasting does.
+**When forward sums, backward broadcasts.** Take a reduction instead of a broadcast — `sum` along axis 1, collapsing three numbers into one:
 
-So they are not two rules to memorise. They are one rule — *an element used in many places collects the sum of their gradients* — read forwards and backwards.
+```
+forward :   [ 1  2  3 ]   →  sum axis 1  →   [  6 ]        [2,3] → [2,1]
+            [ 4  5  6 ]                      [ 15 ]
+
+backward:   [ 1 ]  →  copied across the row  →  [ 1  1  1 ]    [2,1] → [2,3]
+            [ 1 ]                               [ 1  1  1 ]
+```
+
+Why: each of the three inputs contributed to its output with a coefficient of exactly 1, so every one of them receives the *same* upstream gradient. Copying one number into many positions is precisely what broadcasting does.
+
+So there are not two rules here to keep straight:
+
+> forward **broadcasts** a shape up  →  backward **sums** the gradient down
+> forward **sums** a shape down  →  backward **broadcasts** the gradient up
+
+Both are the single Chapter 08 rule — *a value used in several places collects the sum of their gradients* — read from one end or the other. §2 was the first line. This is the second. Nothing else in this chapter needs a third.
 
 ---
 
-## 5. `sumToShape` — the one new primitive
+## 5. `sumToShape` — writing it for any pair of shapes
 
-Everything in §4's left panel is packaged into a single function:
+In §2 you summed six gradients down into three by hand. `sumToShape` is that same operation, written once so it works for any shapes rather than just `[2,3] → [1,3]`:
 
 ```
 sumToShape(grad, targetShape)  →  grad, summed back down to targetShape
 ```
 
-Every broadcasting operation's backward calls it. Get it right once and `add` and `mul` become easy.
+Every broadcasting op's backward calls it, so getting it right once makes `add` and `mul` easy.
 
-**Worked example**, and the one the exercise checks:
-
-```
-bias   : [1,3]         activations : [4,3]
-forward: bias is copied into all 4 rows
-grad in: [4,3]         12 gradients, one per position
-target : [1,3]         but the bias only has 3 numbers
-
-each output = the sum of the 4 gradients down its column
-with every incoming gradient = 1  →  [4, 4, 4]
-```
-
-**Two cases, and both must be handled:**
+You already know *what* it does. The only new thing is *how*, because broadcasting can change a shape in two different ways — and both have to be handled:
 
 1. **Rank was added.** `[3]` broadcast to `[2,3]` gained a leading axis. Sum the leading axes away until the ranks match.
 2. **A size-1 axis was stretched.** `[3,1]` broadcast to `[3,4]` kept its rank but grew axis 1. Sum along that axis **with `keepDims = true`**, so the size-1 axis survives and you land on `[3,1]`, not `[3]`.
@@ -249,6 +252,8 @@ Do (1) first. Once the ranks agree, one pass comparing axes pairwise handles (2)
 > **The `keepDims` trap.** Dropping the axis in case 2 gives `[3]` where the parameter is `[3,1]`. Both hold three numbers, so nothing crashes — it fails later, as a shape mismatch far from the cause, or silently re-broadcasts differently. This is the single most annoying bug in the chapter.
 
 And the no-op case matters: when `grad.shape` already equals `targetShape`, return it unchanged. Every caller depends on that being safe, which is why none of them checks first.
+
+**One note on the numbers, so they don't look like two different stories.** §2 used two rows and got `[2,2,2]`. The exercise uses the same setup with **four** rows, so `sumToShape(ones([4,3]), [1,3])` gives `[4,4,4]` — one gradient per row, summed. It is the identical rule with a taller tensor, and your implementation should produce both without any special-casing.
 
 ---
 
@@ -283,7 +288,7 @@ Those two lines are the workhorse of every backward pass from here to Chapter 30
   <img src="../assets/ch-10/matmul-backward-shapes.svg" alt="A shape derivation for matmul backward. The forward pass shows A of shape [2,3] times B of shape [3,4] giving Z of shape [2,4], so the upstream gradient dZ is also [2,4]. Two panels then derive the backward shapes by constraint. For dA: it must come out [2,3] to match A, and starting from dZ at [2,4] the only factor that produces [2,3] is something shaped [4,3], which is B transposed — giving dA = dZ @ B-transpose. For dB: it must come out [3,4] to match B, and the only factor that produces that from dZ at [2,4] is something shaped [3,2] multiplied on the left, which is A transposed — giving dB = A-transpose @ dZ. A caption notes the transposes are not a trick to memorise, they are the only shapes that fit." />
 </p>
 
-*Figure 2: there is only one arrangement that type-checks.*
+*Figure 3: there is only one arrangement that type-checks.*
 
 The reasoning, in full:
 
