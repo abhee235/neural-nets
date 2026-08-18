@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">why Chapter 10 has to exist: the same weight matrix, two ways to hold it</text>
+
+  <!--
+    One 768x768 weight matrix = 589,824 numbers.
+    Scalar Value nodes: 589,824 objects, each with an _inputs array and a closure.
+    TensorValue: 1 object over a Float64Array of 589,824 * 8 = 4,718,592 bytes = 4.5 MiB.
+    The dot field on the left is a 24x14 sample standing in for the full count.
+  -->
+
+  <!-- ══════ LEFT — scalar ══════════════════════════════════════ -->
+  <text x="180" y="52" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="12" font-weight="700">Ch 08 — one number per node</text>
+
+  <rect x="34" y="64" width="292" height="196" rx="8" fill="#ffffff" stroke="#a94442" stroke-width="1.5"/>
+
+  <!-- a field of tiny nodes, sampled -->
+  <g fill="#a94442" fill-opacity="0.55">
+    <circle cx="52"  cy="82" r="2.4"/><circle cx="63"  cy="82" r="2.4"/><circle cx="74"  cy="82" r="2.4"/><circle cx="85"  cy="82" r="2.4"/><circle cx="96"  cy="82" r="2.4"/><circle cx="107" cy="82" r="2.4"/><circle cx="118" cy="82" r="2.4"/><circle cx="129" cy="82" r="2.4"/><circle cx="140" cy="82" r="2.4"/><circle cx="151" cy="82" r="2.4"/><circle cx="162" cy="82" r="2.4"/><circle cx="173" cy="82" r="2.4"/><circle cx="184" cy="82" r="2.4"/><circle cx="195" cy="82" r="2.4"/><circle cx="206" cy="82" r="2.4"/><circle cx="217" cy="82" r="2.4"/><circle cx="228" cy="82" r="2.4"/><circle cx="239" cy="82" r="2.4"/><circle cx="250" cy="82" r="2.4"/><circle cx="261" cy="82" r="2.4"/><circle cx="272" cy="82" r="2.4"/><circle cx="283" cy="82" r="2.4"/><circle cx="294" cy="82" r="2.4"/><circle cx="305" cy="82" r="2.4"/>
+  </g>
+  <g fill="#a94442" fill-opacity="0.45">
+    <rect x="46" y="92" width="266" height="150" fill="url(#dots)"/>
+  </g>
+  <defs>
+    <pattern id="dots" width="11" height="11" patternUnits="userSpaceOnUse">
+      <circle cx="5.5" cy="5.5" r="2.4" fill="#a94442" fill-opacity="0.5"/>
+    </pattern>
+  </defs>
+
+  <!-- pulsing overlay to suggest the bookkeeping cost -->
+  <rect x="46" y="76" width="266" height="166" fill="#a94442" fill-opacity="0">
+    <animate attributeName="fill-opacity" values="0;0.10;0" dur="3s" repeatCount="indefinite"/>
+  </rect>
+
+  <text x="180" y="278" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="20" font-weight="700">589,824 objects</text>
+  <text x="180" y="298" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">one per number — each with its own</text>
+  <text x="180" y="312" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">_inputs array and _backward closure</text>
+  <text x="180" y="332" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">…and that is ONE weight matrix,</text>
+  <text x="180" y="346" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">before a single forward pass runs</text>
+
+  <!-- ══════ ARROW ══════════════════════════════════════════════ -->
+  <path d="M338,160 L378,160" stroke="#c9b88a" stroke-width="2"/>
+  <path d="M378,160 l-8,-5 l0,10 z" fill="#c9b88a"/>
+  <text x="358" y="150" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">Ch 10</text>
+
+  <!-- ══════ RIGHT — tensor ═════════════════════════════════════ -->
+  <text x="540" y="52" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="12" font-weight="700">Ch 10 — one tensor per node</text>
+
+  <rect x="394" y="64" width="292" height="196" rx="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.5"/>
+
+  <!-- single node box -->
+  <rect x="452" y="104" width="176" height="116" rx="10" fill="#f0f6f0" stroke="#2e7d32" stroke-width="2">
+    <animate attributeName="stroke-width" values="2;3;2" dur="3s" repeatCount="indefinite"/>
+  </rect>
+  <text x="540" y="130" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="13" font-weight="700">TensorValue</text>
+  <line x1="470" y1="140" x2="610" y2="140" stroke="#2e7d32" stroke-opacity="0.3"/>
+  <text x="470" y="158" fill="#2c2416" font-family="monospace" font-size="11">data  : Tensor [768,768]</text>
+  <text x="470" y="176" fill="#2c2416" font-family="monospace" font-size="11">grad  : Tensor | null</text>
+  <text x="470" y="196" fill="#8b7355" font-family="monospace" font-size="10">one Float64Array, contiguous</text>
+  <text x="470" y="210" fill="#8b7355" font-family="monospace" font-size="10">4.5 MiB, numbers side by side</text>
+
+  <text x="540" y="278" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="20" font-weight="700">1 object</text>
+  <text x="540" y="298" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">one _inputs array, one closure,</text>
+  <text x="540" y="312" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">visited once by topoSort</text>
+  <text x="540" y="332" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">the arithmetic is the same —</text>
+  <text x="540" y="346" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">the bookkeeping around it vanishes</text>
+
+  <!-- formula bar -->
+  <rect x="30" y="360" width="660" height="30" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="379" text-anchor="middle" font-family="monospace" font-size="11" fill="#5a4220" font-weight="600">
+    scalar autograd is CORRECT and UNUSABLE — this chapter changes what is in a node, and nothing else
+  </text>
+
+</svg>
