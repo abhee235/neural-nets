@@ -28,10 +28,10 @@ That is genuinely all. The graph does not change. The topological order does not
 >
 > | | Sections | Then |
 > |---|---|---|
-> | **Read** | 1 → 5 | **Build** `sumToShape`, `reshape`, `transpose`, `zeroGrad` (§6) |
-> | **Read** | 7 | **Build** `add`, `mul`, `matMul` (§8) |
-> | **Read** | 9 | **Build** `sum`, `mean`, `backward` (§10) |
-> | **Read** | 11 | Verify everything, then §12–13 |
+> | **Read** | 1 → 5 | **Build** `sumToShape`, `reshape`, `transpose`, `zeroGrad` (section 6) |
+> | **Read** | 7 | **Build** `add`, `mul`, `matMul` (section 8) |
+> | **Read** | 9 | **Build** `sum`, `mean`, `backward` (section 10) |
+> | **Read** | 11 | Verify everything, then sections 12–13 |
 >
 > [`grad.ts`](../../src/autograd/grad.ts) presents every method as a **pair** — the scalar code you already wrote in Ch 08, then what changes for tensors. Read it alongside this doc; the two are designed to be used together.
 
@@ -185,7 +185,7 @@ The cost is that every accumulation site has to ask "first contribution, or anot
 
 ### The invariant behind all of it
 
-Notice what §2 kept checking after every step: *does the gradient's shape match its tensor's shape?* That is the rule the whole chapter runs on.
+Notice what section 2 kept checking after every step: *does the gradient's shape match its tensor's shape?* That is the rule the whole chapter runs on.
 
 A gradient answers a question about one number — *if I nudge this, how does the loss respond?* — so there has to be exactly one gradient per data element:
 
@@ -193,21 +193,21 @@ $$\boxed{\texttt{node.grad.shape} \;=\; \texttt{node.data.shape}}$$
 
 Always. A `[4,3]` tensor has twelve numbers and therefore twelve gradients, arranged `[4,3]`.
 
-Simple enough — except that **forward operations are allowed to change shape.** Broadcasting grew `[1,3]` into `[2,3]` in §2. Reductions shrink one. `matMul` makes a third shape out of two. Every time forward changes a shape, backward has to change it back, and getting that direction right is essentially the whole chapter.
+Simple enough — except that **forward operations are allowed to change shape.** Broadcasting grew `[1,3]` into `[2,3]` in section 2. Reductions shrink one. `matMul` makes a third shape out of two. Every time forward changes a shape, backward has to change it back, and getting that direction right is essentially the whole chapter.
 
-It is also a new *category* of bug. In Ch 08 a wrong gradient was a wrong number. Here you can have a perfectly-shaped tensor full of wrong numbers — shapes line up, nothing throws, and the loss even falls for a while. §11 is about not letting that happen.
+It is also a new *category* of bug. In Ch 08 a wrong gradient was a wrong number. Here you can have a perfectly-shaped tensor full of wrong numbers — shapes line up, nothing throws, and the loss even falls for a while. Section 11 is about not letting that happen.
 
 ---
 
 ## 4. The same rule, running the other way
 
-Before moving on, here is §2 as a picture — the bias going down in the forward pass, its gradients coming back up in the backward pass. Same numbers, nothing new:
+Before moving on, here is section 2 as a picture — the bias going down in the forward pass, its gradients coming back up in the backward pass. Same numbers, nothing new:
 
 <p align="center">
   <img src="../assets/ch-10/broadcast-sum-duality.svg" alt="Section 2's example drawn as two halves of one operation. The left half, labelled FORWARD, shows the bias b of shape [1,3] holding 10, 20, 30 with an arrow down labelled copied into every row, producing Z of shape [2,3] holding 11, 22, 33 on the first row and 14, 25, 36 on the second, where Z = X + b and X is [[1,2,3],[4,5,6]], giving L = sum(Z) = 141. The right half, labelled BACKWARD, shows Z.grad of shape [2,3] with every one of its six entries equal to 1, and an arrow pointing up labelled 1 + 1 = 2 producing b.grad of shape [1,3] holding 2, 2, 2, annotated sumToShape(Z.grad, [1,3]) = [2,2,2]. A highlighted column sweeps across positions 0, 1 and 2 on both halves at the same time, so each bias entry lines up with the column of gradients that sums into it. A panel below states the rule read both ways: forward broadcasts a shape up so backward sums the gradient down, and forward sums a shape down so backward broadcasts the gradient up, because b was used twice — once per row — so each of its gradients is 1 + 1 = 2." />
 </p>
 
-*Figure 2: §2, drawn. The sweeping column shows which gradients sum into which bias entry.*
+*Figure 2: section 2, drawn. The sweeping column shows which gradients sum into which bias entry.*
 
 That is one direction. There is exactly one more, and it is the mirror image.
 
@@ -228,13 +228,13 @@ So there are not two rules here to keep straight:
 > forward **broadcasts** a shape up  →  backward **sums** the gradient down
 > forward **sums** a shape down  →  backward **broadcasts** the gradient up
 
-Both are the single Chapter 08 rule — *a value used in several places collects the sum of their gradients* — read from one end or the other. §2 was the first line. This is the second. Nothing else in this chapter needs a third.
+Both are the single Chapter 08 rule — *a value used in several places collects the sum of their gradients* — read from one end or the other. Section 2 was the first line. This is the second. Nothing else in this chapter needs a third.
 
 ---
 
 ## 5. `sumToShape` — writing it for any pair of shapes
 
-In §2 you summed six gradients down into three by hand. `sumToShape` is that same operation, written once so it works for any shapes rather than just `[2,3] → [1,3]`:
+In section 2 you summed six gradients down into three by hand. `sumToShape` is that same operation, written once so it works for any shapes rather than just `[2,3] → [1,3]`:
 
 ```
 sumToShape(grad, targetShape)  →  grad, summed back down to targetShape
@@ -253,7 +253,7 @@ Do (1) first. Once the ranks agree, one pass comparing axes pairwise handles (2)
 
 And the no-op case matters: when `grad.shape` already equals `targetShape`, return it unchanged. Every caller depends on that being safe, which is why none of them checks first.
 
-**One note on the numbers, so they don't look like two different stories.** §2 used two rows and got `[2,2,2]`. The exercise uses the same setup with **four** rows, so `sumToShape(ones([4,3]), [1,3])` gives `[4,4,4]` — one gradient per row, summed. It is the identical rule with a taller tensor, and your implementation should produce both without any special-casing.
+**One note on the numbers, so they don't look like two different stories.** section 2 used two rows and got `[2,2,2]`. The exercise uses the same setup with **four** rows, so `sumToShape(ones([4,3]), [1,3])` gives `[4,4,4]` — one gradient per row, summed. It is the identical rule with a taller tensor, and your implementation should produce both without any special-casing.
 
 ---
 
@@ -318,14 +318,14 @@ The transposes are not a trick. They are the only shapes that fit. Whenever you 
 **Milestone 6 — `mul`.** Structurally identical to Ch 08's — the switch still swaps the operands. Every `*` becomes an element-wise tensor `mul`, and each accumulation is wrapped in `sumToShape`.
 > **Order matters here.** `mul(other.data, out.grad)` is *itself* a broadcasting operation, so its result has the broadcast shape, not the parent's. `sumToShape` wraps the product; it does not go on `out.grad` first. Reverse those and you will be multiplying mismatched shapes.
 
-**Milestone 7 — `matMul`.** §7's two formulas.
+**Milestone 7 — `matMul`.** section 7's two formulas.
 ✅ *Checkpoint:* `[2,3] @ [3,4]` gives `[2,4]`, and after backward the gradients are `[2,3]` and `[3,4]` — each matching its own parameter. That is the shape invariant doing its job, and it is a strong signal you got the transposes the right way round.
 
 ---
 
 ## 9. Reductions backward — `sum` and `mean`
 
-The mirror side of §4.
+The mirror side of section 4.
 
 **`sum`.** Every input element contributed with coefficient 1, so every element gets the same upstream gradient — broadcast it back out.
 
@@ -350,7 +350,7 @@ And a callback to Ch 09's deep dive on why `mean` is usually the right choice fo
 
 ## 10. Build it (3) — `sum`, `mean`, `backward`
 
-**Milestone 8 — `sum` and `mean`.** §9. Do `sum` first and get `mean` by scaling it.
+**Milestone 8 — `sum` and `mean`.** section 9. Do `sum` first and get `mean` by scaling it.
 
 **Milestone 9 — `backward`.** Line for line the Ch 08 version, with two substitutions:
 

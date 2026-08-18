@@ -257,7 +257,7 @@ Read top-to-bottom: **the 2-D formula is the tail of the 3-D formula.** Going fr
 rank 2 to rank 3 just *prepends one extra term* — the depth index `d` times the size
 of one whole slab `R · C`. Everything you learned a minute ago still applies; you
 only added a new outermost step. (Rank 4 would prepend yet another term, and so on —
-that's the pattern the general formula in §4 captures.)
+that's the pattern the general formula in section 4 captures.)
 
 For our `[2, 3, 4]` tensor, $R \cdot C = 3 \times 4 = 12$, so one depth step jumps
 **12 cells** in the flat buffer. That `12` is `stride[0]`, named properly in the
@@ -508,7 +508,7 @@ These are the exact exports you need to write in [`src/tensor/types.ts`](../../s
 ### A code trace for `flatIndex`
 
 The full walk-through — staircase, loop, and trace table for `[2, 3, 4]`, `[1, 2, 3] → 23`
-— lives in [§4 above](#4-strides--a-precise-formula). Re-read it once before opening
+— lives in [section 4 above](#4-strides--a-precise-formula). Re-read it once before opening
 the exercise file; the signature you implement is **`flatIndex(shape, indices)`**
 (matches the stub in `src/tensor/types.ts`).
 

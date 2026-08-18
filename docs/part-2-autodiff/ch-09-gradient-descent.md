@@ -22,8 +22,8 @@ So why give it a chapter? Because this is the first code that **closes the loop*
 >
 > | | Sections | Then |
 > |---|---|---|
-> | **Read** | 1 → 6 | **Build** `SGD` (§7) |
-> | **Read** | 8 → 10 | **Build** `SGDMomentum` (§11) |
+> | **Read** | 1 → 6 | **Build** `SGD` (section 7) |
+> | **Read** | 8 → 10 | **Build** `SGDMomentum` (section 11) |
 > | **Read** | 12 → 13 | Run the exercise |
 >
 > Sections 12 and 13 are context, not prerequisites — you can finish every line of code without them. Nothing in this chapter requires the [deep dive](../deep-dives/ch-09-how-big-a-step.md); save it for after your tests pass.
@@ -105,7 +105,7 @@ That is already the complete algorithm. If you understand this line, you underst
 >
 > It does, and this is the right moment to be suspicious of it. The resolution is that **all the difficulty of being deep lives inside `backward()`, not inside the update.** A parameter sitting four operations away from the loss has a gradient that is a *product of four local derivatives* — but the chain rule assembles that product during the backward pass, and by the time the update runs, that parameter is holding one number just like every other.
 >
-> And if the question underneath yours is *"none of these examples look like a neural network — is any of this actually going anywhere?"*, that one is answered head-on in **§6, "So where is the neural network?"**, with a real neuron trained by this chapter's loop.
+> And if the question underneath yours is *"none of these examples look like a neural network — is any of this actually going anywhere?"*, that one is answered head-on in **section 6, "So where is the neural network?"**, with a real neuron trained by this chapter's loop.
 >
 > If you would rather see the scaling claim demonstrated than take it on trust, [**one rule, many layers**](../deep-dives/ch-09-one-rule-many-layers.md) runs gradient descent on the graph you already know — Chapter 08's own `f = b·sin(a) + b²`. One of its parameters gets its gradient through a chain (`∂f/∂a = b·cos(a)`, passing through the `sin`), the other as a sum over two paths (`∂f/∂b = sin(a) + 2b`, the `1 + 6 = 7` you derived by hand). Those are exactly the two complications a deep network presents — and the same single update line moves both. Worth reading once this chapter's `SGD` works.
 
@@ -207,14 +207,14 @@ gradient : -10   -8     -6.4   -5.12     ← gradient = 2 × (w − 5), so also 
 step     :  1.0   0.8    0.64            ← step = 0.1 × gradient, so also 0.8×
 ```
 
-The distance shrinks by a factor, so the gradient shrinks by the same factor, so the step does too. Everything rides on one number. Where that number comes from — and why it happens to be `0.8` at `η = 0.1` — is §13.
+The distance shrinks by a factor, so the gradient shrinks by the same factor, so the step does too. Everything rides on one number. Where that number comes from — and why it happens to be `0.8` at `η = 0.1` — is section 13.
 
 The learning rate is the one thing *you* choose. It scales every step:
 
 - **Small `η`** — short strides. Safe, but you may still be walking at nightfall.
 - **Large `η`** — long strides. Fast, until a stride carries you clean across the valley and partway up the opposite slope.
 
-There is no universally correct value. There is, however, a value that is correct *for a given loss surface*, and more can be said about it than "try some numbers" — see §13.
+There is no universally correct value. There is, however, a value that is correct *for a given loss surface*, and more can be said about it than "try some numbers" — see section 13.
 
 ---
 
@@ -240,7 +240,7 @@ So the three outcomes to recognise are:
 
 The middle panel is what a healthy training run looks like: big improvements early, then progressively smaller ones, then a flat tail.
 
-One footnote for later: on this particular bowl, the boundary between "converges" and "diverges" is not a matter of taste — it can be derived exactly, and it turns out to be `η = 1`. That derivation is §13.
+One footnote for later: on this particular bowl, the boundary between "converges" and "diverges" is not a matter of taste — it can be derived exactly, and it turns out to be `η = 1`. That derivation is section 13.
 
 ---
 
@@ -272,7 +272,7 @@ And in code:
 
 *Figure 2: the loop. Stages 1–3 are Chapter 08; stages 4–5 are what you are about to build.*
 
-Two practical notes now, and the reasoning behind them in §8.
+Two practical notes now, and the reasoning behind them in section 8.
 
 **Step 5 exists because `backward()` adds to gradients rather than replacing them.** So after you have used this step's gradients, clear them, and the next iteration starts from a clean slate. That is all you need to believe for now.
 
@@ -306,7 +306,7 @@ This is worth holding onto, because it is what "the loss" always means:
 
 Where that number comes from — squared error here, cross-entropy in Ch 12 — gradient descent genuinely does not care. It needs one number, and the gradients leading back from it. That indifference is why the same five lines train a one-parameter bowl and a GPT.
 
-(Do notice the "four times as steep", though. Steepness changes which learning rates are safe — the model version diverges above `η = 0.25` where the plain bowl tolerates up to `1.0`. §13 is where that gets pinned down.)
+(Do notice the "four times as steep", though. Steepness changes which learning rates are safe — the model version diverges above `η = 0.25` where the plain bowl tolerates up to `1.0`. Section 13 is where that gets pinned down.)
 
 ### So where is the neural network?
 
@@ -384,11 +384,11 @@ opt.step();
 opt.zeroGrad();
 ```
 
-This mirrors PyTorch's `torch.optim.SGD(model.parameters(), lr=0.1)`, so what you learn here transfers directly. (§11 shows why owning the list is not merely cosmetic.)
+This mirrors PyTorch's `torch.optim.SGD(model.parameters(), lr=0.1)`, so what you learn here transfers directly. (section 11 shows why owning the list is not merely cosmetic.)
 
 ### One full iteration, line by line
 
-The five stages have been described in words and drawn as a ring. Here they are as actual calls, with the value of everything after each line. These are the numbers from step 1 of the §3 trace:
+The five stages have been described in words and drawn as a ring. Here they are as actual calls, with the value of everything after each line. These are the numbers from step 1 of the section 3 trace:
 
 ```
 const w   = new Value(0);                  // the parameter, starting at 0
@@ -418,7 +418,7 @@ Two details in there are easy to miss and both matter:
 
 **The loss is built *inside* the loop, not before it.** `w.add(new Value(-5)).pow(2)` creates brand-new nodes every iteration. That is what "a fresh graph each step" means in practice — you are not reusing last iteration's graph, you are constructing a new one around the parameter's new value.
 
-**`w` is the only thing that survives between iterations.** The graph is thrown away and rebuilt; the parameter persists. That is exactly the split from §9: the graph is scratch work, the parameter is state.
+**`w` is the only thing that survives between iterations.** The graph is thrown away and rebuilt; the parameter persists. That is exactly the split from section 9: the graph is scratch work, the parameter is state.
 
 ### The milestones
 
@@ -426,7 +426,7 @@ Two details in there are easy to miss and both matter:
 ✅ *Checkpoint:* `new SGD([w], 0.1).params[0]` is the *same object* as `w`, not a copy. If you copy the numbers out, every method below will run correctly on the copies and the model will never change.
 
 **Milestone 2 — `step()`.** One loop over the parameters, one subtraction each, written straight onto `.data`.
-✅ *Checkpoint:* reproduce the hand trace from §3 exactly — `1.0`, `1.8`, `2.44`. If it disagrees, print `w.data`, `w.grad` and `learningRate`; one of the three is wrong and the trace tells you which.
+✅ *Checkpoint:* reproduce the hand trace from section 3 exactly — `1.0`, `1.8`, `2.44`. If it disagrees, print `w.data`, `w.grad` and `learningRate`; one of the three is wrong and the trace tells you which.
 
 **Milestone 3 — `zeroGrad()`.** Loop over the parameters and set each `.grad` back to 0. One line of work.
 ✅ *Checkpoint:* `bun test src/optim/sgd` — the `SGD` block should now go green.
@@ -604,11 +604,11 @@ For `L(w) = (w−5)²`, track the **error** `e = w − 5` instead of `w` itself,
 
 $$e_{\text{new}} = e_{\text{old}}\,(1 - 2\eta)$$
 
-The error is multiplied by the same constant every step. That immediately explains the `0.8×` ratio you saw back in §3 (at `η = 0.1`), tells you the method converges exactly when `η < 1`, and predicts that `η = 0.5` lands on the answer in a **single step**.
+The error is multiplied by the same constant every step. That immediately explains the `0.8×` ratio you saw back in section 3 (at `η = 0.1`), tells you the method converges exactly when `η < 1`, and predicts that `η = 0.5` lands on the answer in a **single step**.
 
 [**Deep dive: how big a step can you take?**](../deep-dives/ch-09-how-big-a-step.md) derives that, then extends it: why the general threshold is `1/curvature`, how much speed momentum can actually build up, and why summing a loss instead of averaging it makes your safe learning rate shrink as you add training data — which is the reason the exercise needs `0.01` for the linear fit but `0.1` for the bowl.
 
-And the question this whole chapter has been deferring — *does a one-parameter rule really train a network?* — gets answered in [**one rule, many layers**](../deep-dives/ch-09-one-rule-many-layers.md), by descending on Chapter 08's own graph, `f = b·sin(a) + b²`. It shows where the depth actually goes: into the product that `backward()` builds, and nowhere near `step()`. Along the way it catches a genuine saddle-point stall — twenty-five iterations that barely move — which is §12's story happening in a two-parameter function you can hold in your head. And it explains why gradients shrink with depth, and why ReLU (Ch 11), LayerNorm (Ch 20) and residual connections (Ch 26) all exist to fight the same multiplication.
+And the question this whole chapter has been deferring — *does a one-parameter rule really train a network?* — gets answered in [**one rule, many layers**](../deep-dives/ch-09-one-rule-many-layers.md), by descending on Chapter 08's own graph, `f = b·sin(a) + b²`. It shows where the depth actually goes: into the product that `backward()` builds, and nowhere near `step()`. Along the way it catches a genuine saddle-point stall — twenty-five iterations that barely move — which is section 12's story happening in a two-parameter function you can hold in your head. And it explains why gradients shrink with depth, and why ReLU (Ch 11), LayerNorm (Ch 20) and residual connections (Ch 26) all exist to fight the same multiplication.
 
 ---
 
@@ -682,7 +682,7 @@ The exercise is the real gate, and it is worth using properly: **predict every p
 
 This is the habit to carry through the whole course. Seeing `w = 1.8` and thinking *"okay, it works"* teaches you nothing. Being able to say *"I expect 1.8, because the gradient is −8 and the learning rate is 0.1, so the step is +0.8"* means you understand the algorithm rather than the output.
 
-You can do this for the whole exercise, not just single steps. The bowl is `(w−5)²` from `w = 0`, and §13's recurrence gives `wₙ = 5 − 5(1−2η)ⁿ` — so every printed value is predictable on paper. `minimise(0.01, 200)` should print `4.912`; both `minimise(0.1, 100)` and `minimise(0.9, 100)` should print `5.000`. Matching a trajectory you predicted is a much stronger signal than watching a number go down.
+You can do this for the whole exercise, not just single steps. The bowl is `(w−5)²` from `w = 0`, and section 13's recurrence gives `wₙ = 5 − 5(1−2η)ⁿ` — so every printed value is predictable on paper. `minimise(0.01, 200)` should print `4.912`; both `minimise(0.1, 100)` and `minimise(0.9, 100)` should print `5.000`. Matching a trajectory you predicted is a much stronger signal than watching a number go down.
 
 ---
 
@@ -696,7 +696,7 @@ You can do this for the whole exercise, not just single steps. The bowl is `(w�
 6. In your own words: what does momentum remember, and what does `β = 0` do?
 7. Momentum with `β = 0.9` overshot the minimum in Figure 3. Is that a bug? What would you change to reduce it, and what would you give up?
 8. Why does the optimizer own its parameter list, rather than receiving it at each `step()` call? Answer in terms of `SGDMomentum` specifically.
-9. *(After §13)* On `L = (w−5)²`, why does `η = 0.5` reach the minimum in one step? Why doesn't that trick work for a general loss?
+9. *(After section 13)* On `L = (w−5)²`, why does `η = 0.5` reach the minimum in one step? Why doesn't that trick work for a general loss?
 
 ---
 
