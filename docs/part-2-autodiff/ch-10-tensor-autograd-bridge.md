@@ -444,7 +444,74 @@ The other genuinely new piece. For `Z = A B`:
 
 $$\frac{\partial L}{\partial A} = \frac{\partial L}{\partial Z}\,B^{\mathsf T}, \qquad \frac{\partial L}{\partial B} = A^{\mathsf T}\frac{\partial L}{\partial Z}$$
 
-Those two lines are the workhorse of every backward pass from here to Chapter 30 — attention is mostly matmuls. So it is worth being able to reconstruct them rather than recall them.
+Those two lines are the workhorse of every backward pass from here to Chapter 30 — attention is mostly matmuls. They look like new mathematics. **They are not** — a matmul is built out of `mul` and `add`, and you differentiated both in Chapter 08. This section asks the same question sections 4 and 5 asked — *which outputs did this number feed, and what is the sum there* — for one cell of `A`, and watches the transpose appear on its own.
+
+### One cell of the forward pass, opened up
+
+Take small, non-square matrices (the same ones as the figure below):
+
+```
+A = [ 1  2  3 ]        B = [ 1  2  3  4 ]
+    [ 4  5  6 ]            [ 5  6  7  8 ]
+                           [ 9 10 11 12 ]
+    shape [2,3]            shape [3,4]
+```
+
+One cell of `Z = A @ B` is a row of `A` against a column of `B` — multiplies, then adds:
+
+```
+Z[0][0] = A[0][0]·B[0][0] + A[0][1]·B[1][0] + A[0][2]·B[2][0]
+        =    1·1          +    2·5          +    3·9            = 38
+```
+
+Every cell of `Z` is built exactly like that. So there is no new calculus anywhere in a matmul — only the two operations whose backward you already know. What is new is purely the bookkeeping of *which* products feed *which* cells.
+
+For the backward pass, say `L = sum(Z) = 610`, so `Z.grad` is all ones, shape `[2,4]` — the same setup as every example so far.
+
+### Section 4's question, asked for one cell of `A`
+
+*Where was `A[0][0]` — the number `1` — used, and what was it multiplied by each time?*
+
+Row 0 of `A` only ever builds row 0 of `Z`, so walk that row:
+
+```
+Z[0][0] = A[0][0]·B[0][0] + …      used, multiplied by B[0][0] = 1
+Z[0][1] = A[0][0]·B[0][1] + …      used, multiplied by B[0][1] = 2
+Z[0][2] = A[0][0]·B[0][2] + …      used, multiplied by B[0][2] = 3
+Z[0][3] = A[0][0]·B[0][3] + …      used, multiplied by B[0][3] = 4
+```
+
+Four uses. Each use is a `mul`, and Ch 08's switch rule says each hands back the upstream gradient times *the sibling operand*. A value used in several places sums its contributions:
+
+```
+A.grad[0][0] = dZ[0][0]·B[0][0] + dZ[0][1]·B[0][1] + dZ[0][2]·B[0][2] + dZ[0][3]·B[0][3]
+             =     1·1    +    1·2    +    1·3    +    1·4              = 10
+```
+
+Not a rule — section 4's question with four uses instead of two. One more cell to see the pattern: `A[0][1] = 2` partners with B's **row 1** (`5, 6, 7, 8`), so its gradient is `5+6+7+8 = 26`. All of A's row 0 comes out `[10, 26, 42]` — each entry the sum of the matching row of `B`.
+
+### Where the transpose is born
+
+Now write the sum we just did in general form, directly above the definition of a matmul:
+
+```
+A.grad[i][k]   =  Σⱼ  dZ[i][j] · B[k][j]        ← what we derived
+(X @ Y)[i][k]  =  Σⱼ   X[i][j] · Y[j][k]        ← what a matmul is
+```
+
+They are the same shape of expression — one running index `j`, products summed — except for one detail: ours reads **`B[k][j]`** where a matmul needs **`Y[j][k]`**. The indices are swapped. And the matrix whose `[j][k]` entry equals `B[k][j]` is, by definition, **`Bᵀ`**. So:
+
+$$A.grad = Z.grad \; @ \; B^{\mathsf T}$$
+
+That is where the transpose comes from — nowhere mysterious. Our sum walks **along row `k` of `B`**, because those were `A[i][k]`'s partners in the forward pass. A matmul walks **down a column**. Transposing `B` turns its rows into columns so the two walks line up. The transpose is bookkeeping for "the sum runs along the other axis" — nothing more.
+
+`B.grad` is the same story from the other side. `B[k][j]` was used once per row of `A` — in `Z[i][j]`, multiplied by `A[i][k]` — so:
+
+```
+B.grad[k][j] = Σᵢ A[i][k] · dZ[i][j] = (Aᵀ @ Z.grad)[k][j]
+```
+
+Check one by hand: `B[0][0] = 1` was used in `Z[0][0]` (times `A[0][0] = 1`) and in `Z[1][0]` (times `A[1][0] = 4`). Gradient: `1 + 4 = 5` — the figure's other hand check.
 
 <p align="center">
   <img src="../assets/ch-10/matmul-backward-shapes.svg" alt="A shape derivation for matmul backward, with concrete numbers. The forward pass shows A of shape [2,3] holding 1 to 6, times B of shape [3,4] holding 1 to 12, giving Z of shape [2,4] holding 38, 44, 50, 56 and 83, 98, 113, 128, with L = sum(Z) = 610 so Z.grad is all ones of shape [2,4]. Two panels then derive the backward shapes by constraint. For A.grad: it must come out [2,3] to match A, and starting from Z.grad at [2,4] the only factor that lands on [2,3] is something shaped [4,3] on the right — and the only [4,3] in the graph is B transposed, giving A.grad = Z.grad @ B-transpose = rows of 10, 26, 42, where 10 is checkable by hand as the sum of B's row 0. For B.grad: it must come out [3,4], and the only way from [2,4] is to be multiplied into from the left by a [3,2], which is A transposed — giving B.grad = A-transpose @ Z.grad = rows of 5s, 7s and 9s, where 5 is the sum of A's column 0. A footer notes that forgetting the transpose is caught by the shapes themselves: Z.grad @ B is [2,4] @ [3,4], an inner-dimension mismatch that throws — which is why non-square test shapes are your friend, since a square matrix would let the mistake through silently." />
@@ -452,7 +519,9 @@ Those two lines are the workhorse of every backward pass from here to Chapter 30
 
 *Figure 3: only one arrangement of transposes makes the shapes fit — and the shapes themselves catch the mistake.*
 
-The reasoning, in full:
+### The shapes, as the everyday shortcut
+
+You will not redo the cell-by-cell derivation every time — and you don't need to. Once you know (from above) that each gradient must be *some* matmul of `Z.grad` with the other operand, the shapes alone pick the only arrangement that fits:
 
 ```
 A : [m, k]      B : [k, n]      Z : [m, n]      dZ : [m, n]
@@ -464,9 +533,18 @@ dB must be [k, n].   Starting from dZ [m,n], the only way to reach [k,n]
                      is to be multiplied into by something [k,m].  That is Aᵀ.
 ```
 
-The transposes are not a trick. They are the only shapes that fit. Whenever you are unsure in a later chapter, write down the four shapes and the answer reassembles itself.
+So the derivation is the understanding, and the shapes are the recall. Whenever you are unsure in a later chapter, write down the four shapes and the answer reassembles itself.
 
-> **Which axes does `transpose` swap?** Ch 04's `transpose(t, axes?)` reverses **all** axes by default, which is what you want for a 2-D matrix. For a batched tensor — `[batch, seq, dHead]`, which is what Ch 23 hands you — reversing everything is wrong. You need to swap only the **last two** axes and leave the batch dimensions alone. Pass an explicit `axes` permutation, and consider a small helper for it; attention will call it constantly.
+> **Which axes does `transpose` swap?** Ch 04's `transpose(t, axes?)` reverses **all** axes by default, which is what you want for a 2-D matrix. For a batched tensor it is wrong, and one concrete shape shows why. Take `[2, 3, 4]` — a batch of 2 matrices, each `[3,4]`:
+>
+> ```
+> reverse all axes            →  [4, 3, 2]    the batch axis ended up inside
+>                                             the matrix — meaningless
+> axes = [0, 2, 1]            →  [2, 4, 3]    batch stays put, and only the
+>                                             matrix part flips — what you want
+> ```
+>
+> Ch 23 hands you exactly this situation (`[batch, seq, dHead]`), so pass an explicit `axes` permutation that swaps only the **last two** axes, and consider a small helper for it; attention will call it constantly.
 >
 > Decide at the same time whether this method uses `matMul` or `matMulBatch`, and whether it should dispatch on `ndim`. The tests here are 2-D. Ch 23 is not.
 

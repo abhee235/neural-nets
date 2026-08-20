@@ -212,6 +212,16 @@ export class TensorValue {
    * genuinely new, and it is the one you will lean on for the rest of the
    * course: attention is mostly matmuls.
    *
+   * It is NOT new calculus, though. One cell of A is used once per column of
+   * Z's row i, multiplied by B[k][j] each time — Ch 08's switch rule, summed
+   * over the uses:
+   *
+   *     A.grad[i][k] = Σⱼ dZ[i][j] · B[k][j]  =  (dZ @ Bᵀ)[i][k]
+   *
+   * The transpose exists because that sum walks ALONG a row of B while a
+   * matmul walks DOWN a column. Doc section 8 derives it cell by cell with
+   * concrete numbers — read that before implementing this.
+   *
    * ── TENSOR (Ch 10) ──────────────────────────────────────────────────────
    * Forward: `matMul(this.data, other.data)` from Ch 04.
    *
