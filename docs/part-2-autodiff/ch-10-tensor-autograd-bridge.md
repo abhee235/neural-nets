@@ -28,7 +28,7 @@ That is genuinely all. The graph does not change. The topological order does not
 >
 > | | Sections | Then |
 > |---|---|---|
-> | **Read** | 1 → 6 | **Build** `sumToShape`, `reshape`, `transpose`, `zeroGrad` (section 7) |
+> | **Read** | 1 → 6 | **Build** `sumToShape`, `topoSortTensor`, `reshape`, `transpose`, `zeroGrad` (section 7) |
 > | **Read** | 8 | **Build** `add`, `mul`, `matMul` (section 9) |
 > | **Read** | 10 | **Build** `sum`, `mean`, `backward` (section 11) |
 > | **Read** | — | **Verify** everything (section 12) |
@@ -226,17 +226,17 @@ Section 2 computed `d.grad = [2, 2, 2]` in three lines that looked almost the sa
 Here is `d` again, and here is `Z.grad`, the tensor of gradients that arrived from upstream. Both are copied straight from section 2, so there is nothing new to set up:
 
 ```
-d = [ 10  20  30 ]            shape [1,3]
+d = [ 10  10  10 ]            shape [1,3]
 
 Z.grad = [ 1  1  1 ]          shape [2,3]
          [ 1  1  1 ]
 ```
 
-**Find `d.grad[0]` — the gradient for the number `10` — and nothing else.**
+**Find `d.grad[0]` — the gradient for `d`'s first entry — and nothing else.**
 
 Forget that `d` has three numbers for a moment; pretend it only has this one. Ask exactly one question: *everywhere `d[0]` was used in the forward pass, which position of `Z.grad` is sitting there now?*
 
-`d[0]` was added into the first column of `X` — that's `Z[0][0]` and `Z[1][0]`. Both of those positions in `Z.grad` hold `1`. So:
+`d[0]` was added into the first column of `C` — that's `Z[0][0]` and `Z[1][0]`. Both of those positions in `Z.grad` hold `1`. So:
 
 ```
 d.grad[0]  =  Z.grad[0][0]  +  Z.grad[1][0]
@@ -246,9 +246,9 @@ d.grad[0]  =  Z.grad[0][0]  +  Z.grad[1][0]
 
 That's it. One number, computed from two cells you can point to.
 
-**Now do `d.grad[1]` — the gradient for `20` — the exact same way, from scratch.**
+**Now do `d.grad[1]` — the second entry — the exact same way, from scratch.**
 
-`d[1]` was added into the *second* column of `X`: `Z[0][1]` and `Z[1][1]`. Both hold `1` in `Z.grad`:
+`d[1]` was added into the *second* column of `C`: `Z[0][1]` and `Z[1][1]`. Both hold `1` in `Z.grad`:
 
 ```
 d.grad[1]  =  Z.grad[0][1]  +  Z.grad[1][1]
@@ -256,7 +256,7 @@ d.grad[1]  =  Z.grad[0][1]  +  Z.grad[1][1]
            =  2
 ```
 
-**And `d.grad[2]`, for `30`, once more:**
+**And `d.grad[2]`, the third entry, once more:**
 
 `d[2]` lives in the third column: `Z[0][2]` and `Z[1][2]`. Both `1`:
 
@@ -276,7 +276,7 @@ That question — *which cells did this number feed, and what is the sum there* 
 
 Section 4 handled *broadcasting* — one small tensor copied into a bigger one. There is exactly one other way a shape changes in this chapter: *reduction*, where a bigger tensor is collapsed into a smaller one. `sum(x, axis)` does this, and it is what every loss function ends with.
 
-Section 2's graph doesn't have a partial reduction to reuse — its only `sum` collapses everything to one number. So here is one small, fresh example, set up the same deliberate way: two rows, three columns, summed along the columns.
+Section 2's graph doesn't have a partial reduction to reuse — its only `sum` collapses everything to one number. So here is one small, fresh example, set up the same deliberate way: two rows, three columns, and each row summed down to a single number.
 
 ```
 R = [ 3  1  5 ]          shape [2,3]
@@ -334,7 +334,7 @@ R.grad = [ 2  2  2 ]      shape [2,3]   ✓ matches R
 **Section 4 and section 5, side by side, now that both are concrete rather than abstract:**
 
 <p align="center">
-  <img src="../assets/ch-10/two-examples-side-by-side.svg" alt="Two small worked examples shown side by side, matching the numbers already computed in the text. Left, labelled section 4, d gets copied then summed back: d holding 10, 20, 30 is copied into both rows of Z, shown as Z's two rows 11,22,33 and 14,25,36; an upward arrow sweeps across the three columns showing 1 + 1 = 2 being computed for each; d.grad comes out 2, 2, 2, captioned many cells summed to one. Right, labelled section 5, R gets summed then copied back: R holding rows 3,1,5 and 4,2,0 is summed along each row into S holding 9 and 6; a given upstream gradient S.grad of 2 and 5 is shown being copied three times across each row; R.grad comes out as row 0 equal to 2,2,2 and row 1 equal to 5,5,5, captioned one cell copied to many. A bottom bar states the same law applies both times — a value used in several places collects the sum of their gradients — noting that on the left there were three places to sum so the sum shows up, and on the right there was only one place per output so the sum is just that one term." />
+  <img src="../assets/ch-10/two-examples-side-by-side.svg" alt="Two small worked examples shown side by side, matching the numbers already computed in the text. Left, labelled section 4, d gets copied then summed back: d holding 10, 10, 10 is copied into both rows, with a note that the forward result is Z = C + d = all 4 and L = sum(Z) = 24; below it sits Z.grad, a [2,3] grid of ones, and an upward arrow sweeps across the three columns showing 1 + 1 = 2 being computed for each; d.grad comes out 2, 2, 2, captioned many cells summed to one. Right, labelled section 5, R gets summed then copied back: R holding rows 3,1,5 and 4,2,0 is summed along each row into S holding 9 and 6; a given upstream gradient S.grad of 2 and 5 is shown being copied three times across each row; R.grad comes out as row 0 equal to 2,2,2 and row 1 equal to 5,5,5, captioned one cell copied to many. A bottom bar states the same law applies both times — a value used in several places collects the sum of their gradients — noting that on the left there were three places to sum so the sum shows up, and on the right there was only one place per output so the sum is just that one term." />
 </p>
 
 *Figure 2: the two examples above, side by side. Same numbers you just computed by hand.*
@@ -401,7 +401,7 @@ result = [ 4 ]             shape [3,1]   ✓ matches target
          [ 12 ]
 ```
 
-**Now watch what happens if `keepDims` is left off.** The three numbers `4, 8, 12` come out exactly the same — but without `keepDims`, the summed axis is *deleted* instead of shrunk to size 1:
+**Now watch what happens if `keepDims` is left off.** The three numbers `4`, `8`, `12` come out exactly the same — but without `keepDims`, the summed axis is *deleted* instead of shrunk to size 1:
 
 ```
 result = [ 4  8  12 ]      shape [3]   ✗ target was [3,1]
@@ -447,10 +447,10 @@ $$\frac{\partial L}{\partial A} = \frac{\partial L}{\partial Z}\,B^{\mathsf T}, 
 Those two lines are the workhorse of every backward pass from here to Chapter 30 — attention is mostly matmuls. So it is worth being able to reconstruct them rather than recall them.
 
 <p align="center">
-  <img src="../assets/ch-10/matmul-backward-shapes.svg" alt="A shape derivation for matmul backward. The forward pass shows A of shape [2,3] times B of shape [3,4] giving Z of shape [2,4], so the upstream gradient dZ is also [2,4]. Two panels then derive the backward shapes by constraint. For dA: it must come out [2,3] to match A, and starting from dZ at [2,4] the only factor that produces [2,3] is something shaped [4,3], which is B transposed — giving dA = dZ @ B-transpose. For dB: it must come out [3,4] to match B, and the only factor that produces that from dZ at [2,4] is something shaped [3,2] multiplied on the left, which is A transposed — giving dB = A-transpose @ dZ. A caption notes the transposes are not a trick to memorise, they are the only shapes that fit." />
+  <img src="../assets/ch-10/matmul-backward-shapes.svg" alt="A shape derivation for matmul backward, with concrete numbers. The forward pass shows A of shape [2,3] holding 1 to 6, times B of shape [3,4] holding 1 to 12, giving Z of shape [2,4] holding 38, 44, 50, 56 and 83, 98, 113, 128, with L = sum(Z) = 610 so Z.grad is all ones of shape [2,4]. Two panels then derive the backward shapes by constraint. For A.grad: it must come out [2,3] to match A, and starting from Z.grad at [2,4] the only factor that lands on [2,3] is something shaped [4,3] on the right — and the only [4,3] in the graph is B transposed, giving A.grad = Z.grad @ B-transpose = rows of 10, 26, 42, where 10 is checkable by hand as the sum of B's row 0. For B.grad: it must come out [3,4], and the only way from [2,4] is to be multiplied into from the left by a [3,2], which is A transposed — giving B.grad = A-transpose @ Z.grad = rows of 5s, 7s and 9s, where 5 is the sum of A's column 0. A footer notes that forgetting the transpose is caught by the shapes themselves: Z.grad @ B is [2,4] @ [3,4], an inner-dimension mismatch that throws — which is why non-square test shapes are your friend, since a square matrix would let the mistake through silently." />
 </p>
 
-*Figure 3: only one arrangement of transposes makes the shapes fit.*
+*Figure 3: only one arrangement of transposes makes the shapes fit — and the shapes themselves catch the mistake.*
 
 The reasoning, in full:
 
