@@ -481,14 +481,57 @@ Z[0][2] = A[0][0]·B[0][2] + …      used, multiplied by B[0][2] = 3
 Z[0][3] = A[0][0]·B[0][3] + …      used, multiplied by B[0][3] = 4
 ```
 
-Four uses. Each use is a `mul`, and Ch 08's switch rule says each hands back the upstream gradient times *the sibling operand*. A value used in several places sums its contributions:
+Four uses. Before adding them up, pause on something that was invisible in section 4.
+
+**Every gradient term is a product of two rates.** Section 4's bias formula, written with nothing hidden, was really:
+
+```
+d.grad[0] = Z.grad[0][0]·1  +  Z.grad[1][0]·1
+                        ↑                  ↑
+              add's local rate — always 1, so you never saw it
+```
+
+*(how much L cares about the output cell)* × *(how fast a nudge reaches that cell)*. For the bias the second rate was `1`, because addition passes nudges through unchanged. Here, for the first time, the second rate is **visible** — it is the sibling operand from Ch 08's switch rule.
+
+**One route at a time.** Take just `Z[0][1]` and hide everything that does not contain `A[0][0]`:
+
+```
+Z[0][1] = A[0][0]·B[0][1] + (terms that do not move when A[0][0] moves)
+        = A[0][0]·2       + constant
+```
+
+As far as `A[0][0]` is concerned, `Z[0][1]` is a scalar `mul` from Ch 08: nudge `A[0][0]` and `Z[0][1]` moves at **rate 2** — the sibling. But `Z[0][1]` moving is not the end of the story; `L` has to care. How much `L` cares about `Z[0][1]` is exactly what `dZ[0][1]` stores (here `1`, because `L = sum`). So this one route contributes:
+
+```
+dZ[0][1] · B[0][1]  =  1 · 2  =  2
+```
+
+**Now all four routes — measured, not asserted.** Nudge `A[0][0]` from `1` to `1.01` and recompute the forward pass (these numbers come from actually running it):
+
+```
+Z[0][0]:  38 → 38.01      moved by 0.01 × 1      (its rate is B[0][0])
+Z[0][1]:  44 → 44.02      moved by 0.01 × 2
+Z[0][2]:  50 → 50.03      moved by 0.01 × 3
+Z[0][3]:  56 → 56.04      moved by 0.01 × 4
+Z row 1:  untouched        (A[0][0] appears nowhere in it)
+
+L: 610 → 610.10            ΔL / ΔA[0][0]  =  0.10 / 0.01  =  10
+```
+
+One nudge moves four cells at four different rates; `L` feels all four movements, and they add: `0.01 + 0.02 + 0.03 + 0.04 = 0.10`. The gradient is `10` because that is what physically happens when you push the number.
+
+**The formula is that experiment, written down** — one term per route:
 
 ```
 A.grad[0][0] = dZ[0][0]·B[0][0] + dZ[0][1]·B[0][1] + dZ[0][2]·B[0][2] + dZ[0][3]·B[0][3]
              =     1·1    +    1·2    +    1·3    +    1·4              = 10
+               └─ route via ──┘ └─ route via ──┘ └─ route via ──┘ └─ route via ──┘
+                   Z[0][0]          Z[0][1]          Z[0][2]          Z[0][3]
 ```
 
-Not a rule — section 4's question with four uses instead of two. One more cell to see the pattern: `A[0][1] = 2` partners with B's **row 1** (`5, 6, 7, 8`), so its gradient is `5+6+7+8 = 26`. All of A's row 0 comes out `[10, 26, 42]` — each entry the sum of the matching row of `B`.
+Why write `dZ[0][j]` instead of just `1`? Because the `1`s are an accident of `L = sum(Z)`. With any other loss the `dZ` values differ — and the formula stays true unchanged. The upstream gradient is a real factor, not decoration.
+
+Not a rule — section 4's question with four uses instead of two, and the ×sibling no longer equal to 1. One more cell to see the pattern: `A[0][1] = 2` partners with B's **row 1** (`5, 6, 7, 8`), so its gradient is `5+6+7+8 = 26` — and nudging it by `0.01` moves `L` by exactly `0.26`. All of A's row 0 comes out `[10, 26, 42]` — each entry the sum of the matching row of `B`.
 
 ### Where the transpose is born
 
