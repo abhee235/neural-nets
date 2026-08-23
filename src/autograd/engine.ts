@@ -154,9 +154,12 @@ export function topoSort(root: Value): Value[] {
  * Worth knowing the generic form exists, though — it is what you would reach
  * for outside a course.
  *
- * ✅ CHECKPOINT: identical in spirit to the scalar one. For a tensor graph
- *    `Z = (A @ B) + D`, `topoSortTensor(Z)` returns 5 nodes with the three
- *    leaves before the matmul node, and the matmul node before `Z`.
+ * ✅ CHECKPOINT: identical in spirit to the scalar one. For grad.ts's
+ *    GRAPH 1 — `C = A.mul(B); Z = C.add(d); L = Z.sum()` — calling
+ *    `topoSortTensor(L)` returns 6 nodes ordered `[A, B, C, d, Z, L]`:
+ *    every node after its own inputs, ready for `backward()` to walk it
+ *    reversed, exactly as the scalar `topoSort` returned `[a, b, c, d, L]`
+ *    for the same graph in Ch 08.
  */
 export function topoSortTensor(root: TensorValue): TensorValue[] {
   throw new Error("topoSortTensor not implemented");

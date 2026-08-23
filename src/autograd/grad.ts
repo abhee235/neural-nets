@@ -46,6 +46,34 @@
  * They are mirror images. The chapter doc walks both by hand (sections 4-5).
  *
  * ──────────────────────────────────────────────────────────────────────────
+ * THE RUNNING EXAMPLES — the doc's two graphs, nothing new
+ * ──────────────────────────────────────────────────────────────────────────
+ * Every worked trace below uses one of the two graphs you already know, so
+ * every number here is one you have already derived by hand in the doc.
+ *
+ * GRAPH 1 (doc sections 2-6) — Ch 08's  L = (a·b) + d,  with tensors:
+ *
+ *     A = all 2   [2,3]     B = all -3  [2,3]     d = [10,10,10]  [1,3]
+ *     C = A×B = all -6      Z = C+d = all 4       L = sum(Z) = 24
+ *
+ *     backward:  Z.grad = C.grad = all 1
+ *                A.grad = all -3    B.grad = all 2    d.grad = [2,2,2]
+ *
+ * GRAPH 2 (doc section 8) —  L = sum(A @ B):
+ *
+ *     A = [1 2 3]      B = [1  2  3  4]      Z = [38  44  50  56]
+ *         [4 5 6]          [5  6  7  8]          [83  98 113 128]
+ *       [2,3]              [9 10 11 12]        [2,4]     L = 610
+ *                        [3,4]
+ *
+ *     backward:  A.grad = [10 26 42]      B.grad = [5 5 5 5]
+ *                         [10 26 42]               [7 7 7 7]
+ *                                                  [9 9 9 9]
+ *
+ * If any number in a trace surprises you, the doc derives it cell by cell in
+ * the section named beside the trace.
+ *
+ * ──────────────────────────────────────────────────────────────────────────
  * WHAT YOU WILL NEED TO IMPORT
  * ──────────────────────────────────────────────────────────────────────────
  * Everything on the right-hand side of the tensor blocks below already exists.
@@ -165,8 +193,21 @@ export class TensorValue {
    * When the shapes already match, `sumToShape` must be a no-op — so it is
    * always safe to call. Do not try to be clever and skip it conditionally.
    *
-   * ✅ CHECKPOINT: the doc's section 2 example — `Z = (A×B) + d` with `d` of
-   *    shape `[1,3]` — must give `d.grad = [2,2,2]` with shape `[1,3]`.
+   * ── THE RECIPE (every binary op below follows these same four steps) ─────
+   * 1. out = a new TensorValue holding the forward result
+   * 2. out._inputs = [this, other]      ← by hand; this constructor won't
+   * 3. out._backward = a closure that accumulates each parent's contribution
+   *    (null-aware, as in the class comment) — for add, the two `sumToShape`
+   *    lines above
+   * 4. return out
+   *
+   * ── WORKED TRACE — GRAPH 1's  Z = C.add(d)   (doc section 2) ────────────
+   * forward:   C.data all -6 [2,3],  d.data = [10,10,10] [1,3]
+   *            add broadcasts d into both rows  →  Z.data all 4 [2,3]
+   * backward:  Z.grad arrives as all 1 [2,3]  (L = sum seeds it)
+   *            C.grad += sumToShape(all-1 [2,3], [2,3]) = all 1    ← no-op case
+   *            d.grad += sumToShape(all-1 [2,3], [1,3]) = [2,2,2]  ← summed case
+   * — the section 2 table's rows for C and d, exactly.
    */
   add(other: TensorValue): TensorValue {
     throw new Error("TensorValue.add not implemented");
@@ -198,6 +239,15 @@ export class TensorValue {
    * result has the BROADCAST shape, not the parent's. That is exactly why
    * `sumToShape` wraps the product rather than being applied to `out.grad`
    * first — reverse the order and you will be multiplying mismatched shapes.
+   *
+   * ── WORKED TRACE — GRAPH 1's  C = A.mul(B)   (doc section 2) ────────────
+   * forward:   A all 2, B all -3, same shape  →  C.data all -6 [2,3]
+   * backward:  C.grad arrives as all 1
+   *            A.grad += sumToShape(mul(B.data, all-1), [2,3]) = all -3
+   *            B.grad += sumToShape(mul(A.data, all-1), [2,3]) = all  2
+   * The switch, element-wise: A receives B's values and B receives A's — the
+   * same crossover as Ch 08's  a.grad = -3, b.grad = 2,  once per cell.
+   * (Recipe: add's four steps, with these wrapped products as step 3.)
    */
   mul(other: TensorValue): TensorValue {
     throw new Error("TensorValue.mul not implemented");
@@ -255,8 +305,24 @@ export class TensorValue {
    * Ch 04 gave you both. Decide now which this method uses, and whether it
    * should dispatch on `ndim`. The tests here are 2-D; Ch 23 is not.
    *
-   * ✅ CHECKPOINT: `[2,3] @ [3,4]` gives `[2,4]`; after backward the gradients
-   *    are `[2,3]` and `[3,4]` — each matching its own parameter.
+   * ── THE RECIPE ──────────────────────────────────────────────────────────
+   * add's four steps; step 3's two contributions are the formulas above,
+   * built from `matMul` and `transpose`. In 2-D each contribution already
+   * has its parent's exact shape (no broadcasting happens in a plain matmul),
+   * so no `sumToShape` is needed here.
+   *
+   * ── WORKED TRACE — GRAPH 2's  L = sum(A @ B)   (doc section 8) ──────────
+   * forward:   A [2,3] = 1..6,   B [3,4] = 1..12   →   Z [2,4],  L = 610
+   * backward:  Z.grad = all 1 [2,4]
+   *            A.grad += matMul(Z.grad, Bᵀ)        [2,4]@[4,3] → [2,3]
+   *                    = [10 26 42]                each entry = the sum of
+   *                      [10 26 42]                the matching ROW of B
+   *            B.grad += matMul(Aᵀ, Z.grad)        [3,2]@[2,4] → [3,4]
+   *                    = [5 5 5 5]                 each row = the sum of
+   *                      [7 7 7 7]                 the matching COLUMN of A
+   *                      [9 9 9 9]
+   * Section 8 derives the 10 and the 5 cell by cell. If either number
+   * surprises you, re-read it before writing this method.
    */
   matMul(other: TensorValue): TensorValue {
     throw new Error("TensorValue.matMul not implemented");
@@ -285,6 +351,27 @@ export class TensorValue {
    *
    * Handle `axis === undefined` too: the output is a scalar, and every input
    * element receives that one gradient value.
+   *
+   * ── THE RECIPE ──────────────────────────────────────────────────────────
+   * 1. capture this.data.shape — backward must broadcast back to the ORIGINAL
+   * 2. out = new TensorValue(sum(this.data, axis, keepDims)); wire _inputs
+   * 3. backward: take out.grad; if the axis was dropped (keepDims false and
+   *    an axis was given), unsqueeze it back in; broadcast to the captured
+   *    shape; accumulate into this.grad
+   * 4. return out
+   *
+   * ── WORKED TRACE — GRAPH 1's  L = Z.sum()   (doc section 2) ─────────────
+   * forward:   Z all 4 [2,3]  →  L.data = [24], shape []
+   * backward:  L.grad = ones([]) — the seed itself, a lone 1
+   *            Z.grad += broadcast(ones([]), [2,3]) = all 1
+   * (`broadcast` stretches a scalar to any shape directly — the no-axis case
+   * needs no unsqueeze.)
+   *
+   * ── WORKED TRACE — the axis case   (doc section 5's R) ──────────────────
+   * forward:   R = [3 1 5; 4 2 0],  sum(axis=1, keepDims=true) → [[9],[6]]
+   * backward:  upstream [[2],[5]]  →  R.grad += broadcast = [2 2 2; 5 5 5]
+   * With keepDims=false the same upstream arrives as [2] — unsqueeze(…, 1)
+   * back to [2,1] first, then the identical broadcast.
    */
   sum(axis?: number, keepDims?: boolean): TensorValue {
     throw new Error("TensorValue.sum not implemented");
@@ -307,6 +394,12 @@ export class TensorValue {
    * AXIS, not the total element count. With no axis it is `this.data.size`.
    * Getting this wrong scales every gradient by a constant factor, which
    * looks exactly like a mis-set learning rate and will not fail loudly.
+   *
+   * ── WORKED TRACE — GRAPH 1's Z again ────────────────────────────────────
+   * forward:   Z all 4 [2,3]  →  Z.mean() = [4], shape []      (24 / 6)
+   * backward:  every cell of Z receives 1/6 — sum's broadcast, scaled by
+   *            1/n with n = this.data.size = 6, since no axis was given.
+   * (Recipe: sum's recipe plus one `mulScalar(…, 1/n)` on the way back.)
    */
   mean(axis?: number, keepDims?: boolean): TensorValue {
     throw new Error("TensorValue.mean not implemented");
@@ -327,6 +420,11 @@ export class TensorValue {
    * ── PITFALL ─────────────────────────────────────────────────────────────
    * Reshape backward to the ORIGINAL shape, captured from `this.data.shape`
    * — not to `newShape`, and not with the forward call's argument.
+   *
+   * ── WORKED TRACE — GRAPH 2's A ──────────────────────────────────────────
+   * forward:   reshape(A [2,3], [6])  →  [1,2,3,4,5,6] as a flat [6]
+   * backward:  a [6] gradient arrives  →  reshape it to the captured [2,3]
+   * Same six numbers both directions; only the shape label changes.
    */
   reshape(newShape: number[]): TensorValue {
     throw new Error("TensorValue.reshape not implemented");
@@ -354,6 +452,11 @@ export class TensorValue {
    * is its own inverse, so backward can simply reverse again — but only if
    * you handle the undefined case explicitly instead of feeding `undefined`
    * into your inversion loop.
+   *
+   * ── WHERE YOU USE IT FIRST ──────────────────────────────────────────────
+   * matMul's backward, just above: Bᵀ is `transpose(B.data)` — GRAPH 2's
+   * B [3,4] becomes [4,3], turning B's rows into columns so the backward
+   * matmul can dot rows of Z.grad with rows of B (doc section 8).
    */
   transpose(axes?: number[]): TensorValue {
     throw new Error("TensorValue.transpose not implemented");
@@ -391,6 +494,23 @@ export class TensorValue {
    * ── UNCHANGED ───────────────────────────────────────────────────────────
    * Reverse topological order, for the same correctness reason as Ch 08b.
    * No zeroing here — still the caller's job. Still one sweep, all gradients.
+   *
+   * ── WORKED TRACE — the whole of GRAPH 1, one sweep (doc section 2) ──────
+   * Build  C = A.mul(B);  Z = C.add(d);  L = Z.sum();  then L.backward():
+   *
+   *   1. order = topoSortTensor(L) = [A, B, C, d, Z, L]
+   *   2. L.grad = ones([]) — a lone scalar 1
+   *   3. walk reversed — L, Z, d, C, B, A:
+   *        L._backward():  Z.grad += broadcast(1, [2,3])  = all 1
+   *        Z._backward():  C.grad += all 1                (no-op sumToShape)
+   *                        d.grad += [2,2,2]              (rows summed)
+   *        d._backward():  leaf — the constructor's no-op runs
+   *        C._backward():  A.grad += all -3;   B.grad += all 2
+   *        B, A:           leaves — no-ops
+   *
+   *   Final: the section 2 table, exactly — three gradients element-for-
+   *   element equal to Ch 08's scalars, and d summed down its rows. Run this
+   *   graph as your first end-to-end check the moment mul, add and sum work.
    */
   backward(): void {
     throw new Error("TensorValue.backward not implemented");
@@ -426,6 +546,15 @@ export class TensorValue {
  *
  * The chapter doc walks this by hand in section 4 (one bias entry at a time)
  * before generalising it in section 6. Read those first.
+ *
+ * ── WORKED TRACE — GRAPH 1's d   (doc sections 2 and 4) ───────────────────
+ *     grad in : all 1, shape [2,3]        target: [1,3]   (d's shape)
+ *     ranks match; axis 0 has size 2 where the target has 1
+ *       →  sum axis 0 with keepDims:  [1+1, 1+1, 1+1] = [2,2,2], shape [1,3]
+ *     — d.grad, the number you derived one entry at a time in section 4.
+ * Section 6 runs the other two situations with numbers:
+ *     case 1   [2,3] → [3]    = [2,2,2]   (rank dropped — leading axis summed)
+ *     case 2   [3,4] → [3,1]  = [4,8,12]  (keepDims — the trap lives here)
  *
  * ── THE ALGORITHM (doc, section 6) ────────────────────────────────────────
  * Two distinct cases, and both must be handled:
@@ -478,6 +607,14 @@ export function sumToShape(grad: Tensor, targetShape: number[]): Tensor {
  *      wrapper around `fn` — the loss must collapse to ONE number, so sum
  *      the output if it is not already scalar.
  *   3. Compare element by element against `tolerance` (default 1e-5).
+ *
+ * ── WORKED TRACE — verifying GRAPH 1's d.grad ─────────────────────────────
+ *     fn = ([c, d]) => c.add(d).sum()
+ *     analytical (your backward)           :  d.grad = [2, 2, 2]
+ *     numerical (numericalGradientTensor)  :  nudge each d[j] by ±h — it sits
+ *        in TWO cells of Z, so L moves by 2h, and the measured slope is 2  ✓
+ * When the two sides agree to tolerance on every operation, the chapter's
+ * verification gate is met.
  *
  * ── PITFALL: zero the gradients before you start ──────────────────────────
  * `fn` gets called many times inside the numerical loop. If gradients from
