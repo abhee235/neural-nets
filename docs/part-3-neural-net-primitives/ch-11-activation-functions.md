@@ -72,7 +72,8 @@ By the end of this chapter you can:
 
 | Word | Plain meaning |
 |------|---------------|
-| **activation** | A function applied between layers to bend the signal. The subject of this chapter. |
+| **activation** | Confusingly, two things. The *noun* is a unit's output — inherited from "a neuron is activated when it fires". The *activation function* is what produces it. Section 2 has the etymology. |
+| **nonlinearity** | The modern synonym for "activation function", and the more honest one. |
 | **primitive** | An operation the engine knows how to differentiate — one that owns a `_backward`. |
 | **elementwise** | Each output cell depends on exactly one input cell. `relu`, `sigmoid`, `gelu`. |
 | **local derivative** | For an elementwise `f`, the value `f'(x)` at one cell. Ch 08's "local gradient". |
@@ -158,6 +159,26 @@ step(x) = 1 if x > 0
 ```
 
 This is not an arbitrary choice — it is where the whole field started. A biological neuron either fires or it does not, and McCulloch and Pitts' 1943 model of a neuron, and Rosenblatt's perceptron, both used exactly this. It decides. It is nonlinear. It solves XOR.
+
+> **Where the name "activation function" comes from — and why it fits badly now**
+>
+> The vocabulary was borrowed from neuroscience, not invented. When a real neuron fires, it is said to be *activated*; McCulloch and Pitts' paper is titled *"A Logical Calculus of the Ideas Immanent in Nervous **Activity**"*. So an artificial unit's output was called its **activation** — a noun, meaning how switched-on the unit is — and the function producing it became the **activation function**. The terminology still carries that layering:
+>
+> ```
+>      x·w + b        →      f(x·w + b)
+>   ───────────           ──────────────
+>   "pre-activation"      "the activation"
+>   (also: logits)         ← the unit's output
+>
+>                       f = the ACTIVATION FUNCTION
+>                           — named for what it produces
+> ```
+>
+> No single person coined it; it drifted in from biology with the metaphor, and became fixed terminology through 1980s connectionism.
+>
+> **And the name has aged badly.** It describes the step function perfectly — the unit activates or it does not, exactly like a neuron. But `relu(5) = 5` is not a neuron activating; it is a hinge passing a magnitude. `gelu` scales by a probability. `softmax` is not even per-unit. The biological metaphor was left behind somewhere around 2010; the name it deposited stayed.
+>
+> Which is why modern papers often just write **"nonlinearity"** — *"we use a GELU nonlinearity"*. Same object, more honest name: it says what the function *is* rather than a biological process it no longer models. Two names, two eras.
 
 And it is completely untrainable.
 
