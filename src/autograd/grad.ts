@@ -86,7 +86,40 @@
  *   autograd/engine.ts topoSortTensor            ← the Ch 10 sort in engine.ts
  *   utils/numerical.ts numericalGradientTensor   ← the referee for the checks
  */
-import type { Tensor } from "../tensor/index.ts";
+import {
+  add, broadcast, matMul, mean, mul, mulScalar, ones, reshape, sum,
+  transpose, unsqueeze, type Tensor,
+} from "../tensor/index.ts";
+import { topoSortTensor } from "./engine.ts";
+import { numericalGradientTensor } from "../utils/numerical.ts";
+
+/**
+ * The tensor version of Ch 08's `+=`: fold one gradient contribution into a
+ * node, handling the "no gradient yet" case. Written once because every
+ * `_backward` closure in this file needs the identical two lines.
+ *
+ * `contribution` must already have the node's own shape — that is the
+ * caller's job (usually via `sumToShape`).
+ */
+function accumulate(node: TensorValue, contribution: Tensor): void {
+  // First contribution replaces the null; later ones add element-wise.
+  node.grad = node.grad === null ? contribution : add(node.grad, contribution);
+}
+
+/**
+ * Invert a permutation. `axes[i] = j` means "output axis i came from input
+ * axis j", so the inverse satisfies `inv[axes[i]] = i` — one loop.
+ *
+ *     axes = [1, 2, 0]  →  inv = [2, 0, 1]      (not the same array!)
+ *     axes = [1, 0]     →  inv = [1, 0]         (happens to equal axes)
+ */
+function invertPermutation(axes: number[]): number[] {
+  const inv = new Array<number>(axes.length);
+  for (let i = 0; i < axes.length; i++) {
+    inv[axes[i]!] = i;
+  }
+  return inv;
+}
 
 /**
  * A tensor-valued node in the autograd graph.
@@ -202,15 +235,40 @@ export class TensorValue {
    * 4. return out
    *
    * ── WORKED TRACE — GRAPH 1's  Z = C.add(d)   (doc section 2) ────────────
-   * forward:   C.data all -6 [2,3],  d.data = [10,10,10] [1,3]
-   *            add broadcasts d into both rows  →  Z.data all 4 [2,3]
-   * backward:  Z.grad arrives as all 1 [2,3]  (L = sum seeds it)
-   *            C.grad += sumToShape(all-1 [2,3], [2,3]) = all 1    ← no-op case
-   *            d.grad += sumToShape(all-1 [2,3], [1,3]) = [2,2,2]  ← summed case
+   *
+   * forward — d's single row is copied into both rows of C (broadcast):
+   *
+   *     C.data = [ -6  -6  -6 ]          d.data = [ 10  10  10 ]  [1,3]
+   *              [ -6  -6  -6 ]  [2,3]
+   *
+   *     Z.data = [  4   4   4 ]
+   *              [  4   4   4 ]  [2,3]
+   *
+   * backward — Z.grad arrives as all ones (L = sum seeded it):
+   *
+   *     Z.grad = [ 1  1  1 ]
+   *              [ 1  1  1 ]  [2,3]
+   *
+   *     C.grad += sumToShape(Z.grad, [2,3])  =  [ 1  1  1 ]   ← same shape:
+   *                                             [ 1  1  1 ]     the no-op case
+   *
+   *     d.grad += sumToShape(Z.grad, [1,3])  =  [ 2  2  2 ]   ← each column
+   *                                               [1,3]          summed: 1+1
+   *
    * — the section 2 table's rows for C and d, exactly.
    */
   add(other: TensorValue): TensorValue {
-    throw new Error("TensorValue.add not implemented");
+    // Forward: the Ch 03 free function — Tensor has no methods.
+    const out = new TensorValue(add(this.data, other.data));
+    out._inputs = [this, other];
+    out._backward = () => {
+      // `!` — safe for the same reason as order[i]! in Ch 08's backward():
+      // reverse topological order guarantees out.grad was seeded (root) or
+      // accumulated by out's consumers before this closure fires.
+      accumulate(this, sumToShape(out.grad!, this.data.shape));
+      accumulate(other, sumToShape(out.grad!, other.data.shape));
+    };
+    return out;
   }
 
   /**
@@ -241,16 +299,39 @@ export class TensorValue {
    * first — reverse the order and you will be multiplying mismatched shapes.
    *
    * ── WORKED TRACE — GRAPH 1's  C = A.mul(B)   (doc section 2) ────────────
-   * forward:   A all 2, B all -3, same shape  →  C.data all -6 [2,3]
-   * backward:  C.grad arrives as all 1
-   *            A.grad += sumToShape(mul(B.data, all-1), [2,3]) = all -3
-   *            B.grad += sumToShape(mul(A.data, all-1), [2,3]) = all  2
-   * The switch, element-wise: A receives B's values and B receives A's — the
-   * same crossover as Ch 08's  a.grad = -3, b.grad = 2,  once per cell.
+   *
+   * forward — same shape, element by element:
+   *
+   *     A.data = [ 2  2  2 ]          B.data = [ -3  -3  -3 ]
+   *              [ 2  2  2 ]  [2,3]            [ -3  -3  -3 ]  [2,3]
+   *
+   *     C.data = [ -6  -6  -6 ]
+   *              [ -6  -6  -6 ]  [2,3]
+   *
+   * backward — C.grad arrives as all ones; the switch crosses the operands:
+   *
+   *     A.grad += sumToShape( mul(B.data, C.grad), [2,3] )
+   *             = [ -3  -3  -3 ]        ← A receives B's values
+   *               [ -3  -3  -3 ]
+   *
+   *     B.grad += sumToShape( mul(A.data, C.grad), [2,3] )
+   *             = [ 2  2  2 ]           ← B receives A's values
+   *               [ 2  2  2 ]
+   *
+   * Ch 08's  a.grad = -3, b.grad = 2 — once per cell.
    * (Recipe: add's four steps, with these wrapped products as step 3.)
    */
   mul(other: TensorValue): TensorValue {
-    throw new Error("TensorValue.mul not implemented");
+    const out = new TensorValue(mul(this.data, other.data));
+    out._inputs = [this, other];
+    out._backward = () => {
+      // The switch: each parent's gradient is scaled by the SIBLING's data —
+      // and the product is what gets summed to the parent's shape, because
+      // the product itself has the broadcast shape (see the pitfall above).
+      accumulate(this, sumToShape(mul(other.data, out.grad!), this.data.shape));
+      accumulate(other, sumToShape(mul(this.data, out.grad!), other.data.shape));
+    };
+    return out;
   }
 
   /**
@@ -312,20 +393,40 @@ export class TensorValue {
    * so no `sumToShape` is needed here.
    *
    * ── WORKED TRACE — GRAPH 2's  L = sum(A @ B)   (doc section 8) ──────────
-   * forward:   A [2,3] = 1..6,   B [3,4] = 1..12   →   Z [2,4],  L = 610
-   * backward:  Z.grad = all 1 [2,4]
-   *            A.grad += matMul(Z.grad, Bᵀ)        [2,4]@[4,3] → [2,3]
-   *                    = [10 26 42]                each entry = the sum of
-   *                      [10 26 42]                the matching ROW of B
-   *            B.grad += matMul(Aᵀ, Z.grad)        [3,2]@[2,4] → [3,4]
-   *                    = [5 5 5 5]                 each row = the sum of
-   *                      [7 7 7 7]                 the matching COLUMN of A
-   *                      [9 9 9 9]
+   *
+   * forward:
+   *
+   *     A.data = [ 1  2  3 ]          B.data = [ 1   2   3   4 ]
+   *              [ 4  5  6 ]  [2,3]            [ 5   6   7   8 ]
+   *                                            [ 9  10  11  12 ]  [3,4]
+   *
+   *     Z.data = [ 38  44   50   56 ]
+   *              [ 83  98  113  128 ]  [2,4]          L = sum(Z) = 610
+   *
+   * backward — Z.grad = all ones [2,4]:
+   *
+   *     A.grad += matMul(Z.grad, Bᵀ)              [2,4] @ [4,3] → [2,3]
+   *             = [ 10  26  42 ]       each entry = the sum of the matching
+   *               [ 10  26  42 ]       ROW of B       (10 = 1+2+3+4)
+   *
+   *     B.grad += matMul(Aᵀ, Z.grad)              [3,2] @ [2,4] → [3,4]
+   *             = [ 5  5  5  5 ]       each row = the sum of the matching
+   *               [ 7  7  7  7 ]       COLUMN of A     (5 = 1+4)
+   *               [ 9  9  9  9 ]
+   *
    * Section 8 derives the 10 and the 5 cell by cell. If either number
    * surprises you, re-read it before writing this method.
    */
   matMul(other: TensorValue): TensorValue {
-    throw new Error("TensorValue.matMul not implemented");
+    const out = new TensorValue(matMul(this.data, other.data));
+    out._inputs = [this, other];
+    out._backward = () => {
+      // dA = dZ @ Bᵀ,  dB = Aᵀ @ dZ.  In 2-D both contributions already have
+      // their parent's exact shape, so no sumToShape is needed here.
+      accumulate(this, matMul(out.grad!, transpose(other.data)));
+      accumulate(other, matMul(transpose(this.data), out.grad!));
+    };
+    return out;
   }
 
   /**
@@ -360,21 +461,49 @@ export class TensorValue {
    *    shape; accumulate into this.grad
    * 4. return out
    *
-   * ── WORKED TRACE — GRAPH 1's  L = Z.sum()   (doc section 2) ─────────────
-   * forward:   Z all 4 [2,3]  →  L.data = [24], shape []
-   * backward:  L.grad = ones([]) — the seed itself, a lone 1
-   *            Z.grad += broadcast(ones([]), [2,3]) = all 1
-   * (`broadcast` stretches a scalar to any shape directly — the no-axis case
-   * needs no unsqueeze.)
+   * ── WORKED TRACE 1 — GRAPH 1's  L = Z.sum()   (doc section 2) ───────────
    *
-   * ── WORKED TRACE — the axis case   (doc section 5's R) ──────────────────
-   * forward:   R = [3 1 5; 4 2 0],  sum(axis=1, keepDims=true) → [[9],[6]]
-   * backward:  upstream [[2],[5]]  →  R.grad += broadcast = [2 2 2; 5 5 5]
-   * With keepDims=false the same upstream arrives as [2] — unsqueeze(…, 1)
-   * back to [2,1] first, then the identical broadcast.
+   * forward — all six cells collapse into one number:
+   *
+   *     Z.data = [ 4  4  4 ]          →       L.data = [ 24 ]   shape []
+   *              [ 4  4  4 ]  [2,3]
+   *
+   * backward — L.grad is the seed itself, a lone 1 of shape []:
+   *
+   *     Z.grad += broadcast(L.grad, [2,3])  =  [ 1  1  1 ]
+   *                                            [ 1  1  1 ]
+   *
+   * (a scalar broadcasts to any shape directly — no unsqueeze needed when
+   * axis is undefined)
+   *
+   * ── WORKED TRACE 2 — the axis case   (doc section 5's R) ────────────────
+   *
+   * forward — sum(axis=1, keepDims=true): each row folds into one number:
+   *
+   *     R.data = [ 3  1  5 ]          →       S.data = [ 9 ]
+   *              [ 4  2  0 ]  [2,3]                    [ 6 ]  [2,1]
+   *
+   * backward — say the upstream gradient arriving for S is:
+   *
+   *     S.grad = [ 2 ]           R.grad += broadcast(S.grad, [2,3])
+   *              [ 5 ]  [2,1]            = [ 2  2  2 ]  ← row 0's 2, copied
+   *                                        [ 5  5  5 ]  ← row 1's 5, copied
+   *
+   * With keepDims=false the same upstream arrives as  [ 2  5 ]  shape [2] —
+   * unsqueeze(grad, 1) restores [2,1], then the identical broadcast.
    */
   sum(axis?: number, keepDims?: boolean): TensorValue {
-    throw new Error("TensorValue.sum not implemented");
+    const originalShape = this.data.shape;
+    const out = new TensorValue(sum(this.data, axis, keepDims));
+    out._inputs = [this];
+    out._backward = () => {
+      let grad = out.grad!;
+      if (axis !== undefined && !keepDims) {
+        grad = unsqueeze(grad, axis);
+      }
+      accumulate(this, broadcast(grad, originalShape));
+    };
+    return out;
   }
 
   /**
@@ -396,13 +525,36 @@ export class TensorValue {
    * looks exactly like a mis-set learning rate and will not fail loudly.
    *
    * ── WORKED TRACE — GRAPH 1's Z again ────────────────────────────────────
-   * forward:   Z all 4 [2,3]  →  Z.mean() = [4], shape []      (24 / 6)
-   * backward:  every cell of Z receives 1/6 — sum's broadcast, scaled by
-   *            1/n with n = this.data.size = 6, since no axis was given.
+   *
+   * forward:
+   *
+   *     Z.data = [ 4  4  4 ]          →       Z.mean() = [ 4 ]   shape []
+   *              [ 4  4  4 ]  [2,3]                      (24 / 6)
+   *
+   * backward — sum's broadcast, then scaled by 1/n, n = size = 6 (no axis):
+   *
+   *     Z.grad += [ 1/6  1/6  1/6 ]
+   *               [ 1/6  1/6  1/6 ]
+   *
    * (Recipe: sum's recipe plus one `mulScalar(…, 1/n)` on the way back.)
    */
   mean(axis?: number, keepDims?: boolean): TensorValue {
-    throw new Error("TensorValue.mean not implemented");
+    const originalShape = this.data.shape;
+    // Forward must BE mean — not sum. (With sum here, Z.mean() returns 24
+    // instead of 4 while the backward scales by 1/n: forward and backward
+    // would disagree about what the op is.)
+    const out = new TensorValue(mean(this.data, axis, keepDims));
+    out._inputs = [this];
+    out._backward = () => {
+      let grad = out.grad!;
+      if (axis !== undefined && !keepDims) {
+        grad = unsqueeze(grad, axis);
+      }
+      // `!` — axis was valid in the forward pass or mean() would have thrown.
+      const n = axis === undefined ? this.data.size : this.data.shape[axis]!;
+      accumulate(this, mulScalar(broadcast(grad, originalShape), 1 / n));
+    };
+    return out;
   }
 
   /**
@@ -422,12 +574,26 @@ export class TensorValue {
    * — not to `newShape`, and not with the forward call's argument.
    *
    * ── WORKED TRACE — GRAPH 2's A ──────────────────────────────────────────
-   * forward:   reshape(A [2,3], [6])  →  [1,2,3,4,5,6] as a flat [6]
-   * backward:  a [6] gradient arrives  →  reshape it to the captured [2,3]
+   *
+   *     A.data = [ 1  2  3 ]    → reshape([6]) →   [ 1  2  3  4  5  6 ]  [6]
+   *              [ 4  5  6 ]  [2,3]
+   *
+   * backward — a [6] gradient arrives; reshape it to the captured [2,3]:
+   *
+   *     [ g0  g1  g2  g3  g4  g5 ]   →   [ g0  g1  g2 ]
+   *                           [6]        [ g3  g4  g5 ]  [2,3]
+   *
    * Same six numbers both directions; only the shape label changes.
    */
   reshape(newShape: number[]): TensorValue {
-    throw new Error("TensorValue.reshape not implemented");
+    const originalShape = this.data.shape;
+    // Free functions again — Tensor has no methods (same fix as add's forward).
+    const out = new TensorValue(reshape(this.data, newShape));
+    out._inputs = [this];
+    out._backward = () => {
+      accumulate(this, reshape(out.grad!, originalShape));
+    };
+    return out;
   }
 
   /**
@@ -459,7 +625,15 @@ export class TensorValue {
    * matmul can dot rows of Z.grad with rows of B (doc section 8).
    */
   transpose(axes?: number[]): TensorValue {
-    throw new Error("TensorValue.transpose not implemented");
+    const out = new TensorValue(transpose(this.data, axes));
+    out._inputs = [this];
+    out._backward = () => {
+      // No axes → forward reversed all axes; reversal is its own inverse, so
+      // undefined again undoes it. With axes, invert the permutation.
+      const invAxes = axes ? invertPermutation(axes) : undefined;
+      accumulate(this, transpose(out.grad!, invAxes));
+    };
+    return out;
   }
 
   /**
@@ -499,21 +673,39 @@ export class TensorValue {
    * Build  C = A.mul(B);  Z = C.add(d);  L = Z.sum();  then L.backward():
    *
    *   1. order = topoSortTensor(L) = [A, B, C, d, Z, L]
-   *   2. L.grad = ones([]) — a lone scalar 1
-   *   3. walk reversed — L, Z, d, C, B, A:
-   *        L._backward():  Z.grad += broadcast(1, [2,3])  = all 1
-   *        Z._backward():  C.grad += all 1                (no-op sumToShape)
-   *                        d.grad += [2,2,2]              (rows summed)
-   *        d._backward():  leaf — the constructor's no-op runs
-   *        C._backward():  A.grad += all -3;   B.grad += all 2
-   *        B, A:           leaves — no-ops
+   *   2. seed:  L.grad = ones([]) — a lone 1
+   *   3. walk reversed — L, Z, d, C, B, A — each closure fills a grid:
+   *
+   *      L fires:   Z.grad = [ 1  1  1 ]
+   *                          [ 1  1  1 ]
+   *
+   *      Z fires:   C.grad = [ 1  1  1 ]      d.grad = [ 2  2  2 ]  [1,3]
+   *                          [ 1  1  1 ]
+   *
+   *      d fires:   leaf — the constructor's no-op runs
+   *
+   *      C fires:   A.grad = [ -3  -3  -3 ]   B.grad = [ 2  2  2 ]
+   *                          [ -3  -3  -3 ]            [ 2  2  2 ]
+   *
+   *      B, A:      leaves — no-ops
    *
    *   Final: the section 2 table, exactly — three gradients element-for-
    *   element equal to Ch 08's scalars, and d summed down its rows. Run this
-   *   graph as your first end-to-end check the moment mul, add and sum work.
+   *   graph as your first end-to-end check the moment backward compiles.
    */
   backward(): void {
-    throw new Error("TensorValue.backward not implemented");
+    // Guard the root (see above): seeding with ones only means ∂L/∂L when L
+    // is a single number. Anything else is almost always a missing .sum().
+    if (this.data.size !== 1) {
+      throw new Error(
+        `backward() needs a scalar root, got shape [${this.data.shape}] — collapse with .sum() or .mean() first`,
+      );
+    }
+    const order = topoSortTensor(this);
+    this.grad = ones(this.data.shape);
+    for (let i = order.length - 1; i >= 0; i--) {
+      order[i]!._backward();
+    }
   }
 
   /**
@@ -528,7 +720,7 @@ export class TensorValue {
    * memory instead of holding a full tensor of zeros per parameter.
    */
   zeroGrad(): void {
-    throw new Error("TensorValue.zeroGrad not implemented");
+    this.grad = null;
   }
 }
 
@@ -548,13 +740,23 @@ export class TensorValue {
  * before generalising it in section 6. Read those first.
  *
  * ── WORKED TRACE — GRAPH 1's d   (doc sections 2 and 4) ───────────────────
- *     grad in : all 1, shape [2,3]        target: [1,3]   (d's shape)
+ *
+ *     grad in  = [ 1  1  1 ]          target shape: [1,3]   (d's shape)
+ *                [ 1  1  1 ]  [2,3]
+ *
  *     ranks match; axis 0 has size 2 where the target has 1
- *       →  sum axis 0 with keepDims:  [1+1, 1+1, 1+1] = [2,2,2], shape [1,3]
+ *       →  sum axis 0, keepDims:  [ 1+1  1+1  1+1 ]  =  [ 2  2  2 ]  [1,3]
+ *
  *     — d.grad, the number you derived one entry at a time in section 4.
- * Section 6 runs the other two situations with numbers:
- *     case 1   [2,3] → [3]    = [2,2,2]   (rank dropped — leading axis summed)
- *     case 2   [3,4] → [3,1]  = [4,8,12]  (keepDims — the trap lives here)
+ *
+ * Section 6's other two situations:
+ *
+ *     case 1 — rank dropped:     [ 1  1  1 ]   →  [3]   =  [ 2  2  2 ]  [3]
+ *                                [ 1  1  1 ]
+ *
+ *     case 2 — the keepDims      [ 1  1  1  1 ]              [  4 ]
+ *              trap:             [ 2  2  2  2 ]  → [3,1]  =  [  8 ]
+ *                                [ 3  3  3  3 ]              [ 12 ]  [3,1]
  *
  * ── THE ALGORITHM (doc, section 6) ────────────────────────────────────────
  * Two distinct cases, and both must be handled:
@@ -583,7 +785,32 @@ export class TensorValue {
  *      sumToShape( ones([3,4]), [1,4] )  →  reduces axis 0
  */
 export function sumToShape(grad: Tensor, targetShape: number[]): Tensor {
-  throw new Error("sumToShape not implemented");
+  let result = grad;
+
+  // Case 1: RANK was added. Sum the extra leading axes away one at a time —
+  // NO keepDims here, the axis must disappear. `sum` takes a single axis, and
+  // after each sum the remaining extra axis is axis 0 again, so always sum 0.
+  while (result.shape.length > targetShape.length) {
+    result = sum(result, 0, false);
+  }
+
+  // Case 2: a size-1 axis was STRETCHED. Sum along it WITH keepDims so the
+  // axis survives as size 1. keepDims never shifts the axis numbering, so
+  // summing one axis at a time in order is safe.
+  for (let axis = 0; axis < targetShape.length; axis++) {
+    if (result.shape[axis] !== targetShape[axis]) {
+      if (targetShape[axis] === 1) {
+        result = sum(result, axis, true);
+      } else {
+        throw new Error(
+          `Cannot sum to shape: incompatible shapes ${grad.shape} and ${targetShape}`,
+        );
+      }
+    }
+  }
+
+  // No-op case: if neither loop fired, result is still the original grad.
+  return result;
 }
 
 /**
@@ -610,10 +837,12 @@ export function sumToShape(grad: Tensor, targetShape: number[]): Tensor {
  *
  * ── WORKED TRACE — verifying GRAPH 1's d.grad ─────────────────────────────
  *     fn = ([c, d]) => c.add(d).sum()
- *     analytical (your backward)           :  d.grad = [2, 2, 2]
- *     numerical (numericalGradientTensor)  :  nudge each d[j] by ±h — it sits
- *        in TWO cells of Z, so L moves by 2h, and the measured slope is 2  ✓
- * When the two sides agree to tolerance on every operation, the chapter's
+ *
+ *     analytical, from your backward:        d.grad   = [ 2  2  2 ]
+ *     numerical, one nudge at a time:        measured = [ 2  2  2 ]   ✓
+ *       (each d[j] sits in TWO cells of Z, so a nudge of h moves L by 2h)
+ *
+ * When the two rows agree to tolerance on every operation, the chapter's
  * verification gate is met.
  *
  * ── PITFALL: zero the gradients before you start ──────────────────────────
@@ -631,5 +860,44 @@ export function checkTensorGradient(
   inputs: TensorValue[],
   tolerance?: number
 ): boolean {
-  throw new Error("checkTensorGradient not implemented");
+  const tol = tolerance ?? 1e-5;
+
+  // The loss BOTH sides agree on: sum(fn(...)) — one number, always.
+  // (backward() insists on a scalar root, and the numerical side needs a
+  // plain number to measure a slope against.)
+  const scalarLoss = (nodes: TensorValue[]): TensorValue => {
+    const out = fn(nodes);
+    return out.data.size === 1 ? out : out.sum();
+  };
+
+  // Analytical side. Zero first — fn may have run before, and stale gradients
+  // would contaminate the comparison (Ch 08's −3, −9, −18, on tensors).
+  for (const input of inputs) input.zeroGrad();
+  scalarLoss(inputs).backward();
+
+  // Numerical side, one input at a time. The perturbed copy is substituted at
+  // POSITION i — not always position 0 — and every other input is rebuilt as
+  // a fresh leaf, so no graph state leaks between evaluations.
+  for (let i = 0; i < inputs.length; i++) {
+    const input = inputs[i]!;
+
+    const numerical = numericalGradientTensor((t: Tensor) => {
+      const fresh = inputs.map((node, j) =>
+        j === i ? new TensorValue(t) : new TensorValue(node.data),
+      );
+      // Plain-number readout of the scalar loss — no backward involved here.
+      return scalarLoss(fresh).data.data[0]!;
+    }, input.data);
+
+    // Compare element by element. A null analytical gradient means this input
+    // never influenced the output — which agrees with a numerical zero.
+    for (let k = 0; k < numerical.size; k++) {
+      const analytical = input.grad === null ? 0 : input.grad.data[k]!;
+      if (Math.abs(analytical - numerical.data[k]!) > tol) {
+        return false;
+      }
+    }
+  }
+
+  return true;
 }

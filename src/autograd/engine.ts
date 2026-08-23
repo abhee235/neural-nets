@@ -162,5 +162,18 @@ export function topoSort(root: Value): Value[] {
  *    for the same graph in Ch 08.
  */
 export function topoSortTensor(root: TensorValue): TensorValue[] {
-  throw new Error("topoSortTensor not implemented");
+  const visited = new Set<TensorValue>();
+  const order: TensorValue[] = [];
+
+  function dfs(node: TensorValue): void {
+    if (visited.has(node)) return;
+    visited.add(node);
+    for (const input of node._inputs) {
+      dfs(input);
+    }
+    order.push(node);
+  }
+
+  dfs(root);
+  return order;
 }

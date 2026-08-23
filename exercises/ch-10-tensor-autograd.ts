@@ -8,7 +8,7 @@
  * through matrix operations — the foundation of every layer in the network.
  */
 import { TensorValue } from "../src/autograd/grad.ts";
-import { createTensor, randn } from "../src/tensor/creation.ts";
+import { createTensor } from "../src/tensor/types.ts";
 
 // ─── E1: Simple tensor add ────────────────────────────────────────────────────
 const a = new TensorValue(createTensor([1, 2, 3, 4], [2, 2]));
