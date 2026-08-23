@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">elementwise: one cell in, one cell out — so backward has no shape to repair</text>
+
+  <!--
+    x = [-2,-1,0,1,2]  →  relu(x) = [0,0,0,1,2]
+    relu'(x) = [0,0,0,1,1];  out.grad = ones  →  x.grad = [0,0,0,1,1]
+    The column highlight sweeps all four rows together so cell i lines up
+    across forward, local derivative, upstream and result.
+  -->
+
+  <!-- column x positions: 5 cells -->
+  <!-- 150, 232, 314, 396, 478  (width 66, gap 16) -->
+
+  <text x="118" y="76" text-anchor="end" fill="#6f42c1" font-family="monospace" font-size="11" font-weight="700">x</text>
+  <text x="118" y="88" text-anchor="end" fill="#8b7355" font-family="monospace" font-size="9">[5]</text>
+  <g font-family="monospace" font-size="13" font-weight="700" text-anchor="middle" fill="#2c2416">
+    <rect x="150" y="58" width="66" height="30" rx="4" fill="#ffffff" stroke="#6f42c1"/><text x="183" y="78">-2</text>
+    <rect x="232" y="58" width="66" height="30" rx="4" fill="#ffffff" stroke="#6f42c1"/><text x="265" y="78">-1</text>
+    <rect x="314" y="58" width="66" height="30" rx="4" fill="#ffffff" stroke="#6f42c1"/><text x="347" y="78">0</text>
+    <rect x="396" y="58" width="66" height="30" rx="4" fill="#ffffff" stroke="#6f42c1"/><text x="429" y="78">1</text>
+    <rect x="478" y="58" width="66" height="30" rx="4" fill="#ffffff" stroke="#6f42c1"/><text x="511" y="78">2</text>
+  </g>
+
+  <!-- straight-down arrows: the whole point — cell i only ever meets cell i -->
+  <g stroke="#c9b88a" stroke-width="1.5">
+    <line x1="183" y1="90" x2="183" y2="112"/>
+    <line x1="265" y1="90" x2="265" y2="112"/>
+    <line x1="347" y1="90" x2="347" y2="112"/>
+    <line x1="429" y1="90" x2="429" y2="112"/>
+    <line x1="511" y1="90" x2="511" y2="112"/>
+  </g>
+  <g fill="#c9b88a">
+    <path d="M183,112 l-4,-6 l8,0 z"/><path d="M265,112 l-4,-6 l8,0 z"/><path d="M347,112 l-4,-6 l8,0 z"/>
+    <path d="M429,112 l-4,-6 l8,0 z"/><path d="M511,112 l-4,-6 l8,0 z"/>
+  </g>
+  <text x="580" y="104" fill="#a8956a" font-family="monospace" font-size="10">relu, cell by cell</text>
+
+  <text x="118" y="136" text-anchor="end" fill="#1e6091" font-family="monospace" font-size="11" font-weight="700">relu(x)</text>
+  <text x="118" y="148" text-anchor="end" fill="#8b7355" font-family="monospace" font-size="9">[5]</text>
+  <g font-family="monospace" font-size="13" font-weight="700" text-anchor="middle" fill="#2c2416">
+    <rect x="150" y="118" width="66" height="30" rx="4" fill="#ffffff" stroke="#1e6091"/><text x="183" y="138">0</text>
+    <rect x="232" y="118" width="66" height="30" rx="4" fill="#ffffff" stroke="#1e6091"/><text x="265" y="138">0</text>
+    <rect x="314" y="118" width="66" height="30" rx="4" fill="#ffffff" stroke="#1e6091"/><text x="347" y="138">0</text>
+    <rect x="396" y="118" width="66" height="30" rx="4" fill="#ffffff" stroke="#1e6091"/><text x="429" y="138">1</text>
+    <rect x="478" y="118" width="66" height="30" rx="4" fill="#ffffff" stroke="#1e6091"/><text x="511" y="138">2</text>
+  </g>
+
+  <line x1="30" y1="172" x2="690" y2="172" stroke="#e0d9c5" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="360" y="190" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="11" font-weight="700">BACKWARD — one elementwise multiply, nothing else</text>
+
+  <!-- local derivative row -->
+  <text x="118" y="222" text-anchor="end" fill="#a94442" font-family="monospace" font-size="11" font-weight="700">relu'(x)</text>
+  <text x="118" y="234" text-anchor="end" fill="#8b7355" font-family="monospace" font-size="9">the gate</text>
+  <g font-family="monospace" font-size="13" font-weight="700" text-anchor="middle" fill="#2c2416">
+    <rect x="150" y="204" width="66" height="30" rx="4" fill="#f7ecea" stroke="#a94442"/><text x="183" y="224">0</text>
+    <rect x="232" y="204" width="66" height="30" rx="4" fill="#f7ecea" stroke="#a94442"/><text x="265" y="224">0</text>
+    <rect x="314" y="204" width="66" height="30" rx="4" fill="#f7ecea" stroke="#a94442"/><text x="347" y="224">0</text>
+    <rect x="396" y="204" width="66" height="30" rx="4" fill="#f0f6f0" stroke="#2e7d32"/><text x="429" y="224">1</text>
+    <rect x="478" y="204" width="66" height="30" rx="4" fill="#f0f6f0" stroke="#2e7d32"/><text x="511" y="224">1</text>
+  </g>
+
+  <text x="360" y="252" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="14" font-weight="700">⊙</text>
+
+  <!-- upstream row -->
+  <text x="118" y="278" text-anchor="end" fill="#a94442" font-family="monospace" font-size="11" font-weight="700">out.grad</text>
+  <g font-family="monospace" font-size="13" font-weight="700" text-anchor="middle" fill="#2c2416">
+    <rect x="150" y="260" width="66" height="30" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="183" y="280">1</text>
+    <rect x="232" y="260" width="66" height="30" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="265" y="280">1</text>
+    <rect x="314" y="260" width="66" height="30" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="347" y="280">1</text>
+    <rect x="396" y="260" width="66" height="30" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="429" y="280">1</text>
+    <rect x="478" y="260" width="66" height="30" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="511" y="280">1</text>
+  </g>
+
+  <line x1="150" y1="300" x2="544" y2="300" stroke="#8b7355" stroke-width="1"/>
+
+  <!-- result row -->
+  <text x="118" y="326" text-anchor="end" fill="#a94442" font-family="monospace" font-size="11" font-weight="700">x.grad</text>
+  <text x="118" y="338" text-anchor="end" fill="#8b7355" font-family="monospace" font-size="9">[5] ✓</text>
+  <g font-family="monospace" font-size="13" font-weight="700" text-anchor="middle" fill="#2c2416">
+    <rect x="150" y="308" width="66" height="30" rx="4" fill="#f7ecea" stroke="#a94442"/><text x="183" y="328">0</text>
+    <rect x="232" y="308" width="66" height="30" rx="4" fill="#f7ecea" stroke="#a94442"/><text x="265" y="328">0</text>
+    <rect x="314" y="308" width="66" height="30" rx="4" fill="#f7ecea" stroke="#a94442"/><text x="347" y="328">0</text>
+    <rect x="396" y="308" width="66" height="30" rx="4" fill="#f0f6f0" stroke="#2e7d32"/><text x="429" y="328">1</text>
+    <rect x="478" y="308" width="66" height="30" rx="4" fill="#f0f6f0" stroke="#2e7d32"/><text x="511" y="328">1</text>
+  </g>
+
+  <text x="580" y="322" fill="#a94442" font-family="monospace" font-size="9">gate shut → 0</text>
+  <text x="580" y="334" fill="#2e7d32" font-family="monospace" font-size="9">gate open → passes</text>
+
+  <!-- sweeping column highlight across all four rows -->
+  <rect y="54" width="70" height="288" rx="6" fill="#6f42c1" fill-opacity="0.08" stroke="#6f42c1" stroke-width="1.5">
+    <animate attributeName="x" values="148;230;312;394;476" keyTimes="0;0.2;0.4;0.6;0.8" dur="6s" calcMode="discrete" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- formula bar -->
+  <rect x="30" y="352" width="660" height="38" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="369" text-anchor="middle" font-family="monospace" font-size="11" fill="#5a4220" font-weight="600">
+    x.grad  +=  f'(x)  ⊙  out.grad          — the backward of every elementwise activation
+  </text>
+  <text x="360" y="383" text-anchor="middle" font-family="monospace" font-size="9" fill="#8b7355">
+    shapes never change, so there is no sumToShape, no unsqueeze, no broadcasting to undo
+  </text>
+
+</svg>

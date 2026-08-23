@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">sigmoid's derivative can never exceed 0.25 — and depth multiplies that ceiling</text>
+
+  <!--
+    Left: derivative curves. x in [-6,6] over 260px; y in [0,1.1] over 150px.
+      sigmoid' peaks 0.25 at x=0; relu' is a step 0 → 1.
+    Right: gradient reaching layer 1 after n layers.
+      sigmoid best case 0.25^n : 0.25, 0.0625, ..., 9.5e-7 at n=10  (log scale)
+      relu 1^n = 1 flat.
+    All values computed, not sketched.
+  -->
+
+  <line x1="358" y1="46" x2="358" y2="330" stroke="#e0d9c5" stroke-width="1" stroke-dasharray="4 4"/>
+
+  <!-- ═══════════ LEFT: the derivative curves ═══════════════════ -->
+  <text x="185" y="60" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="12" font-weight="700">the derivative, plotted</text>
+
+  <g transform="translate(50,80)">
+    <!-- axes -->
+    <line x1="0" y1="150" x2="270" y2="150" stroke="#c9b88a" stroke-width="1"/>
+    <line x1="135" y1="0" x2="135" y2="156" stroke="#e0d9c5" stroke-width="1"/>
+
+    <!-- y gridlines: 1.0 at y=13.6, 0.25 at y=115.9 -->
+    <line x1="0" y1="13.6" x2="270" y2="13.6" stroke="#e0d9c5" stroke-dasharray="2 3"/>
+    <text x="-6" y="17" text-anchor="end" fill="#8b7355" font-family="monospace" font-size="9">1.00</text>
+    <line x1="0" y1="115.9" x2="270" y2="115.9" stroke="#a94442" stroke-width="1" stroke-dasharray="3 3" opacity="0.7"/>
+    <text x="-6" y="119" text-anchor="end" fill="#a94442" font-family="monospace" font-size="9" font-weight="700">0.25</text>
+    <text x="-6" y="153" text-anchor="end" fill="#8b7355" font-family="monospace" font-size="9">0</text>
+
+    <!-- relu' : step 0 then 1 -->
+    <polyline points="0,150 134,150 136,13.6 270,13.6" fill="none" stroke="#2e7d32" stroke-width="2.5"/>
+    <text x="200" y="8" fill="#2e7d32" font-family="monospace" font-size="10" font-weight="700">relu' = 1</text>
+
+    <!-- sigmoid' : bell peaking 0.25 -->
+    <polyline points="0,148.9 22,147.5 45,144.4 67,137.3 90,124.4 112,117.2 135,115.9 158,117.2 180,124.4 203,137.3 225,144.4 248,147.5 270,148.9"
+              fill="none" stroke="#1e6091" stroke-width="2.5"/>
+    <text x="152" y="108" fill="#1e6091" font-family="monospace" font-size="10" font-weight="700">sigmoid'</text>
+
+    <!-- saturation markers -->
+    <text x="16" y="164" fill="#8b7355" font-family="monospace" font-size="9">-6</text>
+    <text x="131" y="164" fill="#8b7355" font-family="monospace" font-size="9">0</text>
+    <text x="256" y="164" fill="#8b7355" font-family="monospace" font-size="9">6</text>
+    <text x="35" y="140" fill="#a94442" font-family="monospace" font-size="9">saturated</text>
+    <text x="200" y="140" fill="#a94442" font-family="monospace" font-size="9">saturated</text>
+  </g>
+
+  <text x="185" y="264" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">sigmoid'(0) = 0.25 is the best it ever gets</text>
+  <text x="185" y="280" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">sigmoid'(10) = 0.0000454</text>
+
+  <!-- ═══════════ RIGHT: what depth does to it ═════════════════ -->
+  <text x="540" y="60" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="12" font-weight="700">gradient reaching layer 1 after n layers</text>
+
+  <g transform="translate(400,80)">
+    <line x1="0" y1="150" x2="260" y2="150" stroke="#c9b88a" stroke-width="1"/>
+
+    <!-- relu: flat at 1 -->
+    <line x1="0" y1="14" x2="260" y2="14" stroke="#2e7d32" stroke-width="2.5"/>
+    <text x="200" y="9" fill="#2e7d32" font-family="monospace" font-size="10" font-weight="700">relu: 1ⁿ = 1</text>
+
+    <!-- sigmoid 0.25^n on log scale: each layer drops ~2 decades of 6 total over 150px -->
+    <!-- n:0..10 → 0.25^n ; log10 from 0 to -6.02 ; y = 14 + (-log10)/6.02*136 -->
+    <polyline points="0,14 26,27.6 52,41.2 78,54.8 104,68.4 130,82 156,95.6 182,109.2 208,122.8 234,136.4 260,150"
+              fill="none" stroke="#a94442" stroke-width="2.5"/>
+    <circle cx="0" cy="14" r="3" fill="#a94442"/>
+    <circle cx="130" cy="82" r="3" fill="#a94442"/>
+    <circle cx="260" cy="150" r="3.5" fill="#a94442"/>
+
+    <text x="8" y="10" fill="#a94442" font-family="monospace" font-size="9">1</text>
+    <text x="136" y="78" fill="#a94442" font-family="monospace" font-size="9">≈1e-3</text>
+    <text x="256" y="166" text-anchor="end" fill="#a94442" font-family="monospace" font-size="9" font-weight="700">9.5e-7</text>
+    <text x="120" y="120" fill="#a94442" font-family="monospace" font-size="10" font-weight="700">sigmoid: 0.25ⁿ</text>
+
+    <text x="0" y="166" fill="#8b7355" font-family="monospace" font-size="9">n=0</text>
+    <text x="128" y="166" fill="#8b7355" font-family="monospace" font-size="9">5</text>
+  </g>
+
+  <text x="540" y="264" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">ten sigmoid layers: a gradient a million times</text>
+  <text x="540" y="280" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">smaller than the one at the output</text>
+
+  <!-- ═══════════ the conclusion ═══════════════════════════════ -->
+  <rect x="30" y="296" width="660" height="44" rx="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.5"/>
+  <text x="360" y="314" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="11" font-weight="700">on its active side relu's derivative is exactly 1 — so the product never decays</text>
+  <text x="360" y="331" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">that single fact is why relu replaced sigmoid in hidden layers</text>
+
+  <!-- formula bar -->
+  <rect x="30" y="352" width="660" height="36" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="369" text-anchor="middle" font-family="monospace" font-size="11" fill="#5a4220" font-weight="600">
+    Ch 09 showed a gradient reaching an early layer is a PRODUCT of every local derivative on the way
+  </text>
+  <text x="360" y="383" text-anchor="middle" font-family="monospace" font-size="9" fill="#8b7355">
+    the trade: relu's gate can shut for good (a dead unit); sigmoid never dies but starves everything upstream
+  </text>
+
+</svg>
