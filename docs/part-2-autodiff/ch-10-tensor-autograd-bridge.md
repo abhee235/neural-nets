@@ -1,4 +1,4 @@
-# Chapter 10: Tensor Autograd
+# Chapter 10: Tensor Autograd Bridge
 
 > **Part 2 of 6 — Autodiff Engine**
 > Source: [`src/autograd/grad.ts`](../../src/autograd/grad.ts) · [`src/autograd/engine.ts`](../../src/autograd/engine.ts)
@@ -7,249 +7,753 @@
 
 ---
 
+## Where we left off (and why this chapter exists)
+
+By the end of Chapter 09 you had a complete, working learning system. A graph that records itself, a backward pass that fills every gradient in one sweep, and an optimizer that moves parameters downhill. It trains a neuron. It would train a network.
+
+It would just never finish.
+
+Every node in that graph holds **one number**. A single weight matrix at GPT-2's width is 768 × 768 = **589,824 numbers** — so as scalar `Value` nodes, that one matrix is 589,824 separate objects, each with its own `_inputs` array and `_backward` closure, before a single forward pass has run. And that is one matrix out of the roughly 150 in the smallest GPT-2.
+
+So this chapter is not a performance tweak. Scalar autograd is *correct* and *unusable*, and without this bridge the course stops at Chapter 09.
+
+The fix is one idea:
+
+> **A node holds a whole tensor instead of a single number.**
+
+That is genuinely all. The graph does not change. The topological order does not change. The reverse walk, the `+=` accumulation, the seed, `zeroGrad`, and your `SGD` do not change. Only the contents of a node change — and then a small number of consequences follow from that, which is what the chapter is actually about.
+
+> **🗺️ How to read this chapter**
+> Alternating, like Ch 09 — read a bit, build a bit.
+>
+> | | Sections | Then |
+> |---|---|---|
+> | **Read** | 1 → 6 | **Build** `sumToShape`, `topoSortTensor`, `reshape`, `transpose`, `zeroGrad` (section 7) |
+> | **Read** | 8 | **Build** `add`, `mul`, `matMul` (section 9) |
+> | **Read** | 10 | **Build** `sum`, `mean`, `backward` (section 11) |
+> | **Read** | — | **Verify** everything (section 12) |
+>
+> [`grad.ts`](../../src/autograd/grad.ts) presents every method as a **pair** — the scalar code you already wrote in Ch 08, then what changes for tensors. Read it alongside this doc; the two are designed to be used together.
+
+---
+
 ## Learning Goals
 
 By the end of this chapter you can:
 
-- Promote `Value` from scalar to tensor: data and grad are both `Tensor`s with matching shapes.
-- Implement backward passes for tensor `add`, `mul`, `matMul`, `reshape`, and `transpose`.
-- Implement `sumToShape` to un-broadcast a gradient back to its original tensor shape.
-- Verify every tensor op against finite differences before depending on it.
-- Confirm that all 19 tests pass; this is the foundation every later chapter relies on.
+- Explain why scalar autograd cannot train a real network, with numbers.
+- State the shape invariant that governs this entire chapter, and name the two problems it creates.
+- Explain why broadcasting backward is a *sum* and reduction backward is a *broadcast*, and why those are the same fact.
+- Implement `sumToShape`, handling both added rank and stretched size-1 axes.
+- Derive `matMul`'s backward from shape constraints alone, without memorising it.
+- Verify every tensor operation against finite differences — and say why that matters more here than anywhere else in the course.
 
 ---
 
-## Intuition First
+## Words we'll use in this chapter
 
-Tensor autograd is scalar autograd with two extra rules:
-
-1. **Matrix backward.** If `C = A @ B`, then `∂L/∂A = ∂L/∂C @ Bᵀ` and `∂L/∂B = Aᵀ @ ∂L/∂C`. These two formulas are the workhorses of every backward pass in this course.
-2. **Un-broadcasting.** If a forward op broadcast a small tensor up to a large shape, the backward op must sum the gradient back down to the small shape. Otherwise gradients have the wrong shape and the optimizer blows up.
-
----
-
-## Mental Model
-
-```text
-  forward:  C = A @ B           (shapes: A:[m,k], B:[k,n] → C:[m,n])
-
-  backward (given dL/dC of shape [m,n]):
-      dL/dA = dL/dC @ Bᵀ       → [m, k]
-      dL/dB = Aᵀ @ dL/dC      → [k, n]
-
-  broadcast rule:
-      forward stretched [d] → [batch, seq, d]
-      backward must  Σ over batch and seq to get [d] again
-```
+| Word | Plain meaning |
+|------|---------------|
+| **`TensorValue`** | The Ch 10 node. Like `Value`, but `data` and `grad` are Tensors. |
+| **shape invariant** | `grad.shape` must always equal `data.shape`. The rule everything follows from. |
+| **broadcasting** | Ch 03's rule for stretching a small tensor across a bigger one. |
+| **un-broadcasting** | Undoing that in the backward pass, by summing. Our `sumToShape`. |
+| **reduction** | An op that collapses an axis — `sum`, `mean` (Ch 05). |
+| **upstream gradient** | `out.grad` — what reached this node from the loss. Same meaning as Ch 08. |
+| **rank** | Number of axes. `[2,3]` has rank 2. |
 
 ---
 
-## Concepts
+## 1. Why one number per node stops working
 
-### From Number Gradients to Tensor Gradients
+Chapter 08's design puts one `Value` object around every single number. That was the right choice for learning: you could print any node, hand-check any gradient, and see the whole graph on one page.
 
-In scalar autograd:
+Now count what it costs on something real.
 
-$$x.data \in \mathbb{R}, \qquad x.grad \in \mathbb{R}$$
+<p align="center">
+  <img src="../assets/ch-10/one-node-many-numbers.svg" alt="Two panels comparing how one 768 by 768 weight matrix is held. On the left, labelled Ch 08 one number per node, a dense field of small red dots fills a box, captioned 589,824 objects — one per number, each with its own _inputs array and _backward closure — and noting that this is one weight matrix before a single forward pass runs. On the right, labelled Ch 10 one tensor per node, a single green box reads TensorValue with fields data: Tensor [768,768] and grad: Tensor or null, described as one contiguous Float64Array of 4.5 MiB, captioned 1 object, visited once by topoSort. A caption states that scalar autograd is correct and unusable, and that this chapter changes what is in a node and nothing else." />
+</p>
 
-In tensor autograd:
+*Figure 1: the same matrix, held two ways.*
 
-$$X.data \in \mathbb{R}^{s_1 \times s_2 \times \cdots \times s_n}, \qquad X.grad \in \mathbb{R}^{s_1 \times s_2 \times \cdots \times s_n}$$
+| | scalar `Value` | `TensorValue` |
+|---|---|---|
+| one 768×768 weight matrix | **589,824 objects** | **1 object** |
+| storage for its numbers | 589,824 boxed values, each in its own object | one `Float64Array`, ~4.5 MB, contiguous |
+| its gradient | 589,824 more numbers, scattered | one `Float64Array` of the same shape |
+| one matmul against it | ~590k multiply nodes + ~590k add nodes | 1 node |
 
-The shape of `grad` must always match the shape of `data` for that `Value`.
+The object count is the part that kills it. Every one of those nodes carries an array and a closure, gets visited individually by `topoSort`, and is chased through memory one pointer at a time. The arithmetic is not the problem — the bookkeeping around the arithmetic is a few hundred times larger than the arithmetic itself.
 
-Plain English: each number in a tensor gets its own derivative. A tensor with 512 values has 512 gradients.
+A tensor collapses all of that into a single node over a single flat buffer. The numbers sit next to each other in memory, and one operation touches all of them.
 
-### Gradient Accumulation Still Uses `+=`
+---
 
-If a tensor is reused in two places, both paths contribute to its gradient:
+## 2. Chapter 08's own graph, with tensors in the nodes
 
-$$\frac{\partial L}{\partial X} = \frac{\partial L_1}{\partial X} + \frac{\partial L_2}{\partial X}$$
+The only honest way to show what this chapter changes is to take something you have **already differentiated by hand** and redo it — changing what is inside the nodes and *nothing else*. Any other example would be changing two things at once, and you would not be able to tell which difference was the point.
 
-So tensor gradients must be accumulated element-wise:
+So we use Chapter 08b's running example. You have seen this graph three times already:
 
-```typescript
-x.grad = add(x.grad, contribution);
+```
+    a ──┐
+        ├──► [×] ──► c ──┐
+    b ──┘                ├──► [+] ──► L
+                         │
+    d ────────────────────┘
+
+    L = (a · b) + d          a = 2,  b = -3,  d = 10
 ```
 
-Do not assign over an existing gradient unless you are intentionally zeroing it before a new backward pass.
+And you already know every number in it, because you computed them in [Ch 08b](ch-08b-autograd-backward.md):
 
-### Broadcasting Backward
-
-Broadcasting copies values conceptually. Backward must sum gradients back over the copied dimensions.
-
-Example:
-
-```text
-x shape: [3, 1]
-y shape: [3, 4]
-z = x + y
-z shape: [3, 4]
+```
+forward :  c = -6      L = 4
+backward:  L.grad = 1   c.grad = 1   d.grad = 1   a.grad = -3   b.grad = 2
 ```
 
-`x` was stretched across 4 columns. During backward, each original `x[i, 0]` receives the sum of the 4 gradients that used it:
+### The same graph, one tensor per node
 
-$$\frac{\partial L}{\partial x_{i,0}} = \sum_{j=0}^{3} \frac{\partial L}{\partial z_{i,j}}$$
+Now the only change: every node holds a **`[2,3]` block** instead of one number. Same names, same values, same operations. `d` stays a **single row** — one bias shared by both rows, which is how a bias is always used:
 
-This operation is often called `unbroadcast` or `sumToShape`.
+```
+A = [  2   2   2 ]        B = [ -3  -3  -3 ]        d = [ 10  10  10 ]
+    [  2   2   2 ]            [ -3  -3  -3 ]
 
-### Reduction Backward
-
-If `sum(x, axis)` collapses a dimension, backward broadcasts the upstream gradient back to the original shape.
-
-If:
-
-```text
-x shape: [2, 3]
-y = sum(x, axis=1, keepDims=true)
-y shape: [2, 1]
+    shape [2,3]                shape [2,3]              shape [1,3]  ← one row
 ```
 
-Then each element in a row receives the same upstream gradient:
+**Forward** — every operation is the tensor version of the one Ch 08 used:
 
-$$\frac{\partial L}{\partial x_{i,j}} = \frac{\partial L}{\partial y_{i,0}}$$
+```
+C = A × B  =  [ -6  -6  -6 ]     ✓ Ch 08's c = -6, six times over
+              [ -6  -6  -6 ]
 
-For `mean`, divide by the number of reduced elements:
+Z = C + d  =  [  4   4   4 ]     ✓ Ch 08's L = 4, six times over
+              [  4   4   4 ]        (d's single row is copied into both)
+
+L = sum(Z) =  24                 ← collapse to one number, so backward()
+                                    has a single thing to start from
+```
+
+**Backward** — now compare each gradient against the one you already know:
+
+| node | Ch 08 gradient | Ch 10 gradient | |
+|---|---|---|---|
+| `C` | `1` | every entry `1` | **same** |
+| `A` | `-3` (that is `b`) | every entry `-3` | **same** |
+| `B` | `2` (that is `a`) | every entry `2` | **same** |
+| `d` | `1` | **`[ 2  2  2 ]`** | **different** |
+
+Read that table slowly, because it is the entire chapter.
+
+**Three of the four are unchanged.** Not "analogous" — identical, element for element. `A.grad` is `-3` in every position exactly as the scalar `a.grad` was `-3`. The multiply still routes each operand its sibling's value; the add still copies its gradient to both parents. Every rule you wrote in Ch 08 carried over without modification, because every one of those nodes had its own gradient slot for every one of its numbers.
+
+**One is different, and only one.** `d` was a single row, but it was *used in two rows*. So ask the Chapter 08 question: **how many times was `d[0]` — the number 10 — actually used?** Twice. And [Ch 08b already told you](ch-08b-autograd-backward.md) what happens to a value used in several places (its "Why `+=` and not `=`" section, and step 7 of its walk-through):
+
+> *its gradient is the sum of the contributions.*
+
+```
+d.grad[0] = Z.grad[0][0] + Z.grad[1][0] = 1 + 1 = 2
+d.grad[1] = Z.grad[0][1] + Z.grad[1][1] = 1 + 1 = 2
+d.grad[2] = Z.grad[0][2] + Z.grad[1][2] = 1 + 1 = 2
+```
+
+That summing-down-the-copies is `sumToShape` — the one genuinely new idea in the first half of the chapter, and you have just done it by hand using a rule you already had. No new mathematics appears anywhere in this section.
+
+> **Why every entry is the same number here.** So the comparison with Ch 08 is exact, line for line. In a real tensor the entries differ from each other and the gradients differ with them — but not one rule changes. If you want to see that, change `A` to `[[1,2,3],[4,5,6]]` and re-run; `A.grad` stays all `-3`, and `d.grad` stays `[2,2,2]`.
+
+> **Check this first.** Once `mul`, `add` and `sum` work, this is the first thing to run. Three gradients matching Ch 08 and `d.grad = [2,2,2]` with shape `[1,3]` means the hard part is done.
+
+---
+
+## 3. What changed, and what didn't
+
+This is the shortest way to see the chapter:
+
+```
+Ch 08:   class Value       { data: number,  grad: number }
+Ch 10:   class TensorValue  { data: Tensor,  grad: Tensor | null }
+```
+
+Everything else on that class — `_inputs`, `_backward`, the operations, the backward sweep — keeps the same structure. The [`grad.ts`](../../src/autograd/grad.ts) stub shows each method next to the scalar version you wrote, so you can see the delta directly rather than re-deriving it.
+
+**What carries over untouched:**
+
+- Topological order, and the reverse walk. `topoSort` never reads `.data` or `.grad` — it only follows `_inputs`. Order is a property of the graph, not of what is in the nodes.
+- Gradient accumulation. A node used twice still sums its contributions; `+=` on a number becomes an element-wise tensor `add`.
+- The seed. Still "the derivative of the output with respect to itself" — still 1, just one per element.
+- Not zeroing inside `backward()`. Still the caller's job.
+- **Your `SGD`.** It reads `.data` and `.grad` and subtracts. It will need tensor arithmetic in Ch 14, but conceptually it never learns that anything happened.
+
+**What is genuinely new** — and it is only two things:
+
+1. `matMul` backward, which has no scalar counterpart at all.
+2. `sumToShape`, because scalars do not broadcast.
+
+Everything else in the chapter is one of those two ideas wearing a different hat.
+
+### Why `grad` is nullable now
+
+In Ch 08, `grad` started at `0`. Here it starts at `null`, and that is a deliberate change rather than an oversight.
+
+Once shape is involved, "a gradient of zero" and "no gradient yet" stop being the same statement. A zero gradient has to be an entire tensor of the right shape — real memory, allocated for every parameter, to represent *nothing has happened yet*. PyTorch draws the same line: `.grad` is `None` until the first backward pass.
+
+The cost is that every accumulation site has to ask "first contribution, or another one?". That is two lines, identical everywhere, and worth extracting into one small helper the first time you write it.
+
+---
+
+### The invariant behind all of it
+
+Notice what section 2 kept checking after every step: *does the gradient's shape match its tensor's shape?* That is the rule the whole chapter runs on.
+
+A gradient answers a question about one number — *if I nudge this, how does the loss respond?* — so there has to be exactly one gradient per data element:
+
+$$\boxed{\texttt{node.grad.shape} \;=\; \texttt{node.data.shape}}$$
+
+Always. A `[4,3]` tensor has twelve numbers and therefore twelve gradients, arranged `[4,3]`.
+
+Simple enough — except that **forward operations are allowed to change shape.** Broadcasting grew `[1,3]` into `[2,3]` in section 2. Reductions shrink one. `matMul` makes a third shape out of two. Every time forward changes a shape, backward has to change it back, and getting that direction right is essentially the whole chapter.
+
+It is also a new *category* of bug. In Ch 08 a wrong gradient was a wrong number. Here you can have a perfectly-shaped tensor full of wrong numbers — shapes line up, nothing throws, and the loss even falls for a while. Section 12 is about not letting that happen.
+
+---
+
+## 4. Slow down: `d`'s gradient, one number at a time
+
+Section 2 computed `d.grad = [2, 2, 2]` in three lines that looked almost the same. That's worth doing again, much more slowly — one bias number, completely by itself, before moving to the next.
+
+Here is `d` again, and here is `Z.grad`, the tensor of gradients that arrived from upstream. Both are copied straight from section 2, so there is nothing new to set up:
+
+```
+d = [ 10  10  10 ]            shape [1,3]
+
+Z.grad = [ 1  1  1 ]          shape [2,3]
+         [ 1  1  1 ]
+```
+
+**Find `d.grad[0]` — the gradient for `d`'s first entry — and nothing else.**
+
+Forget that `d` has three numbers for a moment; pretend it only has this one. Ask exactly one question: *everywhere `d[0]` was used in the forward pass, which position of `Z.grad` is sitting there now?*
+
+`d[0]` was added into the first column of `C` — that's `Z[0][0]` and `Z[1][0]`. Both of those positions in `Z.grad` hold `1`. So:
+
+```
+d.grad[0]  =  Z.grad[0][0]  +  Z.grad[1][0]
+           =        1       +        1
+           =  2
+```
+
+That's it. One number, computed from two cells you can point to.
+
+**Now do `d.grad[1]` — the second entry — the exact same way, from scratch.**
+
+`d[1]` was added into the *second* column of `C`: `Z[0][1]` and `Z[1][1]`. Both hold `1` in `Z.grad`:
+
+```
+d.grad[1]  =  Z.grad[0][1]  +  Z.grad[1][1]
+           =        1       +        1
+           =  2
+```
+
+**And `d.grad[2]`, the third entry, once more:**
+
+`d[2]` lives in the third column: `Z[0][2]` and `Z[1][2]`. Both `1`:
+
+```
+d.grad[2]  =  Z.grad[0][2]  +  Z.grad[1][2]
+           =        1       +        1
+           =  2
+```
+
+Three separate questions, asked the same way three times: *which cells did this number feed, and what do their gradients add up to?* Put the three answers side by side and you get section 2's `d.grad = [2, 2, 2]` — the same result, but now you can see where every single one of those `2`s came from, rather than trusting a formula.
+
+That question — *which cells did this number feed, and what is the sum there* — is the whole of what `sumToShape` automates. Nothing else is coming; the rest of this chapter is applying that one question in more places.
+
+---
+
+## 5. The mirror question: one gradient becomes several copies
+
+Section 4 handled *broadcasting* — one small tensor copied into a bigger one. There is exactly one other way a shape changes in this chapter: *reduction*, where a bigger tensor is collapsed into a smaller one. `sum(x, axis)` does this, and it is what every loss function ends with.
+
+Section 2's graph doesn't have a partial reduction to reuse — its only `sum` collapses everything to one number. So here is one small, fresh example, set up the same deliberate way: two rows, three columns, and each row summed down to a single number.
+
+```
+R = [ 3  1  5 ]          shape [2,3]
+    [ 4  2  0 ]
+```
+
+**Forward — sum each row into one number:**
+
+```
+S = sum(R, axis=1)
+
+S[0]  =  R[0][0] + R[0][1] + R[0][2]  =  3 + 1 + 5  =  9
+S[1]  =  R[1][0] + R[1][1] + R[1][2]  =  4 + 2 + 0  =  6
+
+S = [ 9 ]                shape [2,1]
+    [ 6 ]
+```
+
+Three numbers went in, one came out — for each row. That is a reduction: several inputs feeding one output.
+
+**Backward — say a gradient has already arrived for `S`, from whatever used it next.** For this example, just take it as given, the same way `Z.grad` was simply handed to you in section 4:
+
+```
+S.grad = [ 2 ]            shape [2,1]
+         [ 5 ]
+```
+
+**Find `R.grad[0][0]`, `R.grad[0][1]` and `R.grad[0][2]` — the three numbers that fed `S[0]`.**
+
+Each one contributed to `S[0]` by being added in with a coefficient of exactly 1 — that's what addition inside a sum does to every term. So each of the three gets *the same* gradient back: whatever `S[0]`'s gradient was.
+
+```
+R.grad[0][0]  =  S.grad[0]  =  2
+R.grad[0][1]  =  S.grad[0]  =  2
+R.grad[0][2]  =  S.grad[0]  =  2
+```
+
+Notice what this is **not**: it is not a sum of three things landing on one number, the way section 4 was. It is the opposite — *one* number, `S.grad[0] = 2`, handed out as a copy to three different places.
+
+**Now row 1, the same way.** All three of `R[1][0]`, `R[1][1]`, `R[1][2]` fed `S[1]`, whose gradient is `5`:
+
+```
+R.grad[1][0]  =  S.grad[1]  =  5
+R.grad[1][1]  =  S.grad[1]  =  5
+R.grad[1][2]  =  S.grad[1]  =  5
+```
+
+Put it together:
+
+```
+R.grad = [ 2  2  2 ]      shape [2,3]   ✓ matches R
+         [ 5  5  5 ]
+```
+
+**Section 4 and section 5, side by side, now that both are concrete rather than abstract:**
+
+<p align="center">
+  <img src="../assets/ch-10/two-examples-side-by-side.svg" alt="Two small worked examples shown side by side, matching the numbers already computed in the text. Left, labelled section 4, d gets copied then summed back: d holding 10, 10, 10 is copied into both rows, with a note that the forward result is Z = C + d = all 4 and L = sum(Z) = 24; below it sits Z.grad, a [2,3] grid of ones, and an upward arrow sweeps across the three columns showing 1 + 1 = 2 being computed for each; d.grad comes out 2, 2, 2, captioned many cells summed to one. Right, labelled section 5, R gets summed then copied back: R holding rows 3,1,5 and 4,2,0 is summed along each row into S holding 9 and 6; a given upstream gradient S.grad of 2 and 5 is shown being copied three times across each row; R.grad comes out as row 0 equal to 2,2,2 and row 1 equal to 5,5,5, captioned one cell copied to many. A bottom bar states the same law applies both times — a value used in several places collects the sum of their gradients — noting that on the left there were three places to sum so the sum shows up, and on the right there was only one place per output so the sum is just that one term." />
+</p>
+
+*Figure 2: the two examples above, side by side. Same numbers you just computed by hand.*
+
+| | what forward did | what backward does |
+|---|---|---|
+| section 4 (`d`) | copied **one** number into **many** cells | **summed** those many cells back into one gradient |
+| section 5 (`R`) | **combined many** numbers into one cell | **copied** that one gradient into many gradients |
+
+They are opposite operations, and they get opposite treatments — sum answers broadcasting, broadcasting answers sum. Both of them are still nothing but Chapter 08's rule — *a value used in several places collects the sum of their gradients* — because that rule is what forces section 4's answer to be a sum. Section 5's "copy" isn't a separate rule at all: a single term contributing to a single output has nothing to sum, so the "sum of contributions" is just that one contribution, handed back unchanged. Same law, and section 5 is the case where it only ever had one thing to add up.
+
+---
+
+## 6. `sumToShape` — turning section 4 into code
+
+You have already done section 4's job by hand, for one specific pair of shapes: `[2,3]` down to `[1,3]`. `sumToShape` is that same question — *which cells did this number feed, and what do their gradients add up to* — written once so it works for any two shapes.
+
+```
+sumToShape(grad, targetShape)  →  grad, summed back down to targetShape
+```
+
+Every broadcasting operation's backward calls it. There are two different ways a forward pass can broadcast a shape up, and `sumToShape` needs to undo both. Take them one at a time — do not try to hold both in your head together.
+
+### Case 1 — the target has fewer axes entirely
+
+Sometimes a bias has no row axis at all — it is a flat list, not a `[1, n]` block. Say the gradient arriving is the same `[2,3]` block from section 4:
+
+```
+grad = [ 1  1  1 ]        shape [2,3]
+       [ 1  1  1 ]
+
+target shape: [3]         ← rank 1. There is no row axis to keep.
+```
+
+The ranks don't match — `grad` has 2 axes, the target has 1 — so the extra leading axis has to disappear completely. Sum it away:
+
+```
+result = [ 1+1  1+1  1+1 ]  =  [ 2  2  2 ]        shape [3]
+```
+
+Same numbers as section 4's `d.grad`, but notice the shape: `[3]`, not `[1,3]`. There was no size-1 row axis to preserve, because the target never had one.
+
+### Case 2 — the target keeps its rank, but one axis was stretched from size 1
+
+This is `d`'s actual situation. The target is `[1,3]` — rank 2, same as `grad` — and only the row axis shrank, from 2 down to 1. Take a fresh pair of numbers to see it clearly, since this case needs an axis with more than one row in the *target* to show the difference from Case 1:
+
+```
+grad = [ 1  1  1  1 ]     shape [3,4]
+       [ 2  2  2  2 ]
+       [ 3  3  3  3 ]
+
+target shape: [3,1]       ← rank 2, same as grad. Axis 1 must shrink to size 1.
+```
+
+Sum along axis 1, and this time keep that axis alive as a size-1 axis rather than deleting it:
+
+```
+row 0:  1+1+1+1 = 4
+row 1:  2+2+2+2 = 8
+row 2:  3+3+3+3 = 12
+
+result = [ 4 ]             shape [3,1]   ✓ matches target
+         [ 8 ]
+         [ 12 ]
+```
+
+**Now watch what happens if `keepDims` is left off.** The three numbers `4`, `8`, `12` come out exactly the same — but without `keepDims`, the summed axis is *deleted* instead of shrunk to size 1:
+
+```
+result = [ 4  8  12 ]      shape [3]   ✗ target was [3,1]
+```
+
+Same three numbers. Wrong shape. Nothing here throws an error — `[3]` and `[3,1]` both hold three numbers, so this bug will not announce itself where it happens. It surfaces later, as a shape mismatch somewhere else entirely, or as a silent, wrong re-broadcast. This is the single most annoying bug in the chapter, and now you have seen the exact moment it is born.
+
+### Putting the two cases together
+
+Do case 1 first: sum away whole leading axes until the ranks match. *Then* do case 2: walk the remaining axes one at a time, and wherever the target's size is 1 but `grad`'s isn't, sum that axis with `keepDims = true`.
+
+And one case needs no work at all: if `grad.shape` already equals `targetShape`, return it unchanged. Every caller relies on that being safe, which is why none of them checks first.
+
+**Checking your numbers against a taller version.** The exercise uses the same `d`-shaped situation as section 4, but with **four** rows instead of two: `sumToShape(ones([4,3]), [1,3])`. Walk it exactly like section 4's three separate questions, just with four cells to add per column instead of two — `d.grad[0] = 1+1+1+1 = 4`, and the same for columns 1 and 2. Result: `[4, 4, 4]`. Same question, asked on a taller tensor; no special case needed.
+
+---
+
+## 7. Build it (1) — the easy half
+
+Start here, because these four have the fewest moving parts and get you a working file to test against.
+
+**Milestone 1 — `sumToShape`.** The function above. Everything else leans on it.
+✅ *Checkpoint:* the three tests in `grad.test.ts` — `[4,3] → [1,3]` gives `[4,4,4]`, an already-matching shape is returned unchanged, and `[3,4] → [1,4]` reduces axis 0.
+
+**Milestone 2 — `topoSortTensor`** in [`engine.ts`](../../src/autograd/engine.ts). Copy the scalar `topoSort` directly above it and change `Value` to `TensorValue`.
+✅ *Checkpoint:* it is a character-for-character copy apart from the types. If you found yourself changing anything else, re-read why — the algorithm only ever touches `_inputs`.
+
+**Milestone 3 — `reshape` and `transpose`.** Neither broadcasts, so neither needs `sumToShape`.
+- `reshape` backward reshapes the gradient back to the **original** shape, captured from `this.data.shape`.
+- `transpose` backward applies the **inverse** permutation. `axes[i] = j` means "output axis i came from input axis j", so the inverse is `inv[axes[i]] = i`.
+✅ *Checkpoint:* `axes = [1,2,0]` inverts to `[2,0,1]`. Verify that by hand. Note it is *not* the same array — while for `[1,0]` the inverse **is** `[1,0]`, which is exactly why a 2-D-only test would let a wrong implementation through.
+
+**Milestone 4 — `zeroGrad`.** Set `grad` back to `null`.
+
+---
+
+## 8. `matMul` backward — derive it, don't memorise it
+
+The other genuinely new piece. For `Z = A B`:
+
+$$\frac{\partial L}{\partial A} = \frac{\partial L}{\partial Z}\,B^{\mathsf T}, \qquad \frac{\partial L}{\partial B} = A^{\mathsf T}\frac{\partial L}{\partial Z}$$
+
+Those two lines are the workhorse of every backward pass from here to Chapter 30 — attention is mostly matmuls. They look like new mathematics. **They are not** — a matmul is built out of `mul` and `add`, and you differentiated both in Chapter 08. This section asks the same question sections 4 and 5 asked — *which outputs did this number feed, and what is the sum there* — for one cell of `A`, and watches the transpose appear on its own.
+
+### One cell of the forward pass, opened up
+
+Take small, non-square matrices (the same ones as the figure below):
+
+```
+A = [ 1  2  3 ]        B = [ 1  2  3  4 ]
+    [ 4  5  6 ]            [ 5  6  7  8 ]
+                           [ 9 10 11 12 ]
+    shape [2,3]            shape [3,4]
+```
+
+One cell of `Z = A @ B` is a row of `A` against a column of `B` — multiplies, then adds:
+
+```
+Z[0][0] = A[0][0]·B[0][0] + A[0][1]·B[1][0] + A[0][2]·B[2][0]
+        =    1·1          +    2·5          +    3·9            = 38
+```
+
+Every cell of `Z` is built exactly like that. So there is no new calculus anywhere in a matmul — only the two operations whose backward you already know. What is new is purely the bookkeeping of *which* products feed *which* cells.
+
+For the backward pass, say `L = sum(Z) = 610`, so `Z.grad` is all ones, shape `[2,4]` — the same setup as every example so far.
+
+### Section 4's question, asked for one cell of `A`
+
+*Where was `A[0][0]` — the number `1` — used, and what was it multiplied by each time?*
+
+Row 0 of `A` only ever builds row 0 of `Z`, so walk that row:
+
+```
+Z[0][0] = A[0][0]·B[0][0] + …      used, multiplied by B[0][0] = 1
+Z[0][1] = A[0][0]·B[0][1] + …      used, multiplied by B[0][1] = 2
+Z[0][2] = A[0][0]·B[0][2] + …      used, multiplied by B[0][2] = 3
+Z[0][3] = A[0][0]·B[0][3] + …      used, multiplied by B[0][3] = 4
+```
+
+Drawn as a graph, this is a picture you have seen since Ch 08 — one node fanning out into several children. Each edge carries its multiplier:
+
+```
+A[0][0] ──┬──× B[0][0] = 1 ──►  Z[0][0]
+          ├──× B[0][1] = 2 ──►  Z[0][1]
+          ├──× B[0][2] = 3 ──►  Z[0][2]
+          └──× B[0][3] = 4 ──►  Z[0][3]
+```
+
+Four uses — and each one is a plain multiplication feeding a sum, exactly the two operations whose backward you wrote in Chapter 08. The rule you implemented in [`value.ts`'s `mul`](../../src/autograd/value.ts):
+
+> **my gradient  +=  upstream gradient  ×  the sibling operand**
+>
+> *Where this rule was proved, in case it has gone fuzzy:* for `out = x·y`, nudging `x` by `δ` moves `out` by `y·δ` — so the local rate is the sibling, `∂out/∂x = y`. Ch 07's chain rule multiplies that by the upstream gradient, and the `+=` sums over every use. You derived exactly this by hand in [Ch 08b's opening walk-through](ch-08b-autograd-backward.md) (step 6 is the sibling appearing), and it is the `mul` row of that chapter's [local gradient table](ch-08b-autograd-backward.md#local-gradient-table). If the boxed line does not feel obvious, go re-read those two spots first — everything below is only this rule, applied four times.
+
+So there is nothing new to derive. Run that rule once per use, reading the sibling straight off the list above. The upstream gradients are `Z.grad`, all ones, because `L = sum(Z)`:
+
+```
+use in Z[0][0]:   A.grad[0][0]  +=  Z.grad[0][0] · B[0][0]  =  1·1  =  1
+use in Z[0][1]:   A.grad[0][0]  +=  Z.grad[0][1] · B[0][1]  =  1·2  =  2
+use in Z[0][2]:   A.grad[0][0]  +=  Z.grad[0][2] · B[0][2]  =  1·3  =  3
+use in Z[0][3]:   A.grad[0][0]  +=  Z.grad[0][3] · B[0][3]  =  1·4  =  4
+                                                    ──────────────────
+                                                    A.grad[0][0] =  10
+```
+
+Four executions of a line you wrote two chapters ago. That is the entire derivation. The only difference from section 4's bias: `add` hands the gradient through unchanged, so no multiplier was visible there — `mul` scales it by the sibling, so here the `B` values appear.
+
+**"Wait — shouldn't this be one-to-one, position matching position?"** If you expected `A.grad[0][0]` to come from `Z.grad[0][0] · B[0][0]` alone, that instinct is not wrong — it is the correct rule for an element that is used **once**, and it is exactly the backward of the *elementwise* `mul` you will build in section 9: there, `A[0][0]` touches only `Z[0][0]`, so its gradient is that single one-to-one term. A matmul differs for one physical reason: `A[0][0]` was used **four times** — the list above shows it helping to build every cell of Z's row 0. Four uses, four one-to-one terms, summed. And look inside each `+=` line: the pairing there *is* position-to-position — `Z.grad[0][j]` with `B[0][j]`, the same `j` on both sides. The one-to-one rule never broke; it fired four times.
+
+Collapse the four `+=` lines into one and you have the formula:
+
+```
+A.grad[0][0] = dZ[0][0]·B[0][0] + dZ[0][1]·B[0][1] + dZ[0][2]·B[0][2] + dZ[0][3]·B[0][3] = 10
+```
+
+(The `dZ` factors are all `1` only because `L = sum(Z)` here. Any other loss puts other values in them, and the line stays true unchanged — which is why it is written with `dZ` in it rather than simplified away.)
+
+### The same walk, for two more cells
+
+To see which cells each gradient draws from, run the identical walk for two more entries of `A` — one moving *along* a row, one moving *down* a column.
+
+**`A.grad[0][1]` — same row, next column.** `A[0][1] = 2` also lives in row 0, so it was used in the same four cells of Z. What changes is its *partner*: inside `Z[0][j] = A[0][0]·B[0][j] + A[0][1]·B[1][j] + A[0][2]·B[2][j]`, the slot `A[0][1]` occupies pairs it with **B's row 1**:
+
+```
+use in Z[0][0]:   A.grad[0][1]  +=  Z.grad[0][0] · B[1][0]  =  1·5  =  5
+use in Z[0][1]:   A.grad[0][1]  +=  Z.grad[0][1] · B[1][1]  =  1·6  =  6
+use in Z[0][2]:   A.grad[0][1]  +=  Z.grad[0][2] · B[1][2]  =  1·7  =  7
+use in Z[0][3]:   A.grad[0][1]  +=  Z.grad[0][3] · B[1][3]  =  1·8  =  8
+                                                    ──────────────────
+                                                    A.grad[0][1] =  26
+```
+
+Same `Z.grad` cells as before; a different row of `B`. Moving along A's **columns** changes which row of `B` supplies the siblings.
+
+**`A.grad[1][0]` — next row, same column.** `A[1][0] = 4` lives in row 1, and row 1 of A only builds **row 1 of Z** — so now the upstream cells change, while the partner row of `B` (row 0, because the column index is 0 again) stays:
+
+```
+use in Z[1][0]:   A.grad[1][0]  +=  Z.grad[1][0] · B[0][0]  =  1·1  =  1
+use in Z[1][1]:   A.grad[1][0]  +=  Z.grad[1][1] · B[0][1]  =  1·2  =  2
+use in Z[1][2]:   A.grad[1][0]  +=  Z.grad[1][2] · B[0][2]  =  1·3  =  3
+use in Z[1][3]:   A.grad[1][0]  +=  Z.grad[1][3] · B[0][3]  =  1·4  =  4
+                                                    ──────────────────
+                                                    A.grad[1][0] =  10
+```
+
+Moving down A's **rows** changes which row of `Z.grad` supplies the upstream gradients. (`A.grad[1][0]` equals `A.grad[0][0]` here only because `Z.grad` is all ones, making its two rows identical — a real loss puts different values in them, and these two gradients differ with them.)
+
+Three cells, one pattern:
+
+```
+A.grad[i][k]  =  ( row i of Z.grad )  paired one-to-one with  ( row k of B ),  summed
+
+                 i — A's ROW index     →  picks which row of Z.grad
+                 k — A's COLUMN index  →  picks which row of B
+                 j — runs across both, position to position
+```
+
+A row paired with a row, term by term, then summed — that is a **dot product**. Hold onto that word: a matmul computes dot products of rows-with-*columns*, and we need rows-with-*rows*. That mismatch is a transpose waiting to happen, and it is exactly where the next subsection starts.
+
+All of A's row 0 comes out `[10, 26, 42]` — and row 1 the same, for the all-ones reason above. Each entry is the sum of the matching row of `B`.
+
+### Where the transpose is born
+
+Now write the sum we just did in general form, directly above the definition of a matmul:
+
+```
+A.grad[i][k]   =  Σⱼ  dZ[i][j] · B[k][j]        ← what we derived
+(X @ Y)[i][k]  =  Σⱼ   X[i][j] · Y[j][k]        ← what a matmul is
+```
+
+They are the same shape of expression — one running index `j`, products summed — except for one detail: ours reads **`B[k][j]`** where a matmul needs **`Y[j][k]`**. The indices are swapped. And the matrix whose `[j][k]` entry equals `B[k][j]` is, by definition, **`Bᵀ`**. So:
+
+$$A.grad = Z.grad \; @ \; B^{\mathsf T}$$
+
+That is where the transpose comes from — nowhere mysterious. Our sum walks **along row `k` of `B`**, because those were `A[i][k]`'s partners in the forward pass. A matmul walks **down a column**. Transposing `B` turns its rows into columns so the two walks line up. The transpose is bookkeeping for "the sum runs along the other axis" — nothing more.
+
+`B.grad` is the same story from the other side. `B[k][j]` was used once per row of `A` — in `Z[i][j]`, multiplied by `A[i][k]` — so:
+
+```
+B.grad[k][j] = Σᵢ A[i][k] · dZ[i][j] = (Aᵀ @ Z.grad)[k][j]
+```
+
+Check one by hand — `B[0][0]`'s fan-out has only **two** edges, because a cell of `B` is reused once per row of `A`:
+
+```
+B[0][0] ──┬──× A[0][0] = 1 ──►  Z[0][0]
+          └──× A[1][0] = 4 ──►  Z[1][0]
+```
+
+Gradient: `1·1 + 1·4 = 5` — the figure's other hand check. And notice the counts: every cell of `A` fans out **4** ways (once per column of `Z`), every cell of `B` fans out **2** ways (once per row). Each matrix's reuse count is set by the *other side's* dimension.
+
+**Close the loop by multiplying it out.** We reached `A.grad = Z.grad @ Bᵀ` through indices — now check that the compact formula reproduces the numbers the hand walks gave. `Bᵀ` turns B's rows into columns:
+
+```
+Bᵀ = [ 1  5  9 ]        Z.grad @ Bᵀ,  row 0:
+     [ 2  6 10 ]
+     [ 3  7 11 ]        [1 1 1 1] against each column of Bᵀ
+     [ 4  8 12 ]          =  [ 1+2+3+4,  5+6+7+8,  9+10+11+12 ]
+                          =  [ 10,       26,        42 ]           ✓
+```
+
+The same `10`, `26`, `42` the cell-by-cell walks produced, arriving through the matrix formula. Two independent routes agreeing is the strongest cheap evidence you can get — the same cross-check `a.mul(a)` against `pow(2)` gave you in Ch 08.
+
+<p align="center">
+  <img src="../assets/ch-10/matmul-backward-shapes.svg" alt="A shape derivation for matmul backward, with concrete numbers. The forward pass shows A of shape [2,3] holding 1 to 6, times B of shape [3,4] holding 1 to 12, giving Z of shape [2,4] holding 38, 44, 50, 56 and 83, 98, 113, 128, with L = sum(Z) = 610 so Z.grad is all ones of shape [2,4]. Two panels then derive the backward shapes by constraint. For A.grad: it must come out [2,3] to match A, and starting from Z.grad at [2,4] the only factor that lands on [2,3] is something shaped [4,3] on the right — and the only [4,3] in the graph is B transposed, giving A.grad = Z.grad @ B-transpose = rows of 10, 26, 42, where 10 is checkable by hand as the sum of B's row 0. For B.grad: it must come out [3,4], and the only way from [2,4] is to be multiplied into from the left by a [3,2], which is A transposed — giving B.grad = A-transpose @ Z.grad = rows of 5s, 7s and 9s, where 5 is the sum of A's column 0. A footer notes that forgetting the transpose is caught by the shapes themselves: Z.grad @ B is [2,4] @ [3,4], an inner-dimension mismatch that throws — which is why non-square test shapes are your friend, since a square matrix would let the mistake through silently." />
+</p>
+
+*Figure 3: only one arrangement of transposes makes the shapes fit — and the shapes themselves catch the mistake.*
+
+### The shapes, as the everyday shortcut
+
+You will not redo the cell-by-cell derivation every time — and you don't need to. Once you know (from above) that each gradient must be *some* matmul of `Z.grad` with the other operand, the shapes alone pick the only arrangement that fits:
+
+```
+A : [m, k]      B : [k, n]      Z : [m, n]      dZ : [m, n]
+
+dA must be [m, k].   Starting from dZ [m,n], the only way to reach [m,k]
+                     is to multiply by something [n,k].  That is Bᵀ.
+
+dB must be [k, n].   Starting from dZ [m,n], the only way to reach [k,n]
+                     is to be multiplied into by something [k,m].  That is Aᵀ.
+```
+
+So the derivation is the understanding, and the shapes are the recall. Whenever you are unsure in a later chapter, write down the four shapes and the answer reassembles itself.
+
+> **The recipe to carry away** — not a formula, a procedure: *pick one cell of `A`; find every `Z` cell it fed (its row of `Z`); multiply each of those upstream gradients by the sibling it was paired with (its row of `B`); add.* What you have written is one cell of `Z.grad @ Bᵀ` — the matrix form is nothing but all of those dot products done at once.
+
+> **Which axes does `transpose` swap?** Ch 04's `transpose(t, axes?)` reverses **all** axes by default, which is what you want for a 2-D matrix. For a batched tensor it is wrong, and one concrete shape shows why. Take `[2, 3, 4]` — a batch of 2 matrices, each `[3,4]`:
+>
+> ```
+> reverse all axes            →  [4, 3, 2]    the batch axis ended up inside
+>                                             the matrix — meaningless
+> axes = [0, 2, 1]            →  [2, 4, 3]    batch stays put, and only the
+>                                             matrix part flips — what you want
+> ```
+>
+> Ch 23 hands you exactly this situation (`[batch, seq, dHead]`), so pass an explicit `axes` permutation that swaps only the **last two** axes, and consider a small helper for it; attention will call it constantly.
+>
+> Decide at the same time whether this method uses `matMul` or `matMulBatch`, and whether it should dispatch on `ndim`. The tests here are 2-D. Ch 23 is not.
+
+---
+
+## 9. Build it (2) — `add`, `mul`, `matMul`
+
+**Milestone 5 — `add`.** Forward is Ch 03's broadcasting `add`. Backward is still a router: each parent receives the upstream gradient, wrapped in `sumToShape` for that parent's own shape.
+✅ *Checkpoint:* `[2,3] + [2,3]` gives both gradients `[2,3]`. `[2,3] + [3]` gives the second gradient shape `[3]`, with each entry summed over the two rows.
+
+**Milestone 6 — `mul`.** Structurally identical to Ch 08's — the switch still swaps the operands. Every `*` becomes an element-wise tensor `mul`, and each accumulation is wrapped in `sumToShape`.
+> **Order matters here.** `mul(other.data, out.grad)` is *itself* a broadcasting operation, so its result has the broadcast shape, not the parent's. `sumToShape` wraps the product; it does not go on `out.grad` first. Reverse those and you will be multiplying mismatched shapes.
+
+**Milestone 7 — `matMul`.** section 8's two formulas.
+✅ *Checkpoint:* `[2,3] @ [3,4]` gives `[2,4]`, and after backward the gradients are `[2,3]` and `[3,4]` — each matching its own parameter. That is the shape invariant doing its job, and it is a strong signal you got the transposes the right way round.
+
+---
+
+## 10. Reductions backward — `sum` and `mean`
+
+Section 5 already worked through the mechanism by hand — one gradient, copied out to every input that fed it. This section is the practical, `TensorValue.sum()`-shaped version of that same idea.
+
+**`sum`.** Every input element contributed with coefficient 1, so every element gets the same upstream gradient — broadcast it back out, exactly as in section 5's `R.grad`.
+
+The awkwardness is `keepDims`:
+
+```
+input [2,3], sum axis=1, keepDims=true    →  out [2,1]   broadcast works directly
+input [2,3], sum axis=1, keepDims=false   →  out [2]     axis is GONE
+```
+
+In the second case you must reinsert the axis before broadcasting, or the shapes will not line up — `unsqueeze` from Ch 04 does that. Handle `axis === undefined` too: the output is a scalar and every input element receives that one value.
+
+**`mean`.** `mean` is `sum` divided by the count, so its backward is `sum`'s backward divided by the same count:
 
 $$\frac{\partial}{\partial x_i}\text{mean}(x) = \frac{1}{n}$$
 
-### MatMul Backward
+> **Which `n`?** With an axis it is `shape[axis]` — the length of the *reduced axis*, not the total element count. Without an axis it is `data.size`. Getting this wrong scales every gradient by a constant, which looks exactly like a mis-set learning rate and will not fail loudly.
 
-If:
+And a callback to Ch 09's deep dive on why `mean` is usually the right choice for a loss: summing makes curvature grow with dataset size, so the safe learning rate shrinks as you add data. Dividing by `n` removes that dependency.
 
-$$Z = AB$$
+---
 
-Then:
+## 11. Build it (3) — `sum`, `mean`, `backward`
 
-$$\frac{\partial L}{\partial A} = \frac{\partial L}{\partial Z} B^T$$
+**Milestone 8 — `sum` and `mean`.** section 10. Do `sum` first and get `mean` by scaling it.
 
-$$\frac{\partial L}{\partial B} = A^T \frac{\partial L}{\partial Z}$$
+**Milestone 9 — `backward`.** Line for line the Ch 08 version, with two substitutions:
 
-Shape check:
-
-```text
-A:      [m, k]
-B:      [k, n]
-Z:      [m, n]
-dZ:     [m, n]
-dA:     [m, n] @ [n, k] = [m, k]
-dB:     [k, m] @ [m, n] = [k, n]
+```
+topoSort(this)   →   topoSortTensor(this)
+this.grad = 1    →   this.grad = ones(this.data.shape)
 ```
 
-For batched matmul, the same rule applies independently for every batch/head dimension.
+> **Guard the root.** Seeding with ones only means `∂L/∂L` when `L` is a single number. Called on a `[2,3]` node, it quietly computes the gradient of the *sum* of six entries — rarely what anyone intends. PyTorch refuses outright unless you pass an explicit gradient. Either throw when `data.size !== 1` or document the summing behaviour deliberately. This is the deeper reason every loss ends in a `sum` or a `mean`.
 
-### Reshape Backward
+✅ *Checkpoint:* the whole of `grad.test.ts` except the gradient checks should now pass.
 
-Reshape changes the view of the same numbers. Backward reshapes the upstream gradient back to the original shape.
+---
 
-If:
+## 12. Verify it — and take this one seriously
 
-```text
-x shape: [2, 3, 4]
-y = reshape(x, [6, 4])
-```
+**Milestone 10 — `checkTensorGradient`.**
 
-Then:
+Chapter 07 built `numericalGradientTensor` for exactly this moment. The routine:
 
-```text
-dx = reshape(dy, [2, 3, 4])
-```
+1. Run `fn(inputs)` and `backward()` to fill the analytical gradients.
+2. For each input, call `numericalGradientTensor` with a scalar-valued wrapper around `fn` — the loss must collapse to one number, so sum the output if it is not already scalar.
+3. Compare element by element against a tolerance.
 
-### Transpose Backward
+Two traps:
 
-Transpose permutes axes. Backward applies the inverse permutation.
+- **Zero the gradients first.** `fn` gets called many times inside the numerical loop, and leftover gradients contaminate the analytical side. This is Ch 08's `−3, −9, −18` problem, now on tensors.
+- **Absolute tolerance breaks down.** `1e-5` is fine for gradients around 1 and useless for gradients around `1e6`. For larger matmuls, compare relatively: `|a − n| / max(1, |a|, |n|)`.
 
-If:
+Why this milestone matters more than any other in the chapter: **every layer from Ch 11 to Ch 30 sits on top of these six operations.** A wrong scalar gradient in Ch 08 gave you an obviously wrong number. A wrong tensor gradient gives you a correctly-shaped tensor of wrong numbers — shapes line up, nothing throws, the loss even falls for a while — and it surfaces as *"my transformer doesn't learn"* twenty chapters later, with nothing pointing back here.
 
-```text
-y = transpose(x, [1, 0, 2])
-```
-
-Then:
-
-```text
-dx = transpose(dy, [1, 0, 2])
-```
-
-For a general permutation, compute the inverse permutation rather than assuming the same permutation works.
+Run the check on every operation before you move on. This is the last chapter where verification is cheap.
 
 ---
 
 ## What to Implement
 
 | Symbol | Description |
-|--------|-------------|
-| `class Value` | Tensor-aware autograd node with `data: Tensor`, `grad: Tensor`, `_backward`, `_inputs`, `_op`. |
-| `zerosLike(t)` | Create a zero tensor with the same shape as `t`. |
-| `onesLike(t)` | Create a one tensor with the same shape as `t`. |
-| `addGrad(target, contribution)` | Element-wise gradient accumulation with shape checks. |
-| `sumToShape(grad, shape)` | Reverse broadcasting by summing over broadcasted dimensions. |
-| `Value.add(other)` | Forward add plus broadcast-aware backward. |
-| `Value.mul(other)` | Forward multiply plus broadcast-aware backward. |
-| `Value.sum(axis?, keepDims?)` | Reduction forward plus broadcast backward. |
-| `Value.mean(axis?, keepDims?)` | Mean forward plus scaled reduction backward. |
-| `Value.matMul(other)` | Matmul forward plus matrix-gradient backward. |
-| `Value.reshape(shape)` | Reshape forward plus inverse reshape backward. |
-| `Value.transpose(axes)` | Transpose forward plus inverse permutation backward. |
-| `checkTensorGradient(fn, inputs)` | Numerical gradient check for tensor-valued parameters. |
-
----
-
-## TypeScript Hints
-
-```typescript
-export class Value {
-  data: Tensor;
-  grad: Tensor;
-  _backward: () => void;
-  _inputs: Value[];
-  _op: string;
-
-  constructor(data: Tensor, inputs: Value[] = [], op = "") {
-    this.data = data;
-    this.grad = zeros(data.shape);
-    this._inputs = inputs;
-    this._op = op;
-    this._backward = () => {};
-  }
-
-  add(other: Value): Value {
-    const out = new Value(add(this.data, other.data), [this, other], "add");
-    out._backward = () => {
-      addGrad(this, sumToShape(out.grad, this.data.shape));
-      addGrad(other, sumToShape(out.grad, other.data.shape));
-    };
-    return out;
-  }
-
-  matMul(other: Value): Value {
-    const out = new Value(matMul(this.data, other.data), [this, other], "matmul");
-    out._backward = () => {
-      const dA = matMul(out.grad, transposeLastTwo(other.data));
-      const dB = matMul(transposeLastTwo(this.data), out.grad);
-      addGrad(this, sumToShape(dA, this.data.shape));
-      addGrad(other, sumToShape(dB, other.data.shape));
-    };
-    return out;
-  }
-}
-```
+|---|---|
+| `sumToShape(grad, shape)` | Reverse broadcasting: sum over broadcast axes back to `shape` |
+| `topoSortTensor(root)` | The Ch 08b sort, for `TensorValue`. In `engine.ts` |
+| `TensorValue.add(other)` | Broadcasting forward, `sumToShape` backward |
+| `TensorValue.mul(other)` | The switch, wrapped in `sumToShape` |
+| `TensorValue.matMul(other)` | `dA = dZ @ Bᵀ`, `dB = Aᵀ @ dZ` |
+| `TensorValue.sum(axis?, keepDims?)` | Reduce forward, broadcast backward |
+| `TensorValue.mean(axis?, keepDims?)` | As `sum`, scaled by `1/n` |
+| `TensorValue.reshape(shape)` | Reshape both ways |
+| `TensorValue.transpose(axes?)` | Inverse permutation backward |
+| `TensorValue.backward()` | Seed with ones, walk reversed |
+| `TensorValue.zeroGrad()` | Back to `null` |
+| `checkTensorGradient(fn, inputs, tol?)` | Finite-difference check |
 
 ---
 
 ## Common Pitfalls
 
-- Forgetting to transpose in matmul backward — the shape error will be obvious if your shape checks are strict.
-- Skipping `sumToShape` after a broadcasted op; the gradient comes back the wrong shape.
-- Reusing a tensor's data buffer in two ops without cloning — backward will corrupt forward data.
-- Implementing `reshape` backward as a fresh reshape; it should be `reshape(grad, original_shape)`.
-- Trusting your op without a finite-difference check; this chapter *needs* checks because every later layer depends on it.
+- **Forgetting `sumToShape` after a broadcasting op.** The gradient comes back with the broadcast shape, breaking the invariant.
+- **Applying `sumToShape` to `out.grad` before the product in `mul`.** It wraps the product, not the upstream gradient.
+- **Dropping `keepDims` in `sumToShape` case 2.** `[3]` where `[3,1]` was expected — same element count, so it fails far from the cause.
+- **Transposing the wrong axes in `matMul` backward.** Reversing all axes is right for 2-D and wrong for batched.
+- **Implementing `reshape` backward with the forward shape** instead of the captured original.
+- **Assuming the inverse of a permutation is itself.** True for `[1,0]`, false in general.
+- **Using total size instead of axis length for `mean`'s `n`.** A silent constant factor on every gradient.
+- **Calling `backward()` on a non-scalar** and not noticing you asked for the gradient of a sum.
+- **Trusting an op without a finite-difference check.** Every later chapter depends on these six.
 
 ---
 
 ## How to Verify
-
-Run the tests and the exercise. Both should pass cleanly with no warnings:
 
 ```bash
 bun test src/autograd/grad.test.ts
@@ -258,27 +762,40 @@ bun test src/autograd/grad.test.ts
 bun run exercises/ch-10-tensor-autograd.ts
 ```
 
+There are **15** tests in `grad.test.ts`: three for `sumToShape`, three forward, six backward, three gradient checks. The gradient checks are the real gate — shape tests confirm you did *something* of the right size, and only finite differences confirm you did the right thing.
+
 ---
 
 ## Self-Check Questions
 
-1. If `x.shape = [3, 1]` and `y.shape = [3, 4]`, what is the shape of `x.grad` after `z = x + y` and `loss = sum(z)`?
-2. Why does reduction backward broadcast gradients, while broadcasting backward reduces gradients?
-3. Derive the shape of `dA` and `dB` for `A @ B` where `A = [5, 7]` and `B = [7, 11]`.
+1. If `x.shape = [3,1]` and `y.shape = [3,4]`, what is the shape of `x.grad` after `z = x + y; loss = sum(z)`? What are its values?
+2. Why does reduction backward *broadcast* while broadcasting backward *reduces*? Answer in one sentence that covers both.
+3. For `A @ B` with `A: [5,7]` and `B: [7,11]`, derive the shapes of `dA` and `dB` from the constraint that each must match its own parameter.
 4. Why is `reshape` backward simpler than `matMul` backward?
-5. What bug would appear if you forgot to use `sumToShape` after a broadcasted multiply?
+5. What exactly breaks if you forget `sumToShape` after a broadcasted `mul` — a crash, or something worse?
+6. `topoSort` needed no changes at all for tensors. What does that tell you about which parts of an autograd engine depend on what a node contains?
+7. Why is `grad` nullable here when it was `0` in Ch 08? What would it cost to use zero tensors instead?
 
 ---
 
 ## Further Reading
 
-- [PyTorch internals — autograd](https://pytorch.org/blog/overview-of-pytorch-autograd-engine/) — production autograd; same ideas, more bookkeeping.
-- [Bornschein — Matrix calculus you need for deep learning](https://arxiv.org/abs/1802.01528) — derivations of matmul, sum, mean, and softmax backward.
+- [PyTorch internals — autograd](https://pytorch.org/blog/overview-of-pytorch-autograd-engine/) — production autograd; the same ideas with far more bookkeeping.
+- [Parr & Howard — The Matrix Calculus You Need For Deep Learning](https://arxiv.org/abs/1802.01528) — derivations for matmul, sum, mean and softmax backward.
 - [Justin Domke — Reverse-mode AD](https://people.cs.umass.edu/~domke/courses/sml/08autodiff_nnets.pdf) — clean lecture notes generalising 08b to tensors.
-- [Goodfellow, Bengio, Courville — Deep Learning](https://www.deeplearningbook.org/) — the standard graduate textbook; chapters map cleanly to this course.
+
+---
+
+## Checkpoint
+
+Part 2 is finished. You have a computation graph (Ch 08a), a backward pass (Ch 08b), an optimizer (Ch 09), and now an engine that operates on tensors rather than single numbers (Ch 10).
+
+That combination is a working deep learning framework. Small, slow, and yours — but nothing in Part 3 through Part 6 adds a new *idea* to it. `Linear`, `LayerNorm`, attention, the whole transformer: they are all expressions built from the operations you just finished, differentiated by the `backward()` you just wrote, and trained by the `SGD` from the chapter before.
+
+Prove it before moving on. Build `Z = (A @ B) + c` where `c` is a bias of shape `[1, n]` broadcast across the rows, take `mean()`, call `backward()`, and confirm that `A.grad`, `B.grad` and `c.grad` all come back with exactly their own shapes — with `c.grad` summed down the broadcast axis. That single expression exercises matmul backward, un-broadcasting, and reduction backward together, and it is a `Linear` layer in everything but name.
 
 ---
 
 ## Next Chapter
 
-**[Activations](../part-3-neural-net-primitives/ch-11-activation-functions.md)** — with tensor autograd in place, we can build the nonlinear layers that make networks expressive.
+**[Activation Functions](../part-3-neural-net-primitives/ch-11-activation-functions.md)** — with tensor autograd in place, Part 3 begins building the layers. First the nonlinearities, which is where `relu`'s gate and `tanh`'s shrinking derivative stop being scalar curiosities and start deciding whether a deep network trains at all.

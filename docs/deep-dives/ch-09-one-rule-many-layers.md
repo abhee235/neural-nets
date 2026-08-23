@@ -130,11 +130,11 @@ That is the **saddle point at `(0, 0)`** — the second critical point we found 
 
 Then it escapes. `a = 0` is unstable — the surface still falls away in the `a` direction — so the small residual gradient slowly pushes the point off the ridge, the gradient grows, and it accelerates down to the true minimum.
 
-This is worth having seen once, because it is exactly the failure mode that Chapter 09 §12 claims is the realistic one in high dimensions. Here it is, in a two-parameter function, on the course's own running example:
+This is worth having seen once, because it is exactly the failure mode that Chapter 09 section 12 claims is the realistic one in high dimensions. Here it is, in a two-parameter function, on the course's own running example:
 
 - A loss curve that flattens **does not** mean you have converged.
 - It may mean you are near a saddle, and patience will get you out.
-- Momentum helps here for precisely the reason §10 gives: accumulated velocity carries the point across a flat region that instantaneous gradients cannot.
+- Momentum helps here for precisely the reason section 10 gives: accumulated velocity carries the point across a flat region that instantaneous gradients cannot.
 
 ---
 
@@ -195,7 +195,7 @@ Then:
 
 1. **Start at `a = π/2, b = 3`** and confirm `a.grad` is `0` on every single step. Print it — watching a parameter sit still while the loss falls is worth seeing.
 2. **Start at `a = 1.0, b = 3`** and print the loss every 10 steps. Find the stall yourself, then try `SGDMomentum` with `β = 0.9` on the same start and see how many steps it saves crossing it.
-3. **Start at `a = 3.0, b = -2`** and see which of the two minima it finds. There is another at `(3π/2, 0.5)`, also with `f = −0.25`. Which one you reach depends entirely on where you begin — that is the local-minimum story from §12, in a function small enough to hold in your head.
+3. **Start at `a = 3.0, b = -2`** and see which of the two minima it finds. There is another at `(3π/2, 0.5)`, also with `f = −0.25`. Which one you reach depends entirely on where you begin — that is the local-minimum story from section 12, in a function small enough to hold in your head.
 
 ---
 
@@ -203,4 +203,4 @@ Then:
 
 - [Deep dive: how big a step can you take?](ch-09-how-big-a-step.md) — the other half: given these gradients, how large may `η` be before the loop diverges.
 - [Deep dive: why reverse-mode wins](ch-08-why-reverse-mode.md) — why one backward pass fills both gradients rather than one pass each.
-- [Goodfellow et al. — Deep Learning, §8.2](https://www.deeplearningbook.org/contents/optimization.html) — saddle points, plateaus, and why they dominate local minima in high dimensions.
+- [Goodfellow et al. — Deep Learning, section 8.2](https://www.deeplearningbook.org/contents/optimization.html) — saddle points, plateaus, and why they dominate local minima in high dimensions.

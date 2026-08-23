@@ -8,6 +8,9 @@
  * Doc:     docs/part-2-autodiff/ch-08b-autograd-backward.md
  */
 import type { Value } from "./value.ts";
+// Type-only import, so this does NOT create a runtime cycle with grad.ts —
+// TypeScript erases it entirely. Ch 10 uses the tensor sort at the bottom.
+import type { TensorValue } from "./grad.ts";
 
 /**
  * Return all nodes reachable from root in topological order
@@ -95,6 +98,74 @@ export function topoSort(root: Value): Value[] {
   const order: Value[] = [];
 
   function dfs(node: Value): void {
+    if (visited.has(node)) return;
+    visited.add(node);
+    for (const input of node._inputs) {
+      dfs(input);
+    }
+    order.push(node);
+  }
+
+  dfs(root);
+  return order;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+ * ▲ ABOVE — Chapter 08b, the SCALAR version.  Leave it exactly as it is.
+ * ▼ BELOW — Chapter 10, the TENSOR version.
+ *
+ * The two are kept side by side on purpose. Read the scalar one first; it is
+ * the version you already understand. Then read the tensor one and look for
+ * what changed.
+ *
+ * The answer, this time, is: nothing. Not "a little" — nothing at all.
+ * ══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Same topological sort, for the tensor graph (Ch 10).
+ *
+ * ── WHAT TO WRITE ─────────────────────────────────────────────────────────
+ * Copy `topoSort` above and change `Value` to `TensorValue`. That is the whole
+ * task, and the fact that it IS the whole task is the point of this chapter.
+ *
+ * ── WHY IT IS AN EXACT COPY ───────────────────────────────────────────────
+ * Look at what the algorithm above actually touches: `node._inputs`, a visited
+ * set, and an output array. It never reads `.data`. It never reads `.grad`. It
+ * has no idea whether a node holds a single number or a 768×768 matrix, and it
+ * would work just as well on nodes holding strings.
+ *
+ * Topological order is a property of the GRAPH, not of what is stored in it.
+ * Chapter 10 changes the contents of the nodes and leaves the wiring alone —
+ * so every piece of code that only looks at the wiring carries over untouched.
+ * This function is the cleanest possible demonstration of that.
+ *
+ * ── WHY DUPLICATE IT RATHER THAN GENERALISE IT? ───────────────────────────
+ * A production library would write the algorithm once, over any node type that
+ * exposes `_inputs`:
+ *
+ *     function topoSort<T extends { _inputs: T[] }>(root: T): T[]
+ *
+ * That is genuinely better engineering, and one line. We are not doing it here
+ * for one reason: the scalar version is the one you built while learning what
+ * a computation graph is, and it is worth being able to re-read it later
+ * without decoding a generic signature first. Clarity beats DRY in a codebase
+ * whose purpose is to be read.
+ *
+ * Worth knowing the generic form exists, though — it is what you would reach
+ * for outside a course.
+ *
+ * ✅ CHECKPOINT: identical in spirit to the scalar one. For grad.ts's
+ *    GRAPH 1 — `C = A.mul(B); Z = C.add(d); L = Z.sum()` — calling
+ *    `topoSortTensor(L)` returns 6 nodes ordered `[A, B, C, d, Z, L]`:
+ *    every node after its own inputs, ready for `backward()` to walk it
+ *    reversed, exactly as the scalar `topoSort` returned `[a, b, c, d, L]`
+ *    for the same graph in Ch 08.
+ */
+export function topoSortTensor(root: TensorValue): TensorValue[] {
+  const visited = new Set<TensorValue>();
+  const order: TensorValue[] = [];
+
+  function dfs(node: TensorValue): void {
     if (visited.has(node)) return;
     visited.add(node);
     for (const input of node._inputs) {

@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 380" width="720" height="380">
+
+  <rect width="720" height="380" fill="#faf7f0" rx="12"/>
+
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">the two examples you just worked, side by side — same numbers as the text above</text>
+
+  <!--
+    Left: section 4's d example, from the section 2 graph L = sum((A×B) + d).
+    d = [10,10,10] is broadcast into both rows of C = A×B = all -6, so Z = all 4
+    and L = sum(Z) = 24.  Backward: Z.grad = ones([2,3]);
+    d.grad = column sums = [2,2,2].
+    Right: section 5's R example.  R=[[3,1,5],[4,2,0]], S=sum(R,axis=1)=[[9],[6]].
+    S.grad=[[2],[5]] given.  R.grad = [[2,2,2],[5,5,5]] (each row's grad copied 3x).
+    All values verified against the course's own tensor library.
+  -->
+
+  <line x1="360" y1="46" x2="360" y2="350" stroke="#e0d9c5" stroke-width="1" stroke-dasharray="4 4"/>
+
+  <!-- ══════ LEFT — section 4: broadcast forward, sum backward ══ -->
+  <text x="180" y="60" text-anchor="middle" fill="#6f42c1" font-family="monospace" font-size="12" font-weight="700">section 4 — d gets COPIED, then SUMMED back</text>
+
+  <!-- d row -->
+  <text x="46" y="92" fill="#6f42c1" font-family="monospace" font-size="11" font-weight="700">d</text>
+  <text x="46" y="103" fill="#8b7355" font-family="monospace" font-size="8">[1,3]</text>
+  <g font-family="monospace" font-size="12" font-weight="700" text-anchor="middle">
+    <rect x="60"  y="78" width="46" height="26" rx="4" fill="#ffffff" stroke="#6f42c1"/><text x="83"  y="96">10</text>
+    <rect x="112" y="78" width="46" height="26" rx="4" fill="#ffffff" stroke="#6f42c1"/><text x="135" y="96">10</text>
+    <rect x="164" y="78" width="46" height="26" rx="4" fill="#ffffff" stroke="#6f42c1"/><text x="187" y="96">10</text>
+  </g>
+
+  <path d="M135,106 L135,120" stroke="#c9b88a" stroke-width="1.5"/>
+  <path d="M135,120 l-4,-6 l8,0 z" fill="#c9b88a"/>
+  <text x="222" y="114" fill="#a8956a" font-family="monospace" font-size="9">copied into both rows:</text>
+  <text x="222" y="125" fill="#a8956a" font-family="monospace" font-size="9">Z = C+d = all 4, L = 24</text>
+
+  <!-- Z.grad grid (backward starts here: L = sum, so every entry gets 1) -->
+  <text x="46" y="146" fill="#a94442" font-family="monospace" font-size="10" font-weight="700">Z.grad</text>
+  <text x="46" y="157" fill="#8b7355" font-family="monospace" font-size="8">[2,3]</text>
+  <g font-family="monospace" font-size="11" text-anchor="middle" fill="#2c2416">
+    <rect x="60"  y="130" width="46" height="24" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="83"  y="146">1</text>
+    <rect x="112" y="130" width="46" height="24" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="135" y="146">1</text>
+    <rect x="164" y="130" width="46" height="24" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="187" y="146">1</text>
+    <rect x="60"  y="156" width="46" height="24" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="83"  y="172">1</text>
+    <rect x="112" y="156" width="46" height="24" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="135" y="172">1</text>
+    <rect x="164" y="156" width="46" height="24" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="187" y="172">1</text>
+  </g>
+  <text x="83"  y="200" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">column 0</text>
+
+  <!-- upward sum arrow, animated, sweeping across the 3 columns -->
+  <g>
+    <path d="M83,224 L83,206" stroke="#a94442" stroke-width="1.5"/>
+    <path d="M83,206 l-4,6 l8,0 z" fill="#a94442"/>
+    <animateTransform attributeName="transform" type="translate" values="0,0;52,0;104,0;0,0" keyTimes="0;0.33;0.66;1" dur="4.5s" repeatCount="indefinite"/>
+  </g>
+
+  <!-- d.grad row -->
+  <text x="46" y="240" fill="#a94442" font-family="monospace" font-size="11" font-weight="700">d.grad</text>
+  <g font-family="monospace" font-size="12" font-weight="700" text-anchor="middle">
+    <rect x="60"  y="226" width="46" height="26" rx="4" fill="#ffffff" stroke="#a94442"/><text x="83"  y="244">2</text>
+    <rect x="112" y="226" width="46" height="26" rx="4" fill="#ffffff" stroke="#a94442"/><text x="135" y="244">2</text>
+    <rect x="164" y="226" width="46" height="26" rx="4" fill="#ffffff" stroke="#a94442"/><text x="187" y="244">2</text>
+  </g>
+  <text x="135" y="272" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">each column: 1 + 1 = 2</text>
+  <text x="135" y="288" text-anchor="middle" fill="#6f42c1" font-family="monospace" font-size="10" font-weight="700">many cells → summed to one</text>
+
+  <!-- ══════ RIGHT — section 5: sum forward, broadcast backward ═ -->
+  <text x="540" y="60" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="12" font-weight="700">section 5 — R gets SUMMED, then COPIED back</text>
+
+  <!-- R grid -->
+  <text x="440" y="46" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">R  [2,3]</text>
+  <g font-family="monospace" font-size="11" text-anchor="middle" fill="#2c2416">
+    <rect x="420" y="78" width="40" height="24" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="440" y="94">3</text>
+    <rect x="466" y="78" width="40" height="24" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="486" y="94">1</text>
+    <rect x="512" y="78" width="40" height="24" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="532" y="94">5</text>
+    <rect x="420" y="104" width="40" height="24" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="440" y="120">4</text>
+    <rect x="466" y="104" width="40" height="24" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="486" y="120">2</text>
+    <rect x="512" y="104" width="40" height="24" rx="4" fill="#ffffff" stroke="#c9b88a"/><text x="532" y="120">0</text>
+  </g>
+
+  <path d="M568,90 L590,90" stroke="#c9b88a" stroke-width="1.5"/>
+  <path d="M590,90 l-6,-4 l0,8 z" fill="#c9b88a"/>
+  <text x="579" y="80" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="9">sum</text>
+  <text x="579" y="134" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="9">each row</text>
+
+  <!-- S column -->
+  <text x="626" y="46" text-anchor="middle" fill="#6f42c1" font-family="monospace" font-size="9" font-weight="700">S  [2,1]</text>
+  <g font-family="monospace" font-size="12" font-weight="700" text-anchor="middle">
+    <rect x="606" y="78"  width="40" height="24" rx="4" fill="#ffffff" stroke="#6f42c1"/><text x="626" y="94">9</text>
+    <rect x="606" y="104" width="40" height="24" rx="4" fill="#ffffff" stroke="#6f42c1"/><text x="626" y="120">6</text>
+  </g>
+  <text x="626" y="146" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">3+1+5=9</text>
+
+  <!-- S.grad given -->
+  <text x="440" y="180" fill="#8b7355" font-family="monospace" font-size="9">S.grad (given):</text>
+  <g font-family="monospace" font-size="12" font-weight="700" text-anchor="middle">
+    <rect x="606" y="168" width="40" height="24" rx="4" fill="#ffffff" stroke="#a94442"/><text x="626" y="184">2</text>
+    <rect x="606" y="194" width="40" height="24" rx="4" fill="#ffffff" stroke="#a94442"/><text x="626" y="210">5</text>
+  </g>
+
+  <!-- copy arrows, animated, row 0 -->
+  <g>
+    <path d="M598,178 L560,178" stroke="#a94442" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <path d="M560,178 l6,-4 l0,8 z" fill="#a94442"/>
+    <animate attributeName="opacity" values="1;0.3;1" dur="2.2s" repeatCount="indefinite"/>
+  </g>
+  <text x="579" y="168" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="8">copy ×3</text>
+
+  <!-- R.grad grid -->
+  <text x="440" y="210" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="9">R.grad</text>
+  <g font-family="monospace" font-size="11" text-anchor="middle" fill="#2c2416">
+    <rect x="420" y="228" width="40" height="24" rx="4" fill="#ffffff" stroke="#a94442"/><text x="440" y="244">2</text>
+    <rect x="466" y="228" width="40" height="24" rx="4" fill="#ffffff" stroke="#a94442"/><text x="486" y="244">2</text>
+    <rect x="512" y="228" width="40" height="24" rx="4" fill="#ffffff" stroke="#a94442"/><text x="532" y="244">2</text>
+    <rect x="420" y="254" width="40" height="24" rx="4" fill="#ffffff" stroke="#a94442"/><text x="440" y="270">5</text>
+    <rect x="466" y="254" width="40" height="24" rx="4" fill="#ffffff" stroke="#a94442"/><text x="486" y="270">5</text>
+    <rect x="512" y="254" width="40" height="24" rx="4" fill="#ffffff" stroke="#a94442"/><text x="532" y="270">5</text>
+  </g>
+  <text x="486" y="288" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">row 0: the single value 2, copied 3×</text>
+  <text x="486" y="304" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="10" font-weight="700">one cell → copied to many</text>
+
+  <!-- ══════ bottom bar ══════════════════════════════════════════ -->
+  <rect x="30" y="322" width="660" height="42" rx="8" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="340" text-anchor="middle" font-family="monospace" font-size="11" fill="#5a4220" font-weight="600">
+    same law both times: a value used in several places collects the SUM of their gradients
+  </text>
+  <text x="360" y="355" text-anchor="middle" font-family="monospace" font-size="9" fill="#8b7355">
+    left: three places to sum → the sum shows up.  right: one place per output → the "sum" is just that one term
+  </text>
+
+</svg>
