@@ -105,7 +105,7 @@ So we use Chapter 08b's running example. You have seen this graph three times al
     L = (a · b) + d          a = 2,  b = -3,  d = 10
 ```
 
-And you already know every number in it, because you computed them in Ch 08b:
+And you already know every number in it, because you computed them in [Ch 08b](ch-08b-autograd-backward.md):
 
 ```
 forward :  c = -6      L = 4
@@ -149,7 +149,7 @@ Read that table slowly, because it is the entire chapter.
 
 **Three of the four are unchanged.** Not "analogous" — identical, element for element. `A.grad` is `-3` in every position exactly as the scalar `a.grad` was `-3`. The multiply still routes each operand its sibling's value; the add still copies its gradient to both parents. Every rule you wrote in Ch 08 carried over without modification, because every one of those nodes had its own gradient slot for every one of its numbers.
 
-**One is different, and only one.** `d` was a single row, but it was *used in two rows*. So ask the Chapter 08 question: **how many times was `d[0]` — the number 10 — actually used?** Twice. And Ch 08 already told you what happens to a value used in several places:
+**One is different, and only one.** `d` was a single row, but it was *used in two rows*. So ask the Chapter 08 question: **how many times was `d[0]` — the number 10 — actually used?** Twice. And [Ch 08b already told you](ch-08b-autograd-backward.md) what happens to a value used in several places (its "Why `+=` and not `=`" section, and step 7 of its walk-through):
 
 > *its gradient is the sum of the contributions.*
 
@@ -481,9 +481,11 @@ Z[0][2] = A[0][0]·B[0][2] + …      used, multiplied by B[0][2] = 3
 Z[0][3] = A[0][0]·B[0][3] + …      used, multiplied by B[0][3] = 4
 ```
 
-Four uses — and each one is a plain multiplication feeding a sum, exactly the two operations whose backward you wrote in Chapter 08. The rule from your own `value.ts` `mul`:
+Four uses — and each one is a plain multiplication feeding a sum, exactly the two operations whose backward you wrote in Chapter 08. The rule you implemented in [`value.ts`'s `mul`](../../src/autograd/value.ts):
 
 > **my gradient  +=  upstream gradient  ×  the sibling operand**
+>
+> *Where this rule was proved, in case it has gone fuzzy:* for `out = x·y`, nudging `x` by `δ` moves `out` by `y·δ` — so the local rate is the sibling, `∂out/∂x = y`. Ch 07's chain rule multiplies that by the upstream gradient, and the `+=` sums over every use. You derived exactly this by hand in [Ch 08b's opening walk-through](ch-08b-autograd-backward.md) (step 6 is the sibling appearing), and it is the `mul` row of that chapter's [local gradient table](ch-08b-autograd-backward.md#local-gradient-table). If the boxed line does not feel obvious, go re-read those two spots first — everything below is only this rule, applied four times.
 
 So there is nothing new to derive. Run that rule once per use, reading the sibling straight off the list above. The upstream gradients are `Z.grad`, all ones, because `L = sum(Z)`:
 
