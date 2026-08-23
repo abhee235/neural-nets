@@ -431,6 +431,14 @@ The slope is **constant between the bends and changes only at them** — one ben
 
 That is what a ReLU network is. Each unit contributes one hinge; together they carve the input space into regions, and **inside each region the whole network is just a linear function**. Different region, different linear function. A network with many ReLU units is a committee of linear models, each one taking charge of its own patch of input space.
 
+<p align="center">
+  <img src="../assets/ch-11/hinges-compose.svg" alt="The three terms of f(x) = 2·relu(x+2) − 3·relu(x) + 1.5·relu(x−2) drawn separately on the left and summed on the right. Each of the three small left-hand panels holds one hinge: 2·relu(x+2) in blue is flat until it bends upward at x = -2; −3·relu(x) in red runs along zero then bends downward at x = 0; 1.5·relu(x−2) in green is flat until it bends upward at x = 2. Each panel highlights in turn. On the right their sum is plotted from x = -4.5 to 4.5: flat at zero until -2, rising to a peak of 4 at x = 0, falling to 2 at x = 2, then rising gently to 3.25. Three bend markers appear one per phase, coloured to match the unit that produced each one, while a caption counts up from one unit, one bend, two straight pieces to three units, three bends, four straight pieces. Alternating background bands divide the plot into the four regions, and a table beneath gives each region's linear function, slope, and which units are awake there: f = 0 with slope 0 and no unit awake; f = 2x + 4 with slope +2 and h1 awake; f = -x + 4 with slope -1 and h1 and h2 awake; f = 0.5x + 1 with slope +0.5 and all three awake. A footer notes that inside every region the whole network is one linear function — a committee of linear models, each owning its patch." />
+</p>
+
+*Figure 3: one bend per unit. The left panels are the three units on their own; the right panel is their sum, cut into four regions, each holding a single linear function.*
+
+Read the bottom row of that table across. Each bend is a unit **waking up**: nothing is awake to the left of `-2`, then `h₁` switches on, then `h₂` joins it, then `h₃`. Four regions, four different linear functions, and the network never computes anything but a straight line — it just changes *which* straight line depending on where the input falls.
+
 This is also the intuition behind the *universal approximation* result you may have heard quoted. Any smooth curve can be traced as closely as you like by enough short straight segments — so enough hinges can approximate any function. Add units, get more pieces, fit finer detail. You do not need exotic mathematics; you need enough bends.
 
 And it is exactly what happened in XOR back in section 1: `h₂`'s hinge sat precisely so that only `(1,1)` landed on its active side. One bend, placed to isolate one case.
@@ -596,7 +604,7 @@ On its active side, `relu`'s derivative is exactly 1 — so the product does not
   <img src="../assets/ch-11/saturation-and-decay.svg" alt="Two panels. The left plots the derivative curves of sigmoid and relu against x from -6 to 6: sigmoid's derivative is a bell peaking at 0.25 at x=0 and falling to nearly zero by x = plus or minus 6, marked saturation at both ends; relu's derivative is a step, exactly 0 for negative x and exactly 1 for positive x. A dashed line marks the 0.25 ceiling that sigmoid's derivative can never exceed. The right panel shows what happens when those factors multiply through depth: a bar chart of the gradient reaching the first layer after n layers, sigmoid at its best case 0.25 to the power n falling from 0.25 to 9.5e-7 across ten layers, while relu stays flat at 1 the whole way. A caption states that on its active side relu's derivative is exactly one, so the product does not decay, and that this is why relu replaced sigmoid in hidden layers." />
 </p>
 
-*Figure 3: sigmoid's ceiling is 0.25; relu's is 1. Ten layers turn that into a factor of a million.*
+*Figure 4: sigmoid's ceiling is 0.25; relu's is 1. Ten layers turn that into a factor of a million.*
 
 The trade-off is the one section 3 set out: relu's gate can shut permanently (its dying units), while sigmoid never fully dies but starves everything upstream. The next section is the activation that tries to have both.
 
@@ -672,7 +680,7 @@ Two features worth noticing, because they surprise people: at `x = 0` the deriva
   <img src="../assets/ch-11/four-activations.svg" alt="Four activation curves plotted on shared axes from x = -3 to 3, each with its derivative drawn beneath it as a lighter line, and an animated marker sweeping left to right across all four in step. relu is two straight segments, flat at zero for negative x then rising at 45 degrees, with a step derivative of 0 then 1 and a marked corner at the origin. gelu closely follows relu for large positive x but curves smoothly through the origin and dips slightly negative around x = -1 before flattening, its derivative peaking just above 1 and going slightly negative on the left. sigmoid is an S-curve from 0 to 1 crossing 0.5 at the origin, with a bell-shaped derivative peaking at 0.25. tanh is an S-curve from -1 to 1 through the origin, with a bell-shaped derivative peaking at 1.0, four times sigmoid's peak. Values on the shared row x = -2, -1, 0, 1, 2 are labelled beneath each curve." />
 </p>
 
-*Figure 4: the four curves, each with its derivative. The marker sweeps all four together so the same `x` can be compared across them.*
+*Figure 5: the four curves, each with its derivative. The marker sweeps all four together so the same `x` can be compared across them.*
 
 ---
 
