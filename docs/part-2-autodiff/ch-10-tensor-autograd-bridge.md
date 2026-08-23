@@ -500,6 +500,8 @@ use in Z[0][3]:   A.grad[0][0]  +=  Z.grad[0][3] · B[0][3]  =  1·4  =  4
 
 Four executions of a line you wrote two chapters ago. That is the entire derivation. The only difference from section 4's bias: `add` hands the gradient through unchanged, so no multiplier was visible there — `mul` scales it by the sibling, so here the `B` values appear.
 
+**"Wait — shouldn't this be one-to-one, position matching position?"** If you expected `A.grad[0][0]` to come from `Z.grad[0][0] · B[0][0]` alone, that instinct is not wrong — it is the correct rule for an element that is used **once**, and it is exactly the backward of the *elementwise* `mul` you will build in section 9: there, `A[0][0]` touches only `Z[0][0]`, so its gradient is that single one-to-one term. A matmul differs for one physical reason: `A[0][0]` was used **four times** — the list above shows it helping to build every cell of Z's row 0. Four uses, four one-to-one terms, summed. And look inside each `+=` line: the pairing there *is* position-to-position — `Z.grad[0][j]` with `B[0][j]`, the same `j` on both sides. The one-to-one rule never broke; it fired four times.
+
 Collapse the four `+=` lines into one and you have the formula:
 
 ```
@@ -508,7 +510,49 @@ A.grad[0][0] = dZ[0][0]·B[0][0] + dZ[0][1]·B[0][1] + dZ[0][2]·B[0][2] + dZ[0]
 
 (The `dZ` factors are all `1` only because `L = sum(Z)` here. Any other loss puts other values in them, and the line stays true unchanged — which is why it is written with `dZ` in it rather than simplified away.)
 
-One more cell to see the pattern: `A[0][1] = 2` partners with B's **row 1** (`5, 6, 7, 8`), so its gradient is `5+6+7+8 = 26`. All of A's row 0 comes out `[10, 26, 42]` — each entry the sum of the matching row of `B`.
+### The same walk, for two more cells
+
+To see which cells each gradient draws from, run the identical walk for two more entries of `A` — one moving *along* a row, one moving *down* a column.
+
+**`A.grad[0][1]` — same row, next column.** `A[0][1] = 2` also lives in row 0, so it was used in the same four cells of Z. What changes is its *partner*: inside `Z[0][j] = A[0][0]·B[0][j] + A[0][1]·B[1][j] + A[0][2]·B[2][j]`, the slot `A[0][1]` occupies pairs it with **B's row 1**:
+
+```
+use in Z[0][0]:   A.grad[0][1]  +=  Z.grad[0][0] · B[1][0]  =  1·5  =  5
+use in Z[0][1]:   A.grad[0][1]  +=  Z.grad[0][1] · B[1][1]  =  1·6  =  6
+use in Z[0][2]:   A.grad[0][1]  +=  Z.grad[0][2] · B[1][2]  =  1·7  =  7
+use in Z[0][3]:   A.grad[0][1]  +=  Z.grad[0][3] · B[1][3]  =  1·8  =  8
+                                                    ──────────────────
+                                                    A.grad[0][1] =  26
+```
+
+Same `Z.grad` cells as before; a different row of `B`. Moving along A's **columns** changes which row of `B` supplies the siblings.
+
+**`A.grad[1][0]` — next row, same column.** `A[1][0] = 4` lives in row 1, and row 1 of A only builds **row 1 of Z** — so now the upstream cells change, while the partner row of `B` (row 0, because the column index is 0 again) stays:
+
+```
+use in Z[1][0]:   A.grad[1][0]  +=  Z.grad[1][0] · B[0][0]  =  1·1  =  1
+use in Z[1][1]:   A.grad[1][0]  +=  Z.grad[1][1] · B[0][1]  =  1·2  =  2
+use in Z[1][2]:   A.grad[1][0]  +=  Z.grad[1][2] · B[0][2]  =  1·3  =  3
+use in Z[1][3]:   A.grad[1][0]  +=  Z.grad[1][3] · B[0][3]  =  1·4  =  4
+                                                    ──────────────────
+                                                    A.grad[1][0] =  10
+```
+
+Moving down A's **rows** changes which row of `Z.grad` supplies the upstream gradients. (`A.grad[1][0]` equals `A.grad[0][0]` here only because `Z.grad` is all ones, making its two rows identical — a real loss puts different values in them, and these two gradients differ with them.)
+
+Three cells, one pattern:
+
+```
+A.grad[i][k]  =  ( row i of Z.grad )  paired one-to-one with  ( row k of B ),  summed
+
+                 i — A's ROW index     →  picks which row of Z.grad
+                 k — A's COLUMN index  →  picks which row of B
+                 j — runs across both, position to position
+```
+
+A row paired with a row, term by term, then summed — that is a **dot product**. Hold onto that word: a matmul computes dot products of rows-with-*columns*, and we need rows-with-*rows*. That mismatch is a transpose waiting to happen, and it is exactly where the next subsection starts.
+
+All of A's row 0 comes out `[10, 26, 42]` — and row 1 the same, for the all-ones reason above. Each entry is the sum of the matching row of `B`.
 
 ### Where the transpose is born
 
