@@ -58,7 +58,8 @@ But do not start from the formulas. Sections 1 to 3 are about the *problem* thes
 By the end of this chapter you can:
 
 - Prove in four lines that no linear model can solve XOR — and explain what that impossibility cost the field.
-- State the tension every activation function exists to resolve: a unit must be nonlinear to decide, yet have a usable slope to learn.
+- State the three-part brief every activation function exists to satisfy: decide, keep a usable slope, and survive being stacked a hundred deep.
+- Say why a polynomial — which bends *and* is smooth — still fails, and why that failure is the same collapse as a linear layer's, one level up.
 - Explain each of the four as an *idea* rather than a formula — a hinge, a rounded step, a probabilistic gate, a soft `argmax`.
 - Explain why none of `TensorValue`'s seven operations can produce a nonlinearity, and what has to be added instead.
 - Add a new differentiable primitive to the engine — the tensor version of what you did in Ch 08.
@@ -222,7 +223,75 @@ Put the two candidates side by side and the problem becomes exact:
 | a step | ✅ yes | ❌ no — flat, then a cliff |
 | **what we need** | ✅ | ✅ |
 
-That bottom row is the entire design brief. **Every activation function ever invented is an attempt to fill it:** keep enough of the step's decisiveness to be nonlinear, while recovering a slope that learning can use.
+That bottom row looks like the whole design brief. It is not — and the fastest way to find the missing part is to try the obvious candidate that satisfies both columns.
+
+### Why not just use a curve? (`x²`, `x³`, a polynomial)
+
+A reasonable objection at this point: a parabola **bends** — so it decides — and it is smooth, so it has a slope everywhere. It passes both tests. Why not use that and be done?
+
+This is not a naive idea; it was tried. "Higher-order units" and "sigma-pi units" were an active line of research in the 1980s and 90s. They lost, and the reasons only appear when you **stack** them.
+
+**They do not survive composition.** Put `x²` in ten successive layers and follow one value through:
+
+```
+   x = 2      →  4 → 16 → 256 → 65536 → 4.3e9 → … → 1.3e154 → Infinity
+   x = 1.1    →  … → 2.4e42
+   x = 1.0    →  1 → 1 → 1 → 1 → 1 → 1 → 1 → 1 → 1 → 1
+   x = 0.9    →  … → 1.4e-47
+   x = 0.5    →  … → 5.6e-309        (about to reach zero)
+```
+
+Anything above 1 **overflows a 64-bit float in ten layers**, starting from an input as ordinary as 2. Anything below 1 collapses to nothing. Only `x = 1` *exactly* holds still — a razor's edge, not an operating range. Now the same ten layers of `relu`:
+
+```
+   x = 2      →  2 → 2 → 2 → 2 → 2 → 2 → 2 → 2 → 2 → 2
+```
+
+`relu(x) = x` on the active side, so the scale is preserved **exactly**, forever. That is the property that turns out to matter most, and it is invisible until you stack.
+
+**The gradients explode too.** `d/dx x² = 2x`, which grows without bound as the input grows. Ten layers at `x = 10` puts `10¹³` into the first layer's gradient — the exploding-gradient twin of section 10's vanishing problem. `relu`'s local derivative is `1`, so ten layers give `1`.
+
+**And squaring destroys information:** `x²(-3)` and `x²(3)` are both `9`. A unit built on it cannot tell those inputs apart; half the meaning is gone before the next layer sees anything.
+
+**The deepest reason, though, is one you have already met.** Chapter 09 proved:
+
+```
+linear ∘ linear  =  linear                 ← the collapse
+```
+
+The same closure holds one level up:
+
+```
+degree-2 ∘ degree-2      =  degree 4
+ten layers of degree 2   =  degree 1024    ← still ONE polynomial
+```
+
+Polynomials are **closed under composition as well**. Stacking them does not produce a new *kind* of function — only a higher degree, which a single layer could have produced directly. It is the identical failure to the linear case, hiding one level up where it is harder to notice.
+
+And a high-degree polynomial is precisely what you do not want. Fit a smooth bump with a degree-20 polynomial through 21 *exact* points:
+
+```
+   x = 0.90     true = 0.0471     poly =   0.0471
+   x = 0.95     true = 0.0424     poly = -39.9524      ← between the points
+   x = 0.99     true = 0.0392     poly = -42.4705
+```
+
+Exact at every node, wildly wrong between them — *Runge's phenomenon*, and raising the degree makes it **worse**. So the only thing depth buys with polynomials is the thing that ruins them.
+
+**The difference is global versus local.** A polynomial is one rigid formula governing the entire line: change a single coefficient and the curve moves everywhere at once. A `relu` hinge is local — one bend, one place, linear either side — so each unit can take charge of its own region without disturbing the others. Composition therefore means opposite things: stacking polynomials multiplies **degree**, stacking hinges multiplies **regions**. Section 6 is about the second.
+
+### The real design brief
+
+So there is a third column, and it is the one that only reveals itself under depth:
+
+| | makes a decision? | has a usable slope? | survives being stacked? |
+|---|---|---|---|
+| a straight line | ❌ | ✅ | ✅ (but pointless — it collapses) |
+| a step | ✅ | ❌ | — |
+| a polynomial | ✅ | ✅ | ❌ explodes or vanishes; degree blows up |
+| **what we need** | ✅ | ✅ | ✅ |
+
+That bottom row is the actual brief. **Every activation function ever invented is an attempt to fill it:** keep enough of the step's decisiveness to be nonlinear, recover a slope that learning can use, and stay numerically well-behaved when a hundred copies are stacked on top of each other.
 
 The four in this chapter are four different bargains struck with that one problem.
 
@@ -756,9 +825,10 @@ Two notes specific to this chapter:
 2. Why can't `exp` be built from `add` and `mul`? What does that force you to do instead?
 3. `sigmoid'` peaks at `0.25`. What is the best-case gradient reaching layer 1 of a 20-layer sigmoid stack? What is it for relu?
 4. Show algebraically that `softmax(x)` = `softmax(x + c)` for any constant `c`.
-5. Why does `sigmoid`'s backward use `out.data` rather than `x.data`? Name the two reasons.
-6. Which of the four activations is not elementwise, and what does that change about its backward pass?
-7. A `gelu` unit sits at `x = -1`. Compare its gradient with a `relu` unit at the same input. Which one can recover, and why?
+5. `x²` bends and has a slope everywhere, so it passes the first two tests in section 2's brief. Give two separate reasons it still fails — one about magnitudes under stacking, one about what `degree-2 ∘ degree-2` produces.
+6. Why does `sigmoid`'s backward use `out.data` rather than `x.data`? Name the two reasons.
+7. Which of the four activations is not elementwise, and what does that change about its backward pass?
+8. A `gelu` unit sits at `x = -1`. Compare its gradient with a `relu` unit at the same input. Which one can recover, and why?
 
 ---
 
