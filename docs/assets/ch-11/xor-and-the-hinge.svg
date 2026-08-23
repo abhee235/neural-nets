@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">the problem that made activations necessary — and what one bend does about it</text>
+
+  <!--
+    Left: XOR's four points. Filled = class 1 at (0,1),(1,0); hollow = class 0
+    at (0,0),(1,1). Three candidate lines sweep and each leaves a point wrong.
+    Right: f(x) = 2·relu(x+2) − 3·relu(x) + 1.5·relu(x−2), evaluated:
+      x   : -4   -3   -2   -1    0    1    2    3    4
+      f(x):  0    0    0    2    4    3    2  2.5    3
+    Slope changes only at -2, 0, 2 — one bend per relu unit.
+  -->
+
+  <line x1="352" y1="46" x2="352" y2="344" stroke="#e0d9c5" stroke-width="1" stroke-dasharray="4 4"/>
+
+  <!-- ══════════ LEFT — XOR ═══════════════════════════════════ -->
+  <text x="176" y="60" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="12" font-weight="700">XOR: no straight line works</text>
+
+  <g transform="translate(70,80)">
+    <!-- axes -->
+    <line x1="0" y1="160" x2="180" y2="160" stroke="#c9b88a" stroke-width="1.5"/>
+    <line x1="0" y1="0" x2="0" y2="160" stroke="#c9b88a" stroke-width="1.5"/>
+    <text x="-10" y="164" text-anchor="end" fill="#8b7355" font-family="monospace" font-size="10">0</text>
+    <text x="-10" y="46" text-anchor="end" fill="#8b7355" font-family="monospace" font-size="10">1</text>
+    <text x="40" y="180" fill="#8b7355" font-family="monospace" font-size="10">0</text>
+    <text x="154" y="180" fill="#8b7355" font-family="monospace" font-size="10">1</text>
+    <text x="90" y="196" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="10">x₁</text>
+    <text x="-34" y="84" fill="#a8956a" font-family="monospace" font-size="10">x₂</text>
+
+    <!-- sweeping candidate lines — each one fails -->
+    <line stroke="#a94442" stroke-width="2" stroke-dasharray="5 4" opacity="0.85">
+      <animate attributeName="x1" values="-6;-6;66" keyTimes="0;0.5;1" dur="6s" calcMode="discrete" repeatCount="indefinite"/>
+      <animate attributeName="y1" values="96;20;-6" keyTimes="0;0.5;1" dur="6s" calcMode="discrete" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="186;186;186" keyTimes="0;0.5;1" dur="6s" calcMode="discrete" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="20;120;110" keyTimes="0;0.5;1" dur="6s" calcMode="discrete" repeatCount="indefinite"/>
+    </line>
+
+    <!-- the four points: filled = 1, hollow = 0 -->
+    <circle cx="45" cy="115" r="9" fill="#ffffff" stroke="#1e6091" stroke-width="2.5"/>
+    <text x="45" y="119" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="10" font-weight="700">0</text>
+    <text x="45" y="142" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">(0,0)</text>
+
+    <circle cx="45" cy="45" r="9" fill="#2e7d32"/>
+    <text x="45" y="49" text-anchor="middle" fill="#ffffff" font-family="monospace" font-size="10" font-weight="700">1</text>
+    <text x="45" y="26" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">(0,1)</text>
+
+    <circle cx="145" cy="115" r="9" fill="#2e7d32"/>
+    <text x="145" y="119" text-anchor="middle" fill="#ffffff" font-family="monospace" font-size="10" font-weight="700">1</text>
+    <text x="145" y="142" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">(1,0)</text>
+
+    <circle cx="145" cy="45" r="9" fill="#ffffff" stroke="#1e6091" stroke-width="2.5"/>
+    <text x="145" y="49" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="10" font-weight="700">0</text>
+    <text x="145" y="26" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">(1,1)</text>
+  </g>
+
+  <text x="176" y="300" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="10">the two classes sit on opposite diagonals</text>
+  <text x="176" y="316" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="10" font-weight="700">every line leaves one point on the wrong side</text>
+  <text x="176" y="334" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">Minsky &amp; Papert, 1969 — and a fifteen-year winter</text>
+
+  <!-- ══════════ RIGHT — the hinge ════════════════════════════ -->
+  <text x="536" y="60" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="12" font-weight="700">each relu unit adds one bend</text>
+
+  <g transform="translate(400,80)">
+    <!-- axes: x -4..4 over 260px, y 0..4.5 over 150px -->
+    <line x1="0" y1="150" x2="260" y2="150" stroke="#c9b88a" stroke-width="1.5"/>
+    <line x1="130" y1="0" x2="130" y2="156" stroke="#e0d9c5" stroke-width="1"/>
+    <text x="4" y="166" fill="#8b7355" font-family="monospace" font-size="9">-4</text>
+    <text x="126" y="166" fill="#8b7355" font-family="monospace" font-size="9">0</text>
+    <text x="250" y="166" fill="#8b7355" font-family="monospace" font-size="9">4</text>
+
+    <!-- f(x) polyline: x -> 130+32.5x ; y -> 150 - 33.3*f -->
+    <!-- (-4,0)(-2,0)(-1,2)(0,4)(2,2)(4,3) with bends at -2,0,2 -->
+    <polyline points="0,150 65,150 97.5,83.4 130,16.8 195,83.4 260,50.1"
+              fill="none" stroke="#2e7d32" stroke-width="2.5"/>
+
+    <!-- bend markers -->
+    <circle cx="65" cy="150" r="4" fill="#a94442"/>
+    <circle cx="130" cy="16.8" r="4" fill="#a94442"/>
+    <circle cx="195" cy="83.4" r="4" fill="#a94442"/>
+    <text x="65" y="140" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="9" font-weight="700">bend</text>
+    <text x="130" y="10" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="9" font-weight="700">bend</text>
+    <text x="205" y="78" fill="#a94442" font-family="monospace" font-size="9" font-weight="700">bend</text>
+
+    <!-- travelling marker along the curve -->
+    <circle r="6" fill="#1e6091">
+      <animate attributeName="cx" values="0;65;97.5;130;195;260" keyTimes="0;0.2;0.4;0.6;0.8;1" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="150;150;83.4;16.8;83.4;50.1" keyTimes="0;0.2;0.4;0.6;0.8;1" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <text x="536" y="264" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="10">f(x) = 2·relu(x+2) − 3·relu(x) + 1.5·relu(x−2)</text>
+  <text x="536" y="284" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">the slope is constant BETWEEN bends and changes only AT them</text>
+  <text x="536" y="304" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="10" font-weight="700">three units → three bends → four straight pieces</text>
+  <text x="536" y="322" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">enough hinges trace any curve — that is universal approximation,</text>
+  <text x="536" y="334" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">with no exotic mathematics required</text>
+
+  <!-- formula bar -->
+  <rect x="30" y="354" width="660" height="36" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="371" text-anchor="middle" font-family="monospace" font-size="11" fill="#5a4220" font-weight="600">
+    a line cannot treat one case differently from the others — a bend can
+  </text>
+  <text x="360" y="385" text-anchor="middle" font-family="monospace" font-size="9" fill="#8b7355">
+    in the XOR solution, h₂ = relu(x₁+x₂−1) stays asleep for three inputs and wakes only at (1,1)
+  </text>
+
+</svg>

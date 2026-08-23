@@ -29,25 +29,27 @@ Two linear layers collapse into one. Ten thousand of them still collapse into on
 
 That is what this chapter adds. Four functions:
 
-| | what it does | where it lives in the transformer |
+| | the idea behind it | where it lives in the transformer |
 |---|---|---|
-| `relu` | zeroes negatives | the classic hidden-layer nonlinearity |
-| `gelu` | a smooth `relu` | inside every FFN block in GPT (Ch 25) |
-| `sigmoid` | squashes to `(0, 1)` | binary outputs, gates |
-| `softmax` | turns scores into probabilities | the last step of every attention head (Ch 22) |
+| `relu` | a hinge — one bend, placed where the weights want it | the classic hidden-layer nonlinearity |
+| `gelu` | a gate with the certainty removed | inside every FFN block in GPT (Ch 25) |
+| `sigmoid` | the step function with its corner rounded off | binary outputs, gates |
+| `softmax` | a differentiable `argmax` | the last step of every attention head (Ch 22) |
+
+But do not start from the formulas. Sections 1 to 3 are about the *problem* these were invented to solve — a problem concrete enough to state in four points, and serious enough that it stalled the field for fifteen years. The formulas make far more sense as answers than as definitions.
 
 > **🗺️ How to read this chapter**
 > Read a bit, build a bit — the same rhythm as Ch 09 and Ch 10.
 >
 > | | Sections | Then |
 > |---|---|---|
-> | **Read** | 1 → 3 | **Build** `relu` (section 4) |
-> | **Read** | 5 | **Build** `sigmoid` (section 6) |
-> | **Read** | 7 → 8 | **Build** `gelu` (section 9) |
-> | **Read** | 10 | **Build** `softmax` (section 11) |
-> | **Read** | 12 | Verify everything |
+> | **Read** | 1 → 6 (the *why*, then the pattern) | **Build** `relu` (section 7) |
+> | **Read** | 8 | **Build** `sigmoid` (section 9) |
+> | **Read** | 10 → 11 | **Build** `gelu` (section 12) |
+> | **Read** | 13 | **Build** `softmax` (section 14) |
+> | **Read** | 15 | Verify everything |
 >
-> Good news first: **Chapter 10 was the hard one.** There, shapes changed under you — broadcasting grew them, reductions shrank them, and half the chapter was putting them back. Here, three of the four activations do not change shape at all. Same shape in, same shape out, no `sumToShape`, no `unsqueeze`, no broadcasting. One pattern, three times. Only `softmax` is different, and it gets its own section.
+> Good news on the mechanics: **Chapter 10 was the hard one.** There, shapes changed under you — broadcasting grew them, reductions shrank them, and half the chapter was putting them back. Here, three of the four activations do not change shape at all. Same shape in, same shape out, no `sumToShape`, no `unsqueeze`, no broadcasting. One pattern, three times. Only `softmax` is different, and it gets its own section.
 
 ---
 
@@ -55,12 +57,14 @@ That is what this chapter adds. Four functions:
 
 By the end of this chapter you can:
 
+- Prove in four lines that no linear model can solve XOR — and explain what that impossibility cost the field.
+- State the tension every activation function exists to resolve: a unit must be nonlinear to decide, yet have a usable slope to learn.
+- Explain each of the four as an *idea* rather than a formula — a hinge, a rounded step, a probabilistic gate, a soft `argmax`.
 - Explain why none of `TensorValue`'s seven operations can produce a nonlinearity, and what has to be added instead.
 - Add a new differentiable primitive to the engine — the tensor version of what you did in Ch 08.
 - Write the elementwise backward pattern from memory, and say why it needs no shape bookkeeping.
 - Derive and implement the gradients of `relu`, `sigmoid`, `gelu` and `softmax`.
 - Measure why sigmoid stalls deep networks and ReLU does not — with the actual numbers.
-- Explain why `softmax` is the one activation that is not elementwise, and what that costs.
 
 ---
 
@@ -74,12 +78,132 @@ By the end of this chapter you can:
 | **local derivative** | For an elementwise `f`, the value `f'(x)` at one cell. Ch 08's "local gradient". |
 | **saturation** | An input region where a function flattens out, so its derivative goes to ~0. |
 | **logits** | Raw, unbounded scores — what `softmax` turns into probabilities. |
+| **step function** | Output 1 above a threshold, 0 below. The original activation, and untrainable — section 2. |
+| **hinge** | One `relu` unit's shape: flat, then a bend, then a straight line. |
+| **piecewise-linear** | Made of straight segments joined at bends. What a `relu` network computes. |
+| **`argmax`** | "Which entry is largest?" — a hard, gradient-free choice. `softmax` is its soft version. |
 
 ---
 
-## 1. What your engine cannot do yet
+## 1. The problem that made these necessary
 
-Here is a fact worth sitting with. You can write this:
+Before any formula, the problem. It is small enough to hold in your hand, and it once stopped the entire field for over a decade.
+
+**XOR.** Four points, two classes. Output 1 when the inputs differ, 0 when they match:
+
+```
+    x2
+     │
+   1 │  ●(0,1)=1        ○(1,1)=0
+     │
+   0 │  ○(0,0)=0        ●(1,0)=1
+     └──────────────────────────── x1
+        0                1
+```
+
+Try to separate the filled dots from the hollow ones with **one straight line**. Go on — the failure is instructive. They sit on opposite diagonals; no line has them on opposite sides.
+
+<p align="center">
+  <img src="../assets/ch-11/xor-and-the-hinge.svg" alt="Two panels. The left shows XOR's four points on the x1-x2 square: hollow class-0 circles at (0,0) and (1,1), filled green class-1 circles at (0,1) and (1,0), so the two classes sit on opposite diagonals. A dashed red candidate line sweeps through three different positions and each one leaves a point on the wrong side, captioned that every line fails, with a note on Minsky and Papert 1969 and the fifteen-year winter that followed. The right panel plots f(x) = 2·relu(x+2) − 3·relu(x) + 1.5·relu(x−2) as a piecewise-linear curve from x = -4 to 4, flat at zero until -2, rising steeply to a peak of 4 at x = 0, falling to 2 at x = 2, then rising gently to 3 at x = 4. Three red dots mark the bends at x = -2, 0 and 2, one per relu unit, and a blue marker travels along the curve. Captions note that the slope is constant between bends and changes only at them, that three units give three bends and four straight pieces, and that enough hinges trace any curve. A footer observes that a line cannot treat one case differently from the others but a bend can, as in the XOR solution where h2 stays asleep for three inputs and wakes only at (1,1)." />
+</p>
+
+*Figure 1: the impossibility on the left, and the thing that defeats it on the right.*
+
+That is not a lack of imagination. It is provable in four lines. A linear model is `y = w₁x₁ + w₂x₂ + b`, so the four points demand:
+
+```
+(0,0) → 0    ⇒   b = 0
+(0,1) → 1    ⇒   w₂ + b = 1     ⇒  w₂ = 1
+(1,0) → 1    ⇒   w₁ + b = 1     ⇒  w₁ = 1
+(1,1) → 0    ⇒   w₁ + w₂ + b = 0
+                  but that is 1 + 1 + 0 = 2, and we need 0
+```
+
+**Contradiction.** No weights exist. Not "hard to find" — they do not exist, for any linear model, ever. And Chapter 09 already showed that stacking linear layers changes nothing, because they collapse: a hundred layers is still one line, still helpless against four points.
+
+> **This is real history, not a toy.** Minsky and Papert made exactly this argument in *Perceptrons* (1969). It was correct, it was devastating, and funding for neural networks largely dried up for the next fifteen years — the first "AI winter". The field's comeback needed an answer to this one picture.
+
+### The answer, in two units
+
+Here is that answer, with weights chosen by hand so you can check every number:
+
+```
+h₁ = relu(x₁ + x₂)          h₂ = relu(x₁ + x₂ − 1)          y = h₁ − 2h₂
+```
+
+| input | `h₁` | `h₂` | `y` | want |
+|---|---|---|---|---|
+| (0,0) | `relu(0) = 0` | `relu(-1) = 0` | 0 | 0 ✓ |
+| (0,1) | `relu(1) = 1` | `relu(0) = 0` | 1 | 1 ✓ |
+| (1,0) | `relu(1) = 1` | `relu(0) = 0` | 1 | 1 ✓ |
+| (1,1) | `relu(2) = 2` | `relu(1) = 1` | 0 | 0 ✓ |
+
+Two `relu` units, and the impossible becomes arithmetic you can verify in your head.
+
+Look closely at *why* it works. `h₂` contributes **nothing** for the first three inputs — `relu` zeroes it — and only wakes up at `(1,1)`, where it fires and subtracts. The network has effectively said: *"treat this last case differently from the others."* That is something no line can do, and it is the whole trick.
+
+So the real question of this chapter is not the vague "how do we bend a line". It is sharper:
+
+> **How can a unit make a *decision* — behave one way here and another way there?**
+
+---
+
+## 2. The obvious answer, and why it fails
+
+If you want a unit to decide, the obvious thing is a **threshold**. Fire when the input clears a bar, stay silent otherwise:
+
+```
+step(x) = 1 if x > 0
+          0 otherwise
+```
+
+This is not an arbitrary choice — it is where the whole field started. A biological neuron either fires or it does not, and McCulloch and Pitts' 1943 model of a neuron, and Rosenblatt's perceptron, both used exactly this. It decides. It is nonlinear. It solves XOR.
+
+And it is completely untrainable.
+
+Ask your Chapter 07 question — *what is its slope?*
+
+```
+step'(-2)   = 0
+step'(-0.5) = 0
+step'( 0.5) = 0
+step'( 2)   = 0
+step'( 0)   = undefined     (an infinite jump)
+```
+
+The function is **flat everywhere**. Chapter 09 told you exactly what a zero gradient means for a parameter: *it does not move.* Every weight feeding a step unit receives zero, forever. The network cannot learn a single thing — and at the one interesting point, the threshold itself, the derivative does not even exist.
+
+That is the tension this entire chapter resolves:
+
+> A unit must be **nonlinear** to make a decision at all,
+> but it must have a **usable slope** or nothing can learn.
+>
+> A step has the decision and no slope. A line has slope everywhere and makes no decision.
+
+Every activation function ever invented is an answer to that one problem: *keep the decision, get a slope back.*
+
+---
+
+## 3. Four answers to one question
+
+The four functions in this chapter are four different ways to resolve that tension. Seeing them as four answers — rather than four formulas — is most of the chapter:
+
+| | the idea | what it gives up |
+|---|---|---|
+| **`sigmoid`** | Round off the step's corner into a smooth S. Now it has a slope everywhere. | The slope is tiny except near the threshold — section 10 |
+| **`relu`** | Keep the hard decision, but make the "on" branch a plain `y = x` instead of flattening out. | Off means *completely* off — those units can die |
+| **`gelu`** | Make the decision *probabilistic* rather than a hard cut. | Costs more arithmetic |
+| **`softmax`** | *(a different question)* Make "pick the winner" differentiable. | Not a per-unit gate at all |
+
+Three of these are about a single unit deciding whether to pass its input on. `softmax` answers a separate question that appears at the *output* of a network, and it gets its own section.
+
+Notice that `sigmoid` and `relu` sit at opposite ends of the same trade-off — one keeps the smoothness and loses the gradient's size, the other keeps the gradient's size and loses the smoothness. Almost everything in the literature since is a negotiation between those two, and `gelu` is the negotiation transformers settled on.
+
+---
+
+## 4. What your engine cannot do yet
+
+One practical obstacle before building any of them. You can write this:
 
 ```typescript
 x.matMul(W).add(b)          // a linear layer — Ch 10 gave you this
@@ -93,7 +217,7 @@ relu(x)        sigmoid(x)        tanh(x)        exp(x)
 
 Not "it would be slow" or "it would be awkward". It is impossible. Adding and multiplying can only ever build **polynomials**, and `exp` is not a polynomial — no finite number of adds and multiplies produces it. Same for `tanh`, `log`, and the hard corner in `relu`.
 
-So a nonlinearity cannot be *composed*. It has to be **added to the engine as a new primitive** — a new node type that knows its own forward value and its own derivative.
+This is the same wall as section 1, seen from inside the code: your engine is made of linear parts, and linear parts compose into linear things. A nonlinearity cannot be *composed*. It has to be **added to the engine as a new primitive** — a node that knows its own forward value and its own derivative.
 
 And you have done exactly this before. In Chapter 08, `Value` started with `add` and `mul`, and then you added `exp`, `log`, `tanh` and `relu` — each one a new primitive with its own `_backward` closure. This chapter is that same act, with tensors in the nodes instead of numbers.
 
@@ -101,7 +225,7 @@ And you have done exactly this before. In Chapter 08, `Value` started with `add`
 
 ---
 
-## 2. Adding a primitive: the pattern you already know
+## 5. Adding a primitive: the pattern you already know
 
 Here is Chapter 08's `relu`, from your own [`value.ts`](../../src/autograd/value.ts), unchanged:
 
@@ -142,15 +266,43 @@ where `⊙` means "multiply cell by cell" — Chapter 03's `mul`. That single li
   <img src="../assets/ch-11/elementwise-backward.svg" alt="A five-cell tensor flowing forward and backward through an elementwise activation. Forward, the input row holding -2, -1, 0, 1, 2 passes cell by cell through relu, each cell mapping only to the cell directly below it, producing 0, 0, 0, 1, 2 with the same shape [5]. Below, the local derivative row shows relu prime at each input: 0, 0, 0, 1, 1. Backward, an upstream gradient row of all ones is multiplied cell by cell by that local derivative row, giving the input gradient 0, 0, 0, 1, 1 — the same shape as the input. A caption notes that because each output cell depends on exactly one input cell, the shape never changes and backward needs no sumToShape, no unsqueeze, and no broadcasting: it is a single elementwise multiply." />
 </p>
 
-*Figure 1: the elementwise pattern. One cell in, one cell out, shapes untouched.*
+*Figure 2: the elementwise pattern. One cell in, one cell out, shapes untouched.*
 
 ---
 
-## 3. `relu`, by hand
+## 6. `relu` — a hinge, and what a network builds out of them
 
-The simplest activation, and the one whose behaviour you already met in Chapter 09.
+`relu` is the answer that keeps the hard decision and simply refuses to flatten out on the "on" side:
 
 $$\text{relu}(x) = \max(0, x)$$
+
+It looks almost insultingly simple — the joke is that a decade of research produced `max(0, x)`. But look at what it *is* geometrically, because that is where the insight lives.
+
+**One `relu` unit is a hinge.** It is flat, and then at one point it bends and becomes a straight line. One bend, at a location the weights choose.
+
+Now stack a few and watch what happens. Take three units and add them with different weights:
+
+$$f(x) = 2\,\text{relu}(x+2) \;-\; 3\,\text{relu}(x) \;+\; 1.5\,\text{relu}(x-2)$$
+
+```
+   x   :   -4    -3    -2    -1     0     1     2     3     4
+  f(x) :  0.0   0.0   0.0   2.0   4.0   3.0   2.0   2.5   3.0
+  slope:    0.0   0.0   2.0   2.0  -1.0  -1.0   0.5   0.5
+                        └── bend ──┘└── bend ──┘└── bend ──┘
+                            at -2       at 0        at 2
+```
+
+The slope is **constant between the bends and changes only at them** — one bend per unit, exactly where that unit's threshold sits. The result is a *piecewise-linear* function: straight segments hinged together.
+
+That is what a ReLU network is. Each unit contributes one hinge; together they carve the input space into regions, and **inside each region the whole network is just a linear function**. Different region, different linear function. A network with many ReLU units is a committee of linear models, each one taking charge of its own patch of input space.
+
+This is also the intuition behind the *universal approximation* result you may have heard quoted. Any smooth curve can be traced as closely as you like by enough short straight segments — so enough hinges can approximate any function. Add units, get more pieces, fit finer detail. You do not need exotic mathematics; you need enough bends.
+
+And it is exactly what happened in XOR back in section 1: `h₂`'s hinge sat precisely so that only `(1,1)` landed on its active side. One bend, placed to isolate one case.
+
+### The behaviour you already met
+
+Chapter 09 introduced `relu`'s gate on a scalar. Here is the same thing on a row.
 
 Take five inputs spanning the interesting region — this row is the running example for the whole chapter:
 
@@ -186,7 +338,7 @@ Those last two cells passed their gradient intact. The first three received **ex
 
 ---
 
-## 4. Build it — `relu`
+## 7. Build it — `relu`
 
 Open [`activations.ts`](../../src/nn/activations.ts). Each function carries the same paired guidance as `grad.ts`: your Ch 08 scalar version quoted, then what changes for tensors.
 
@@ -210,11 +362,28 @@ For the forward, `applyFn` from Ch 03 maps a plain function over every cell — 
 
 ---
 
-## 5. `sigmoid` — and a derivative that reuses the output
+## 8. `sigmoid` — the step with its corner rounded off
+
+This is the other answer to section 2's problem, and historically it came first by decades.
+
+The step function was right in spirit and untrainable in practice. So: *keep the shape, round off the corner.* Take the hard jump from 0 to 1 and smooth it into a curve that rises gradually through the same territory:
 
 $$\sigma(x) = \frac{1}{1 + e^{-x}}$$
 
-Sigmoid squashes any real number into `(0, 1)`. On the running row:
+```
+        step                        sigmoid
+                                              ╭────────
+    ────────┐   ╭────────                 ╭───╯
+            │   │                      ╭──╯
+            └───╯                 ─────╯
+
+  jumps at 0, flat elsewhere      rises smoothly through 0
+  slope: 0 or undefined           slope: never zero, never undefined
+```
+
+That is the entire idea. `sigmoid` is a **differentiable step** — it still says "roughly off" for very negative inputs and "roughly on" for very positive ones, but it gets there by a route that has a slope the whole way. And it happens to be interpretable: an output in `(0, 1)` reads naturally as a probability, or as a neuron's firing *rate* rather than a binary spike, which is why it dominated for so long. (The curve itself long predates neural networks — Verhulst introduced it in the 1830s for population growth.)
+
+On the running row:
 
 ```
 x           = [ -2       -1       0       1       2      ]
@@ -237,7 +406,7 @@ Look at what that formula needs: `σ(x)` — which is the value you **already co
 
 ---
 
-## 6. Build it — `sigmoid`
+## 9. Build it — `sigmoid`
 
 **Milestone 2 — `sigmoid`.**
 
@@ -252,7 +421,7 @@ Same five-step recipe as `relu`. Two differences:
 
 ---
 
-## 7. What saturation costs — the vanishing gradient, measured
+## 10. What saturation costs — the vanishing gradient, measured
 
 Look again at that derivative row, and notice its shape:
 
@@ -272,7 +441,7 @@ sigmoid'(6)  = 0.0025
 sigmoid'(10) = 0.0000454
 ```
 
-That flattening is **saturation** — the function has run out of room, so nudging the input barely moves the output.
+That flattening is **saturation** — the function has run out of room, so nudging the input barely moves the output. And notice *why* it is unavoidable: `sigmoid` squeezes the entire infinite real line into a box of height 1. A curve with nowhere left to rise must go flat, and flat means no gradient. **The smoothing that made the step trainable is the same property that starves it.** Rounding the corner cost something, and this is the bill.
 
 Now recall Ch 09's deep dive, which showed that a gradient reaching an early layer is a **product** of every local derivative along the way. Put a sigmoid in each of ten layers and, in the *best possible case*, that product is:
 
@@ -286,23 +455,52 @@ $$1^{10} = 1$$
 
 On its active side, `relu`'s derivative is exactly 1 — so the product does not decay at all. **That single fact is why ReLU replaced sigmoid in hidden layers**, and it is the whole reason ReLU exists.
 
+> **This was a real crisis, and the diagnosis took years.** Through the 1990s and 2000s, deep networks were known not to train — add layers and performance got *worse*, which felt like a law of nature rather than a bug. Glorot and Bengio's 2010 paper put a name and a number on it: gradients were dying on the way back, exactly by the multiplication above. Once the cause was clear the cure was almost embarrassing — stop using a saturating function — and ReLU's adoption is a large part of why deep learning worked from roughly 2012 onward. `max(0, x)` unlocked depth.
+
 <p align="center">
   <img src="../assets/ch-11/saturation-and-decay.svg" alt="Two panels. The left plots the derivative curves of sigmoid and relu against x from -6 to 6: sigmoid's derivative is a bell peaking at 0.25 at x=0 and falling to nearly zero by x = plus or minus 6, marked saturation at both ends; relu's derivative is a step, exactly 0 for negative x and exactly 1 for positive x. A dashed line marks the 0.25 ceiling that sigmoid's derivative can never exceed. The right panel shows what happens when those factors multiply through depth: a bar chart of the gradient reaching the first layer after n layers, sigmoid at its best case 0.25 to the power n falling from 0.25 to 9.5e-7 across ten layers, while relu stays flat at 1 the whole way. A caption states that on its active side relu's derivative is exactly one, so the product does not decay, and that this is why relu replaced sigmoid in hidden layers." />
 </p>
 
-*Figure 2: sigmoid's ceiling is 0.25; relu's is 1. Ten layers turn that into a factor of a million.*
+*Figure 3: sigmoid's ceiling is 0.25; relu's is 1. Ten layers turn that into a factor of a million.*
 
-The trade-off is the one you already know: relu's gate can shut permanently (section 3's dying units), while sigmoid never fully dies but starves everything upstream. The next section is the activation that tries to have both.
+The trade-off is the one section 3 set out: relu's gate can shut permanently (its dying units), while sigmoid never fully dies but starves everything upstream. The next section is the activation that tries to have both.
 
 ---
 
-## 8. `gelu` — the smooth gate transformers use
+## 11. `gelu` — a gate with the certainty removed
 
-`relu` makes a hard decision at zero: pass completely, or block completely. `gelu` makes a **soft** one — it scales each input by roughly "how likely this value is to be worth keeping":
+`relu` decides with a rule: *is `x` above zero?* `gelu` asks a stranger question — and where it comes from is more interesting than the formula.
 
-$$\text{gelu}(x) = x \cdot \Phi(x)$$
+**Suppose the threshold itself were random.** Instead of always comparing against 0, compare `x` against a random draw from a standard normal distribution, and keep `x` only if it wins:
 
-where `Φ` is the normal distribution's CDF — an S-curve from 0 to 1. In practice everyone uses the `tanh` approximation, which matches to about `1e-3` and is much faster:
+```
+keep x  with probability  P(Z ≤ x),  where Z ~ Normal(0, 1)
+drop it otherwise
+```
+
+A large `x` almost always beats the draw and survives. A very negative `x` almost never does. An `x` near zero is a coin flip. That is a *stochastic gate* — closely related to dropout, which also randomly keeps or discards activations.
+
+Random behaviour is awkward to train, so take the **expected value** instead of actually flipping the coin. The expectation of "keep `x` with probability `p`, else 0" is simply `x · p`:
+
+$$\text{gelu}(x) = x \cdot \Phi(x) \qquad\text{where } \Phi(x) = P(Z \le x)$$
+
+That is the whole derivation, and it explains the shape for free — no curve-fitting, no arbitrary smoothing:
+
+```
+   x   |  P(Z ≤ x)  |  gelu = x·P  |  relu
+  -----+------------+--------------+--------
+   -2  |   0.0228   |   -0.0455    |  0.0000
+   -1  |   0.1587   |   -0.1587    |  0.0000
+    0  |   0.5000   |    0.0000    |  0.0000
+    1  |   0.8413   |    0.8413    |  1.0000
+    2  |   0.9772   |    1.9545    |  2.0000
+```
+
+Read the middle column as a survival probability. At `x = 2` the input survives 98% of the time, so almost all of it passes. At `x = 0` it is exactly a coin flip — which is why, as you will see, `gelu`'s *derivative* at zero is `0.5`: the gate is precisely half open. At `x = -1` it survives 16% of the time, so a *small* amount gets through rather than nothing at all.
+
+`relu` is what you get if you make that gate deterministic: threshold at zero, survive with probability 1 or 0. **`gelu` is `relu` with the certainty removed.**
+
+In practice everyone uses a `tanh` approximation of `Φ`, which matches to about `1e-3` and is much faster:
 
 $$\text{gelu}(x) \approx 0.5\,x\left(1 + \tanh\!\left(\sqrt{\tfrac{2}{\pi}}\left(x + 0.044715\,x^3\right)\right)\right)$$
 
@@ -339,11 +537,11 @@ Two features worth noticing, because they surprise people: at `x = 0` the deriva
   <img src="../assets/ch-11/four-activations.svg" alt="Four activation curves plotted on shared axes from x = -3 to 3, each with its derivative drawn beneath it as a lighter line, and an animated marker sweeping left to right across all four in step. relu is two straight segments, flat at zero for negative x then rising at 45 degrees, with a step derivative of 0 then 1 and a marked corner at the origin. gelu closely follows relu for large positive x but curves smoothly through the origin and dips slightly negative around x = -1 before flattening, its derivative peaking just above 1 and going slightly negative on the left. sigmoid is an S-curve from 0 to 1 crossing 0.5 at the origin, with a bell-shaped derivative peaking at 0.25. tanh is an S-curve from -1 to 1 through the origin, with a bell-shaped derivative peaking at 1.0, four times sigmoid's peak. Values on the shared row x = -2, -1, 0, 1, 2 are labelled beneath each curve." />
 </p>
 
-*Figure 3: the four curves, each with its derivative. The marker sweeps all four together so the same `x` can be compared across them.*
+*Figure 4: the four curves, each with its derivative. The marker sweeps all four together so the same `x` can be compared across them.*
 
 ---
 
-## 9. Build it — `gelu`
+## 12. Build it — `gelu`
 
 **Milestone 3 — `gelu`.**
 
@@ -355,13 +553,44 @@ The same five-step recipe. The forward is the `tanh` approximation above; the co
 
 ---
 
-## 10. `softmax` — the one that is not elementwise
+## 13. `softmax` — a differentiable `argmax`
 
-Everything so far shared one property: output cell `i` depended only on input cell `i`. `softmax` breaks it.
+The first three answered section 2's question: *how does one unit decide whether to pass its input on?* `softmax` answers a completely different one, and it shows up at the **end** of a network rather than between layers.
+
+**The question:** a classifier produces one score per class — say `[1, 2, 3]` for three classes. You want to know which class it picked. The obvious operation is `argmax`: winner takes all.
+
+```
+argmax([1, 2, 3])  =  [0, 0, 1]        class 3 wins, everyone else gets nothing
+```
+
+And now you already know what is wrong with it, because **`argmax` is section 2's step function all over again**. Nudge the losing scores and the output does not move at all — zero gradient. Nudge them past the winner and it snaps discontinuously. It decides, and it cannot be trained through.
+
+So apply the same medicine: **soften it.** Keep "the biggest score gets the most weight", but let every score keep a share that varies smoothly:
 
 $$\text{softmax}(x)_i = \frac{e^{x_i}}{\sum_j e^{x_j}}$$
 
-That denominator sums over **every** element along the axis. So changing one input changes *all* the outputs — they are tied together by the requirement that they sum to 1.
+The name is not decoration — **"softmax" means "soft argmax"**, and that is precisely what it is.
+
+You can watch it become `argmax` by turning down a temperature knob. Divide the scores by `T` before exponentiating:
+
+```
+logits [1, 2, 3]        argmax would be [0, 0, 1]
+
+  T = 3      0.2302   0.3213   0.4484      nearly uniform — barely committed
+  T = 1      0.0900   0.2447   0.6652      ← our softmax
+  T = 0.5    0.0159   0.1173   0.8668      sharper
+  T = 0.1    0.0000   0.0000   1.0000      argmax, to four decimals
+```
+
+As `T → 0` softmax *becomes* `argmax`; as `T` grows it flattens toward "no opinion". Our version is `T = 1` — soft enough to have a gradient everywhere, sharp enough to name a winner. (That knob is real: you will meet it again as the temperature setting when sampling from a language model in Ch 30, where it controls how adventurous the generated text is.)
+
+The exponential is what guarantees the outputs behave like probabilities: `eˣ` is always positive, so no score can come out negative, and dividing by the total forces them to sum to 1.
+
+### The consequence: outputs are tied together
+
+That denominator sums over **every** element along the axis. So changing one input changes *all* the outputs — they are coupled by the requirement that they sum to 1. Push one class's score up and the others must give way; there is a fixed amount of probability to share.
+
+This is why `softmax` is the one activation in this chapter that is **not elementwise**, and it is the reason its backward pass looks different from the other three.
 
 ```
 x          = [ 1         2         3        ]
@@ -405,7 +634,7 @@ In words: *take the upstream gradient, subtract its `s`-weighted average, then s
 
 ---
 
-## 11. Build it — `softmax`
+## 14. Build it — `softmax`
 
 **Milestone 4 — `softmax`.**
 
@@ -417,7 +646,7 @@ Backward: the formula above. The weighted sum `Σ_k out.grad_k · s_k` is a `sum
 
 ---
 
-## 12. Verify
+## 15. Verify
 
 **Milestone 5.** Run `checkTensorGradient` on all four, exactly as in Ch 10.
 
