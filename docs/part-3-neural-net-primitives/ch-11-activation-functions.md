@@ -160,7 +160,75 @@ step(x) = 1 if x > 0
 
 This is not an arbitrary choice — it is where the whole field started. A biological neuron either fires or it does not, and McCulloch and Pitts' 1943 model of a neuron, and Rosenblatt's perceptron, both used exactly this. It decides. It is nonlinear. It solves XOR.
 
-> **Where the name "activation function" comes from — and why it fits badly now**
+And it is completely untrainable. Here is what that actually means.
+
+### Watch one weight try to learn
+
+Take a single unit — one weight, one input, a threshold:
+
+```
+h = step(w · x + b)          with   w = 0.5,   x = 2,   b = 0
+
+    w · x + b  =  0.5 × 2 + 0  =  1.0
+    h = step(1.0) = 1                        the unit fires
+```
+
+Training means adjusting `w`. So ask the Chapter 07 question about it: **if I nudge `w`, what happens to `h`?**
+
+```
+   w = 0.50   →   w·x + b = 1.00   →   h = 1
+   w = 0.51   →   w·x + b = 1.02   →   h = 1        no change
+   w = 0.60   →   w·x + b = 1.20   →   h = 1        no change
+   w = 1.00   →   w·x + b = 2.00   →   h = 1        still no change
+```
+
+Read the right-hand column. You **doubled** the weight and the unit's output did not budge. The middle column moved every time; the output ignored it, because `step` only cares which side of zero the number is on, never how far.
+
+"How much does `h` move per unit of `w`" is the definition of the gradient — and here it is plainly zero:
+
+$$\frac{\partial h}{\partial w} = 0$$
+
+Now put that into the update rule you wrote in Chapter 09:
+
+$$w \leftarrow w - \eta \cdot 0 \;=\; w$$
+
+**The weight does not move.** Not slowly — not at all. Run a thousand steps and it sits exactly where it started, along with every other weight feeding this unit. The loss curve would be a perfectly horizontal line.
+
+### "But surely it responds *somewhere*?"
+
+It does — at exactly one point. Keep pushing `w` down until the pre-activation crosses zero:
+
+```
+   w =  0.01  →   w·x + b =  0.02  →   h = 1
+   w = -0.01  →   w·x + b = -0.02  →   h = 0        it flipped
+```
+
+But look at *how* it flipped: all at once, at one exact value, with nothing in between. That is not a slope — it is a cliff. The derivative there isn't a big number; it is **undefined**, because the function jumps rather than rises.
+
+So the step function offers you:
+
+- a gradient of **zero** everywhere it is flat — no information about which way to move, and
+- **no gradient at all** at the single point where anything happens.
+
+There is nowhere for learning to get a grip. The perceptron could only be trained by a special hand-built rule, and that rule could never be extended through multiple layers — which is precisely why XOR stayed unsolved for so long even though, as section 1 showed, two hidden units are enough.
+
+### The tension every activation resolves
+
+Put the two candidates side by side and the problem becomes exact:
+
+| | makes a decision? | has a usable slope? |
+|---|---|---|
+| a straight line | ❌ no — same behaviour everywhere | ✅ yes |
+| a step | ✅ yes | ❌ no — flat, then a cliff |
+| **what we need** | ✅ | ✅ |
+
+That bottom row is the entire design brief. **Every activation function ever invented is an attempt to fill it:** keep enough of the step's decisiveness to be nonlinear, while recovering a slope that learning can use.
+
+The four in this chapter are four different bargains struck with that one problem.
+
+---
+
+> **Aside — where the name "activation function" comes from, and why it fits badly now**
 >
 > The vocabulary was borrowed from neuroscience, not invented. When a real neuron fires, it is said to be *activated*; McCulloch and Pitts' paper is titled *"A Logical Calculus of the Ideas Immanent in Nervous **Activity**"*. So an artificial unit's output was called its **activation** — a noun, meaning how switched-on the unit is — and the function producing it became the **activation function**. The terminology still carries that layering:
 >
@@ -174,34 +242,11 @@ This is not an arbitrary choice — it is where the whole field started. A biolo
 >                           — named for what it produces
 > ```
 >
-> No single person coined it; it drifted in from biology with the metaphor, and became fixed terminology through 1980s connectionism.
+> No single person coined it; it drifted in from biology with the metaphor and hardened into standard terminology through 1980s connectionism.
 >
-> **And the name has aged badly.** It describes the step function perfectly — the unit activates or it does not, exactly like a neuron. But `relu(5) = 5` is not a neuron activating; it is a hinge passing a magnitude. `gelu` scales by a probability. `softmax` is not even per-unit. The biological metaphor was left behind somewhere around 2010; the name it deposited stayed.
+> **And the name has aged badly** — which this section is in a good position to show, because it fits the step function and nothing else. A step unit really does activate, like a neuron. But `relu(5) = 5` is not a neuron activating; it is a hinge passing a magnitude. `gelu` scales by a probability. `softmax` is not even per-unit. The biological metaphor was left behind somewhere around 2010; the name it deposited stayed.
 >
-> Which is why modern papers often just write **"nonlinearity"** — *"we use a GELU nonlinearity"*. Same object, more honest name: it says what the function *is* rather than a biological process it no longer models. Two names, two eras.
-
-And it is completely untrainable.
-
-Ask your Chapter 07 question — *what is its slope?*
-
-```
-step'(-2)   = 0
-step'(-0.5) = 0
-step'( 0.5) = 0
-step'( 2)   = 0
-step'( 0)   = undefined     (an infinite jump)
-```
-
-The function is **flat everywhere**. Chapter 09 told you exactly what a zero gradient means for a parameter: *it does not move.* Every weight feeding a step unit receives zero, forever. The network cannot learn a single thing — and at the one interesting point, the threshold itself, the derivative does not even exist.
-
-That is the tension this entire chapter resolves:
-
-> A unit must be **nonlinear** to make a decision at all,
-> but it must have a **usable slope** or nothing can learn.
->
-> A step has the decision and no slope. A line has slope everywhere and makes no decision.
-
-Every activation function ever invented is an answer to that one problem: *keep the decision, get a slope back.*
+> Which is why modern papers often just write **"nonlinearity"** — *"we use a GELU nonlinearity"*. Same object, more honest name: it says what the function *is*, rather than naming a biological process it no longer models. Two names, two eras.
 
 ---
 
