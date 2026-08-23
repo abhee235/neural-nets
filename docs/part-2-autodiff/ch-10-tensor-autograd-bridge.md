@@ -481,6 +481,15 @@ Z[0][2] = A[0][0]·B[0][2] + …      used, multiplied by B[0][2] = 3
 Z[0][3] = A[0][0]·B[0][3] + …      used, multiplied by B[0][3] = 4
 ```
 
+Drawn as a graph, this is a picture you have seen since Ch 08 — one node fanning out into several children. Each edge carries its multiplier:
+
+```
+A[0][0] ──┬──× B[0][0] = 1 ──►  Z[0][0]
+          ├──× B[0][1] = 2 ──►  Z[0][1]
+          ├──× B[0][2] = 3 ──►  Z[0][2]
+          └──× B[0][3] = 4 ──►  Z[0][3]
+```
+
 Four uses — and each one is a plain multiplication feeding a sum, exactly the two operations whose backward you wrote in Chapter 08. The rule you implemented in [`value.ts`'s `mul`](../../src/autograd/value.ts):
 
 > **my gradient  +=  upstream gradient  ×  the sibling operand**
@@ -575,7 +584,26 @@ That is where the transpose comes from — nowhere mysterious. Our sum walks **a
 B.grad[k][j] = Σᵢ A[i][k] · dZ[i][j] = (Aᵀ @ Z.grad)[k][j]
 ```
 
-Check one by hand: `B[0][0] = 1` was used in `Z[0][0]` (times `A[0][0] = 1`) and in `Z[1][0]` (times `A[1][0] = 4`). Gradient: `1 + 4 = 5` — the figure's other hand check.
+Check one by hand — `B[0][0]`'s fan-out has only **two** edges, because a cell of `B` is reused once per row of `A`:
+
+```
+B[0][0] ──┬──× A[0][0] = 1 ──►  Z[0][0]
+          └──× A[1][0] = 4 ──►  Z[1][0]
+```
+
+Gradient: `1·1 + 1·4 = 5` — the figure's other hand check. And notice the counts: every cell of `A` fans out **4** ways (once per column of `Z`), every cell of `B` fans out **2** ways (once per row). Each matrix's reuse count is set by the *other side's* dimension.
+
+**Close the loop by multiplying it out.** We reached `A.grad = Z.grad @ Bᵀ` through indices — now check that the compact formula reproduces the numbers the hand walks gave. `Bᵀ` turns B's rows into columns:
+
+```
+Bᵀ = [ 1  5  9 ]        Z.grad @ Bᵀ,  row 0:
+     [ 2  6 10 ]
+     [ 3  7 11 ]        [1 1 1 1] against each column of Bᵀ
+     [ 4  8 12 ]          =  [ 1+2+3+4,  5+6+7+8,  9+10+11+12 ]
+                          =  [ 10,       26,        42 ]           ✓
+```
+
+The same `10`, `26`, `42` the cell-by-cell walks produced, arriving through the matrix formula. Two independent routes agreeing is the strongest cheap evidence you can get — the same cross-check `a.mul(a)` against `pow(2)` gave you in Ch 08.
 
 <p align="center">
   <img src="../assets/ch-10/matmul-backward-shapes.svg" alt="A shape derivation for matmul backward, with concrete numbers. The forward pass shows A of shape [2,3] holding 1 to 6, times B of shape [3,4] holding 1 to 12, giving Z of shape [2,4] holding 38, 44, 50, 56 and 83, 98, 113, 128, with L = sum(Z) = 610 so Z.grad is all ones of shape [2,4]. Two panels then derive the backward shapes by constraint. For A.grad: it must come out [2,3] to match A, and starting from Z.grad at [2,4] the only factor that lands on [2,3] is something shaped [4,3] on the right — and the only [4,3] in the graph is B transposed, giving A.grad = Z.grad @ B-transpose = rows of 10, 26, 42, where 10 is checkable by hand as the sum of B's row 0. For B.grad: it must come out [3,4], and the only way from [2,4] is to be multiplied into from the left by a [3,2], which is A transposed — giving B.grad = A-transpose @ Z.grad = rows of 5s, 7s and 9s, where 5 is the sum of A's column 0. A footer notes that forgetting the transpose is caught by the shapes themselves: Z.grad @ B is [2,4] @ [3,4], an inner-dimension mismatch that throws — which is why non-square test shapes are your friend, since a square matrix would let the mistake through silently." />
@@ -598,6 +626,8 @@ dB must be [k, n].   Starting from dZ [m,n], the only way to reach [k,n]
 ```
 
 So the derivation is the understanding, and the shapes are the recall. Whenever you are unsure in a later chapter, write down the four shapes and the answer reassembles itself.
+
+> **The recipe to carry away** — not a formula, a procedure: *pick one cell of `A`; find every `Z` cell it fed (its row of `Z`); multiply each of those upstream gradients by the sibling it was paired with (its row of `B`); add.* What you have written is one cell of `Z.grad @ Bᵀ` — the matrix form is nothing but all of those dot products done at once.
 
 > **Which axes does `transpose` swap?** Ch 04's `transpose(t, axes?)` reverses **all** axes by default, which is what you want for a 2-D matrix. For a batched tensor it is wrong, and one concrete shape shows why. Take `[2, 3, 4]` — a batch of 2 matrices, each `[3,4]`:
 >
