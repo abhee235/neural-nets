@@ -584,21 +584,86 @@ sigmoid'(6)  = 0.0025
 sigmoid'(10) = 0.0000454
 ```
 
-That flattening is **saturation** — the function has run out of room, so nudging the input barely moves the output. And notice *why* it is unavoidable: `sigmoid` squeezes the entire infinite real line into a box of height 1. A curve with nowhere left to rise must go flat, and flat means no gradient. **The smoothing that made the step trainable is the same property that starves it.** Rounding the corner cost something, and this is the bill.
+That flattening is **saturation**: the curve is nearly level there, so nudging the input barely moves the output.
 
-Now recall Ch 09's deep dive, which showed that a gradient reaching an early layer is a **product** of every local derivative along the way. Put a sigmoid in each of ten layers and, in the *best possible case*, that product is:
+### Why sigmoid cannot avoid it
 
-$$0.25^{10} \approx 9.5 \times 10^{-7}$$
+This is not a flaw in the formula. It is forced by the job sigmoid was given.
 
-A gradient a million times smaller than the one at the output. The early layers effectively stop learning, and `step()` is behaving perfectly — it is faithfully multiplying a learning rate by a number near zero.
+Sigmoid takes the entire infinite input line and fits it inside the interval `(0, 1)`. So the total amount it can ever rise is **1** — and it has to spread that single unit of rise across an infinite range of inputs. Almost everywhere, then, there is nearly nothing left to give:
 
-Now compare `relu`:
+```
+total area under sigmoid'(x), over all x   =   1.000000     ← that IS the total rise
+of which, inside the window -2 < x < 2     =   76.2%
+```
+
+Three quarters of everything sigmoid can do happens in a window four units wide. Outside it the curve is essentially flat. **Squashing into a bounded range and going flat are the same fact** — and squashing is exactly what rounded off the step function's corner back in section 8.
+
+### The part that matters: gradients multiply on the way back
+
+Here is the step the ceiling actually costs you. Section 5's rule was:
+
+```
+x.grad = f'(x) ⊙ out.grad
+```
+
+A gradient does **not** travel backward unchanged. At every layer it passes through, it gets *multiplied* by that layer's local derivative. Ten layers means ten multiplications, one after another.
+
+So walk one backward. Start with a gradient of `1` at the output and give sigmoid the **best case at every single layer** — every unit sitting exactly at `x = 0`, where the derivative hits its maximum of `0.25`:
+
+```
+             gradient arriving      relu, for comparison
+  output            1.000000               1
+  layer 10          0.250000               1        × 0.25
+  layer  9          0.062500               1        × 0.25
+  layer  8          0.015625               1        × 0.25
+  layer  7          0.003906               1        × 0.25
+  layer  6          0.000977               1        × 0.25
+  layer  5          0.000244               1        × 0.25
+  layer  4          0.000061               1        × 0.25
+  layer  3          0.000015               1        × 0.25
+  layer  2          0.000004               1        × 0.25
+  layer  1          0.00000095             1        × 0.25
+```
+
+Nothing malfunctioned. Each step did exactly what section 5 says. But `0.25` multiplied by itself ten times is:
+
+$$0.25^{10} = \frac{1}{4^{10}} = \frac{1}{1{,}048{,}576} \approx 9.5 \times 10^{-7}$$
+
+### What that number actually means
+
+Put it through `step()` with a learning rate of `0.1`:
+
+| | gradient | the step it takes |
+|---|---|---|
+| layer 10 (near the loss) | `1.00e+0` | `1.00e-1` |
+| layer 1 (sigmoid, 10 deep) | `9.54e-7` | `9.54e-8` |
+| layer 1 (relu, 10 deep) | `1.00e+0` | `1.00e-1` |
+
+**Layer 1 would need 1,048,576 steps to move as far as layer 10 moves in one.** The early layers have not stopped learning in any dramatic way — they are learning a million times too slowly to matter, which amounts to the same thing.
+
+And `step()` is behaving perfectly. It is faithfully multiplying a learning rate by a number near zero.
+
+It gets worse with depth, because the decay is exponential:
+
+```
+10 layers:  0.25^10 = 9.54e-07
+15 layers:  0.25^15 = 9.31e-10
+20 layers:  0.25^20 = 9.09e-13
+25 layers:  0.25^25 = 8.88e-16     ← below what float64 can carry next to 1
+```
+
+Remember this was the **best** case, and no real network gets it. Every unit sitting exactly at `x = 0` is a fiction; real units sit away from the origin where the derivative is far below `0.25`. Measure it yourself — E9 in `exercises/ch-11-activations.ts` builds a 12-layer net and prints the gradient reaching each layer. Sigmoid starves its first layer by a factor in the millions; `relu`, on the same net, stays within a factor of about ten.
+
+### Why relu fixes it
 
 $$1^{10} = 1$$
 
-On its active side, `relu`'s derivative is exactly 1 — so the product does not decay at all. **That single fact is why ReLU replaced sigmoid in hidden layers**, and it is the whole reason ReLU exists.
+On its active side `relu(x) = x`, so its derivative is **exactly 1** — and 1 multiplied by itself any number of times is still 1. The gradient arrives at layer 1 the same size it left the output. Look at the second column of the table above: it never moves.
 
-> **This was a real crisis, and the diagnosis took years.** Through the 1990s and 2000s, deep networks were known not to train — add layers and performance got *worse*, which felt like a law of nature rather than a bug. Glorot and Bengio's 2010 paper put a name and a number on it: gradients were dying on the way back, exactly by the multiplication above. Once the cause was clear the cure was almost embarrassing — stop using a saturating function — and ReLU's adoption is a large part of why deep learning worked from roughly 2012 onward. `max(0, x)` unlocked depth.
+**That single fact is why ReLU replaced sigmoid in hidden layers.** Not that ReLU is clever — it is that `1` is the only number you can multiply by ten times and still have something left.
+
+> **This was a real crisis, and it took years to diagnose.** Through the 1990s and 2000s deep networks were known not to train: add layers and performance got *worse*, which looked like a law of nature rather than a bug. Glorot and Bengio's 2010 paper identified the cause as exactly the multiplication above — gradients dying on the way back. The fix was to stop using a saturating function, and ReLU's adoption is a large part of why deep learning started working from roughly 2012 onward. `max(0, x)` unlocked depth.
 
 <p align="center">
   <img src="../assets/ch-11/saturation-and-decay.svg" alt="Two panels. The left plots the derivative curves of sigmoid and relu against x from -6 to 6: sigmoid's derivative is a bell peaking at 0.25 at x=0 and falling to nearly zero by x = plus or minus 6, marked saturation at both ends; relu's derivative is a step, exactly 0 for negative x and exactly 1 for positive x. A dashed line marks the 0.25 ceiling that sigmoid's derivative can never exceed. The right panel shows what happens when those factors multiply through depth: a bar chart of the gradient reaching the first layer after n layers, sigmoid at its best case 0.25 to the power n falling from 0.25 to 9.5e-7 across ten layers, while relu stays flat at 1 the whole way. A caption states that on its active side relu's derivative is exactly one, so the product does not decay, and that this is why relu replaced sigmoid in hidden layers." />
