@@ -738,22 +738,53 @@ Read the two rows against each other, because the comparison *is* the explanatio
 
 That "small but not zero" is the whole point. A `relu` unit sitting at a negative input gets a gradient of exactly zero, so it never moves again — it is dead. A `gelu` unit in the same spot still gets a small gradient, so the optimizer can still nudge it back. **It is turned down, not switched off.** This is why GPT-2 and essentially every modern transformer use `gelu` inside the feedforward block (Ch 25).
 
-**Its derivative** is genuinely messier than the others — differentiate the approximation with the product and chain rules. Two options, and both are legitimate:
+### Its derivative
 
-1. **Compose it.** Build the forward out of primitives you already have — but `TensorValue` has no `tanh` or `pow`, so this needs those added first.
-2. **Write it directly.** Compute the derivative into a tensor with `applyFn`, exactly as with `relu` and `sigmoid`.
+`gelu` is a **product** of two things that both depend on `x`:
 
-Option 2 fits this chapter's pattern and is what the guidance in `activations.ts` walks through.
+```
+gelu(x)  =  x  ×  fraction(x)
+```
+
+So its derivative is the product rule from Ch 07 — differentiate each part, keep the other:
+
+$$\text{gelu}'(x) = \underbrace{\text{fraction}(x)}_{\text{keep }x\text{'s derivative}} + \underbrace{x \cdot \text{fraction}'(x)}_{\text{keep }x}$$
+
+In words: **how much you are keeping, plus how fast that amount is changing.** Both terms matter, and reading them separately explains the whole row:
+
+```
+    x    fraction   x × rate     sum
+   -2     0.0228    -0.1080    -0.0852
+   -1     0.1587    -0.2420    -0.0833
+    0     0.5000     0.0000     0.5000
+    1     0.8413     0.2420     1.0833
+    2     0.9772     0.1080     1.0852
+```
+
+At `x = 0` the second term vanishes (`x` is zero), leaving just the fraction — **which is why the derivative there is exactly 0.5**. At `x = -1` the second term is negative and larger than the first, so the total goes negative — **which is why gelu dips.** Neither is a quirk; both fall straight out of the product rule.
+
+To actually implement it, differentiate the `tanh` version. With `u = √(2/π)(x + 0.044715x³)`:
+
+$$\text{gelu}'(x) = \underbrace{0.5\left(1 + \tanh u\right)}_{\text{the fraction}} + \underbrace{0.5\,x\left(1 - \tanh^2 u\right)\sqrt{\tfrac{2}{\pi}}\left(1 + 0.134145\,x^2\right)}_{x \;\times\; \text{its rate of change}}$$
+
+Two things to note when you code it: `1 − tanh²u` is the derivative of `tanh` (Ch 08's `tanh` backward, reused), and `0.134145` is just `3 × 0.044715` — the chain rule bringing down the exponent from `x³`. Both halves reuse `tanh u`, so compute it once.
+
+This checks out against a finite difference to `4.7e-11`, and gives:
 
 ```
 gelu'(x) = [ -0.0861  -0.0830  0.5000  1.0830  1.0861 ]
 ```
 
-Two things in that row surprise people.
+(The `tanh` approximation shifts the exact values in the table above by ~`1e-3` — `-0.0852` becomes `-0.0861`. Both are correct; they are derivatives of two slightly different curves.)
 
-**At `x = 0` the derivative is `0.5`** — not 0, not 1. Half. That is the table's "keep 50%" showing up again in the gradient.
+**Where to put it.** Two options, both legitimate:
 
-**At `x = -2` and `x = -1` the derivative is negative.** A negative slope means the curve is going *down* there. So `gelu` does not simply rise everywhere the way `relu` does: coming from the left it dips a little below zero — bottoming out at about `-0.17` around `x = -0.75` — and only then turns and climbs. That small dip is real, not an artifact of the approximation, and you can see it in the curve below.
+1. **Compose it** from primitives you already have — but `TensorValue` has no `tanh` or `pow`, so those come first.
+2. **Write it directly** with `applyFn`, exactly as with `relu` and `sigmoid`.
+
+Option 2 fits this chapter's pattern and is what the guidance in `activations.ts` walks through.
+
+One consequence is worth seeing on the curve. Because the derivative is negative on the left, `gelu` does not simply rise everywhere the way `relu` does — coming from the left it **dips below zero**, bottoming out at about `-0.17` near `x = -0.75`, and only then turns and climbs. That dip is real, not an artifact of the approximation.
 
 <p align="center">
   <img src="../assets/ch-11/four-activations.svg" alt="Four activation curves plotted on shared axes from x = -3 to 3, each with its derivative drawn beneath it as a lighter line, and an animated marker sweeping left to right across all four in step. relu is two straight segments, flat at zero for negative x then rising at 45 degrees, with a step derivative of 0 then 1 and a marked corner at the origin. gelu closely follows relu for large positive x but curves smoothly through the origin and dips slightly negative around x = -1 before flattening, its derivative peaking just above 1 and going slightly negative on the left. sigmoid is an S-curve from 0 to 1 crossing 0.5 at the origin, with a bell-shaped derivative peaking at 0.25. tanh is an S-curve from -1 to 1 through the origin, with a bell-shaped derivative peaking at 1.0, four times sigmoid's peak. Values on the shared row x = -2, -1, 0, 1, 2 are labelled beneath each curve." />
