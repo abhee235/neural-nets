@@ -588,16 +588,23 @@ That flattening is **saturation**: the curve is nearly level there, so nudging t
 
 ### Why sigmoid cannot avoid it
 
-This is not a flaw in the formula. It is forced by the job sigmoid was given.
-
-Sigmoid takes the entire infinite input line and fits it inside the interval `(0, 1)`. So the total amount it can ever rise is **1** — and it has to spread that single unit of rise across an infinite range of inputs. Almost everywhere, then, there is nearly nothing left to give:
+Just feed it bigger and bigger numbers and watch the output stop moving:
 
 ```
-total area under sigmoid'(x), over all x   =   1.000000     ← that IS the total rise
-of which, inside the window -2 < x < 2     =   76.2%
+     input        output
+         0      0.500000
+         2      0.880797
+         4      0.982014
+         6      0.997527
+        10      0.999955
+       100      1.000000
 ```
 
-Three quarters of everything sigmoid can do happens in a window four units wide. Outside it the curve is essentially flat. **Squashing into a bounded range and going flat are the same fact** — and squashing is exactly what rounded off the step function's corner back in section 8.
+From `x = 6` to `x = 10` the input moves **4 whole units** and the output moves **0.002**. From 10 to 100 it moves `0.00005`.
+
+That is all "the slope is nearly zero" means. Sigmoid's output can never go above 1, so once it is close to 1 it has nowhere left to move — and a function that barely moves has barely any derivative. Same story on the left, near 0.
+
+So this is not a bug in the formula. It is what "squash everything into `(0, 1)`" *is*. And squashing is exactly what rounded off the step function's corner back in section 8.
 
 ### The part that matters: gradients multiply on the way back
 
@@ -626,11 +633,9 @@ So walk one backward. Start with a gradient of `1` at the output and give sigmoi
   layer  1          0.00000095             1        × 0.25
 ```
 
-Nothing malfunctioned. Each step did exactly what section 5 says. But `0.25` multiplied by itself ten times is:
+Nothing broke. Every step did exactly what section 5 says. Quartering a number ten times just leaves you with about **one millionth** of it.
 
-$$0.25^{10} = \frac{1}{4^{10}} = \frac{1}{1{,}048{,}576} \approx 9.5 \times 10^{-7}$$
-
-### What that number actually means
+### What that costs
 
 Put it through `step()` with a learning rate of `0.1`:
 
@@ -640,26 +645,17 @@ Put it through `step()` with a learning rate of `0.1`:
 | layer 1 (sigmoid, 10 deep) | `9.54e-7` | `9.54e-8` |
 | layer 1 (relu, 10 deep) | `1.00e+0` | `1.00e-1` |
 
-**Layer 1 would need 1,048,576 steps to move as far as layer 10 moves in one.** The early layers have not stopped learning in any dramatic way — they are learning a million times too slowly to matter, which amounts to the same thing.
+**Layer 1 would need about a million steps to move as far as layer 10 moves in one.** It has not stopped learning, exactly. It is learning a million times too slowly to matter, which comes to the same thing.
 
-And `step()` is behaving perfectly. It is faithfully multiplying a learning rate by a number near zero.
+And nothing is broken. `step()` is faithfully multiplying a learning rate by a number near zero.
 
-It gets worse with depth, because the decay is exponential:
-
-```
-10 layers:  0.25^10 = 9.54e-07
-15 layers:  0.25^15 = 9.31e-10
-20 layers:  0.25^20 = 9.09e-13
-25 layers:  0.25^25 = 8.88e-16     ← below what float64 can carry next to 1
-```
-
-Remember this was the **best** case, and no real network gets it. Every unit sitting exactly at `x = 0` is a fiction; real units sit away from the origin where the derivative is far below `0.25`. Measure it yourself — E9 in `exercises/ch-11-activations.ts` builds a 12-layer net and prints the gradient reaching each layer. Sigmoid starves its first layer by a factor in the millions; `relu`, on the same net, stays within a factor of about ten.
+Worse, adding layers makes it worse — every extra layer is another `× 0.25`. And remember this was the **best** case: every unit sitting exactly at `x = 0` is a fiction, and real units sit out where the derivative is far below `0.25`. Run E9 in `exercises/ch-11-activations.ts` to see it on a real 12-layer net.
 
 ### Why relu fixes it
 
-$$1^{10} = 1$$
+On its active side `relu(x) = x` — a straight line at 45 degrees — so its derivative is **exactly 1**. And 1 multiplied by itself any number of times is still 1.
 
-On its active side `relu(x) = x`, so its derivative is **exactly 1** — and 1 multiplied by itself any number of times is still 1. The gradient arrives at layer 1 the same size it left the output. Look at the second column of the table above: it never moves.
+The gradient arrives at layer 1 the same size it left the output. Look at the second column of the table above: it never moves.
 
 **That single fact is why ReLU replaced sigmoid in hidden layers.** Not that ReLU is clever — it is that `1` is the only number you can multiply by ten times and still have something left.
 
