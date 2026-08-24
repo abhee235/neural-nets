@@ -673,38 +673,52 @@ The trade-off is the one section 3 set out: relu's gate can shut permanently (it
 
 ## 11. `gelu` — a gate with the certainty removed
 
-`relu` decides with a rule: *is `x` above zero?* `gelu` asks a stranger question — and where it comes from is more interesting than the formula.
+Start from what is wrong with `relu`, because `gelu` is a fix for exactly that.
 
-**Suppose the threshold itself were random.** Instead of always comparing against 0, compare `x` against a random draw from a standard normal distribution, and keep `x` only if it wins:
+`relu` makes an **all-or-nothing** decision. Above zero it keeps 100% of `x`; below zero it keeps 0% and throws the rest away. That hard cut is what kills units: once a unit's input goes negative, it keeps nothing, gets no gradient, and never comes back.
 
-```
-keep x  with probability  P(Z ≤ x),  where Z ~ Normal(0, 1)
-drop it otherwise
-```
+**`gelu`'s idea: keep a *fraction* of `x` instead of all or nothing.**
 
-A large `x` almost always beats the draw and survives. A very negative `x` almost never does. An `x` near zero is a coin flip. That is a *stochastic gate* — closely related to dropout, which also randomly keeps or discards activations.
-
-Random behaviour is awkward to train, so take the **expected value** instead of actually flipping the coin. The expectation of "keep `x` with probability `p`, else 0" is simply `x · p`:
-
-$$\text{gelu}(x) = x \cdot \Phi(x) \qquad\text{where } \Phi(x) = P(Z \le x)$$
-
-That is the whole derivation, and it explains the shape for free — no curve-fitting, no arbitrary smoothing:
+The bigger `x` is, the larger the fraction you keep. Small negative inputs keep a little rather than nothing at all:
 
 ```
-   x   |  P(Z ≤ x)  |  gelu = x·P  |  relu
-  -----+------------+--------------+--------
-   -2  |   0.0228   |   -0.0455    |  0.0000
-   -1  |   0.1587   |   -0.1587    |  0.0000
-    0  |   0.5000   |    0.0000    |  0.0000
-    1  |   0.8413   |    0.8413    |  1.0000
-    2  |   0.9772   |    1.9545    |  2.0000
+   x   |  fraction kept  |  gelu = x × fraction  |  relu
+  -----+-----------------+-----------------------+--------
+   -2  |       2%        |        -0.0455        |  0.0000
+   -1  |      16%        |        -0.1587        |  0.0000
+    0  |      50%        |         0.0000        |  0.0000
+    1  |      84%        |         0.8413        |  1.0000
+    2  |      98%        |         1.9545        |  2.0000
 ```
 
-Read the middle column as a survival probability. At `x = 2` the input survives 98% of the time, so almost all of it passes. At `x = 0` it is exactly a coin flip — which is why, as you will see, `gelu`'s *derivative* at zero is `0.5`: the gate is precisely half open. At `x = -1` it survives 16% of the time, so a *small* amount gets through rather than nothing at all.
+That is the entire function: **multiply `x` by how much of it you want to keep.** At `x = 2` you keep 98% of it, so almost all of it passes — nearly what `relu` does. At `x = -1` you keep 16%, so a little gets through instead of nothing. At `x = 0` you keep exactly half.
 
-`relu` is what you get if you make that gate deterministic: threshold at zero, survive with probability 1 or 0. **`gelu` is `relu` with the certainty removed.**
+Compare the two policies:
 
-In practice everyone uses a `tanh` approximation of `Φ`, which matches to about `1e-3` and is much faster:
+| | fraction kept |
+|---|---|
+| `relu` | 0% or 100%. Nothing in between. |
+| `gelu` | slides smoothly from ~0% to ~100% |
+
+`relu` is the same idea with the dial stuck at the ends. **`gelu` is `relu` with the hard edge taken off.**
+
+### Where that fraction curve comes from
+
+You can use `gelu` knowing only the table above. But the specific curve is not arbitrary, and the story behind it is short.
+
+Imagine that instead of comparing `x` against a fixed threshold of zero, you compared it against a **random number** each time, and kept `x` only when it came out on top. A large `x` wins nearly every time. A very negative `x` almost never wins. An `x` of zero wins half the time.
+
+Doing that literally would make training noisy — the same input would give different answers on different runs. So instead of actually rolling the dice, use **the average of what would happen**. If `x` survives 84% of the time and is discarded the rest, then on average you keep 84% of it. Multiply, don't gamble.
+
+That "how often would `x` win" curve is the fraction column above. Written formally — you do not need this to implement it — the fraction is `Φ(x)`, the standard normal distribution's cumulative function, and:
+
+$$\text{gelu}(x) = x \cdot \Phi(x)$$
+
+The shape came out of that reasoning rather than from curve-fitting, which is why it has no tunable knobs.
+
+### The formula we actually implement
+
+Computing `Φ` exactly is slow, so everyone uses a `tanh` approximation instead. It agrees to about `1e-4` on our row — close enough that nothing downstream notices:
 
 $$\text{gelu}(x) \approx 0.5\,x\left(1 + \tanh\!\left(\sqrt{\tfrac{2}{\pi}}\left(x + 0.044715\,x^3\right)\right)\right)$$
 
@@ -722,7 +736,7 @@ Read the two rows against each other, because the comparison *is* the explanatio
 - At `x = -1`, relu gives a hard `0`; gelu gives `-0.1588` — small, but **not zero**, so a gradient still flows.
 - At `x = 0` both give `0`, but relu has a corner there while gelu is smooth.
 
-That "small but not zero" is the point. A gelu unit sitting at a negative input is discouraged, not executed — it keeps a path back to the optimizer and can recover. This is why GPT-2 and essentially every modern transformer use it inside the feedforward block (Ch 25).
+That "small but not zero" is the whole point. A `relu` unit sitting at a negative input gets a gradient of exactly zero, so it never moves again — it is dead. A `gelu` unit in the same spot still gets a small gradient, so the optimizer can still nudge it back. **It is turned down, not switched off.** This is why GPT-2 and essentially every modern transformer use `gelu` inside the feedforward block (Ch 25).
 
 **Its derivative** is genuinely messier than the others — differentiate the approximation with the product and chain rules. Two options, and both are legitimate:
 
@@ -735,7 +749,11 @@ Option 2 fits this chapter's pattern and is what the guidance in `activations.ts
 gelu'(x) = [ -0.0861  -0.0830  0.5000  1.0830  1.0861 ]
 ```
 
-Two features worth noticing, because they surprise people: at `x = 0` the derivative is `0.5`, not 0 or 1 — the gate is *half* open. And at `x = -2` and `x = -1` the derivative is **negative**, which means `gelu` is not monotonic; it dips slightly below zero before flattening. That is deliberate, and it is visible in the curve.
+Two things in that row surprise people.
+
+**At `x = 0` the derivative is `0.5`** — not 0, not 1. Half. That is the table's "keep 50%" showing up again in the gradient.
+
+**At `x = -2` and `x = -1` the derivative is negative.** A negative slope means the curve is going *down* there. So `gelu` does not simply rise everywhere the way `relu` does: coming from the left it dips a little below zero — bottoming out at about `-0.17` around `x = -0.75` — and only then turns and climbs. That small dip is real, not an artifact of the approximation, and you can see it in the curve below.
 
 <p align="center">
   <img src="../assets/ch-11/four-activations.svg" alt="Four activation curves plotted on shared axes from x = -3 to 3, each with its derivative drawn beneath it as a lighter line, and an animated marker sweeping left to right across all four in step. relu is two straight segments, flat at zero for negative x then rising at 45 degrees, with a step derivative of 0 then 1 and a marked corner at the origin. gelu closely follows relu for large positive x but curves smoothly through the origin and dips slightly negative around x = -1 before flattening, its derivative peaking just above 1 and going slightly negative on the left. sigmoid is an S-curve from 0 to 1 crossing 0.5 at the origin, with a bell-shaped derivative peaking at 0.25. tanh is an S-curve from -1 to 1 through the origin, with a bell-shaped derivative peaking at 1.0, four times sigmoid's peak. Values on the shared row x = -2, -1, 0, 1, 2 are labelled beneath each curve." />
