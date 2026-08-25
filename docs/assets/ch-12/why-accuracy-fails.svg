@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">the thing we care about cannot be trained on — the thing we train on always has a slope</text>
+
+  <!--
+    Both panels share one x-axis: logit[0] sweeping 0 → 6, logits [a, 2, 3],
+    true class 0. px = 60 + (a/6)*380, so a=0 → 60, a=3 → 250, a=6 → 440.
+    TOP    mistakes: 1 while a < 3, 0 after. A staircase — flat, then a jump.
+    BOTTOM cross-entropy = logsumexp([a,2,3]) − a, py = 250 − 40·CE:
+           a=0 → 3.3490,  a=1 → 2.4076,  a=2 → 1.5514,
+           a=3 → 0.8620,  a=4 → 0.4076,  a=6 → 0.0659
+    Right column: the same two facts as derivatives.
+  -->
+
+  <line x1="470" y1="46" x2="470" y2="356" stroke="#e0d9c5" stroke-width="1" stroke-dasharray="4 4"/>
+
+  <!-- ══════════ TOP — count the mistakes ══════════ -->
+  <text x="60" y="52" fill="#a94442" font-family="monospace" font-size="11" font-weight="700">count the mistakes  (what we actually care about)</text>
+
+  <line x1="60" y1="110" x2="440" y2="110" stroke="#e0d9c5" stroke-width="0.8" stroke-dasharray="3 3"/>
+  <line x1="60" y1="70"  x2="60"  y2="118" stroke="#c9b88a" stroke-width="1.2"/>
+  <text x="54" y="74"  text-anchor="end" fill="#a8956a" font-family="monospace" font-size="8">1</text>
+  <text x="54" y="114" text-anchor="end" fill="#a8956a" font-family="monospace" font-size="8">0</text>
+
+  <!-- the staircase: flat at 1 until a=3, then flat at 0 -->
+  <polyline points="60,70 250,70" fill="none" stroke="#a94442" stroke-width="3"/>
+  <polyline points="250,70 250,110" fill="none" stroke="#a94442" stroke-width="3" stroke-dasharray="4 3" opacity="0.5"/>
+  <polyline points="250,110 440,110" fill="none" stroke="#a94442" stroke-width="3"/>
+  <circle cx="250" cy="70" r="4" fill="#faf7f0" stroke="#a94442" stroke-width="2.5"/>
+  <circle cx="250" cy="110" r="4" fill="#a94442"/>
+
+  <text x="150" y="62" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="9">flat — slope 0</text>
+  <text x="348" y="126" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="9">flat — slope 0</text>
+  <text x="256" y="94" fill="#a94442" font-family="monospace" font-size="8.5" font-weight="700">jump</text>
+
+  <text x="250" y="146" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="9">the model improves the whole way, and this number never moves</text>
+
+  <!-- ══════════ BOTTOM — cross-entropy ══════════ -->
+  <text x="60" y="180" fill="#2e7d32" font-family="monospace" font-size="11" font-weight="700">cross-entropy  (what we train on)</text>
+
+  <line x1="60" y1="330" x2="440" y2="330" stroke="#c9b88a" stroke-width="1.2"/>
+  <line x1="60" y1="190" x2="60"  y2="336" stroke="#c9b88a" stroke-width="1.2"/>
+  <text x="54" y="199" text-anchor="end" fill="#a8956a" font-family="monospace" font-size="8">3.3</text>
+  <text x="54" y="334" text-anchor="end" fill="#a8956a" font-family="monospace" font-size="8">0</text>
+
+  <polyline fill="none" stroke="#2e7d32" stroke-width="2.75"
+    points="60.0,195.0 75.8,204.7 91.7,214.2 107.5,223.7 123.3,232.9 139.2,242.0 155.0,250.8 170.8,259.3 186.7,267.5 202.5,275.2 218.3,282.4 234.2,289.1 250.0,295.3 265.8,300.8 281.7,305.6 297.5,309.9 313.3,313.6 329.2,316.7 345.0,319.3 360.8,321.4 376.7,323.2 392.5,324.6 408.3,325.7 424.2,326.6 440.0,327.3"/>
+
+  <!-- the flip point, marked on both panels -->
+  <line x1="250" y1="192" x2="250" y2="330" stroke="#a94442" stroke-width="0.8" stroke-dasharray="3 3" opacity="0.5"/>
+
+  <!-- marker sweeping both panels in step -->
+  <g>
+    <circle r="5" fill="#a94442" cy="70">
+      <animate attributeName="cx" values="60;250;250;440" keyTimes="0;0.5;0.5;1" dur="7s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="70;70;110;110" keyTimes="0;0.499;0.5;1" dur="7s" calcMode="discrete" repeatCount="indefinite"/>
+    </circle>
+    <circle r="5" fill="#2e7d32">
+      <animate attributeName="cx" values="60.0;123.3;186.7;250.0;313.3;376.7;440.0" dur="7s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="195.0;232.9;267.5;295.3;313.6;323.2;327.3" dur="7s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <text x="250" y="346" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="8.5">logit of the true class, sweeping 0 → 6   (logits [a, 2, 3], truth = class 0)</text>
+  <text x="250" y="362" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="9" font-weight="700">3.3490 → 2.4076 → 1.5514 → 0.8620 → 0.4076 → 0.0659 — moving at every step</text>
+
+  <!-- ══════════ RIGHT — the two derivatives ══════════ -->
+  <text x="595" y="52" text-anchor="middle" fill="#5a4220" font-family="monospace" font-size="11" font-weight="700">what gradient descent sees</text>
+
+  <rect x="495" y="70" width="200" height="106" rx="6" fill="#f3e6e4" stroke="#a94442" stroke-width="1.2"/>
+  <text x="595" y="92"  text-anchor="middle" fill="#a94442" font-family="monospace" font-size="9.5" font-weight="700">mistakes</text>
+  <text x="595" y="118" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="16" font-weight="700">∂L/∂z = 0</text>
+  <text x="595" y="140" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="8.5">everywhere it is defined,</text>
+  <text x="595" y="152" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="8.5">undefined at the jump</text>
+  <text x="595" y="168" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="9" font-weight="700">step() updates nothing</text>
+
+  <rect x="495" y="192" width="200" height="106" rx="6" fill="#e4efe4" stroke="#2e7d32" stroke-width="1.2"/>
+  <text x="595" y="214" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="9.5" font-weight="700">cross-entropy</text>
+  <text x="595" y="240" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="16" font-weight="700">∂L/∂z = p − y</text>
+  <text x="595" y="262" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="8.5">never zero while the model</text>
+  <text x="595" y="274" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="8.5">is still wrong</text>
+  <text x="595" y="290" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="9" font-weight="700">always a way downhill</text>
+
+  <text x="595" y="322" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="8.5">this is Ch 11's step function</text>
+  <text x="595" y="334" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="8.5">in a different costume</text>
+
+  <!-- footer -->
+  <rect x="30" y="374" width="660" height="20" rx="5" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="388" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#5a4220" font-weight="600">
+    we do not train on what we want — we train on a smooth stand-in for it, and measure what we want separately
+  </text>
+
+</svg>

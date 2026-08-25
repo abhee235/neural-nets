@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">a loss is judged by what its gradient does when the model is most wrong</text>
+
+  <!--
+    Setup: logits [0, 0, w], truth = class 0. Sweeping w to the right makes the
+    model more and more confidently WRONG.
+      w      CE loss   MSE loss    CE grad    MSE grad
+       0      1.0986    0.2222    -0.666667  -0.148148
+       4      4.0360    0.6320    -0.982332  -0.022331
+      10     10.0001    0.6666    -0.999955  -0.000061
+    LEFT  loss value : px = 60 + (w/10)*240 , py = 300 − 18·L
+    RIGHT |gradient| : px = 420 + (w/10)*240, py = 300 − 150·|g|
+    MSE's ceiling is 2/3, the largest squared error possible between a
+    probability and a one-hot label averaged over three classes.
+  -->
+
+  <line x1="360" y1="44" x2="360" y2="356" stroke="#e0d9c5" stroke-width="1" stroke-dasharray="4 4"/>
+
+  <!-- ══════════ LEFT — the loss VALUE ══════════ -->
+  <text x="210" y="48" text-anchor="middle" fill="#5a4220" font-family="monospace" font-size="11" font-weight="700">what the loss says</text>
+
+  <line x1="60" y1="300" x2="300" y2="300" stroke="#c9b88a" stroke-width="1.2"/>
+  <line x1="60" y1="112" x2="60"  y2="306" stroke="#c9b88a" stroke-width="1.2"/>
+  <text x="54" y="124" text-anchor="end" fill="#a8956a" font-family="monospace" font-size="8">10</text>
+  <text x="54" y="292" text-anchor="end" fill="#a8956a" font-family="monospace" font-size="8">0</text>
+
+  <!-- MSE's ceiling at 2/3 -->
+  <line x1="60" y1="288" x2="300" y2="288" stroke="#a94442" stroke-width="0.8" stroke-dasharray="3 3" opacity="0.7"/>
+  <text x="304" y="291" fill="#a94442" font-family="monospace" font-size="8">ceiling 0.667</text>
+
+  <polyline fill="none" stroke="#2e7d32" stroke-width="2.75"
+    points="60.0,280.2 72.0,276.7 84.0,272.1 96.0,266.4 108.0,259.7 120.0,252.3 132.0,244.3 144.0,235.9 156.0,227.4 168.0,218.6 180.0,209.8 192.0,200.9 204.0,191.9 216.0,182.9 228.0,174.0 240.0,165.0 252.0,156.0 264.0,147.0 276.0,138.0 288.0,129.0 300.0,120.0"/>
+  <polyline fill="none" stroke="#a94442" stroke-width="2.75"
+    points="60.0,296.0 72.0,295.2 84.0,294.0 96.0,292.7 108.0,291.4 120.0,290.4 132.0,289.6 144.0,289.0 156.0,288.6 168.0,288.4 180.0,288.2 192.0,288.1 204.0,288.1 216.0,288.1 228.0,288.0 240.0,288.0 252.0,288.0 264.0,288.0 276.0,288.0 288.0,288.0 300.0,288.0"/>
+
+  <text x="304" y="122" fill="#2e7d32" font-family="monospace" font-size="9" font-weight="700">cross-entropy</text>
+  <text x="304" y="134" fill="#2e7d32" font-family="monospace" font-size="8">unbounded</text>
+
+  <text x="210" y="322" text-anchor="middle" fill="#2c2416" font-family="monospace" font-size="9">cross-entropy keeps climbing; MSE flattens</text>
+  <text x="210" y="336" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="8.5">probabilities are boxed into [0,1], so a squared error cannot get large</text>
+
+  <!-- ══════════ RIGHT — the GRADIENT ══════════ -->
+  <text x="540" y="48" text-anchor="middle" fill="#5a4220" font-family="monospace" font-size="11" font-weight="700">what actually reaches the logits</text>
+
+  <line x1="420" y1="300" x2="660" y2="300" stroke="#c9b88a" stroke-width="1.2"/>
+  <line x1="420" y1="142" x2="420" y2="306" stroke="#c9b88a" stroke-width="1.2"/>
+  <text x="414" y="154" text-anchor="end" fill="#a8956a" font-family="monospace" font-size="8">1.0</text>
+  <text x="414" y="292" text-anchor="end" fill="#a8956a" font-family="monospace" font-size="8">0</text>
+
+  <polyline fill="none" stroke="#2e7d32" stroke-width="2.75"
+    points="420.0,200.0 432.0,191.1 444.0,181.8 456.0,173.1 468.0,166.0 480.0,160.6 492.0,156.8 504.0,154.3 516.0,152.7 528.0,151.6 540.0,151.0 552.0,150.6 564.0,150.4 576.0,150.2 588.0,150.1 600.0,150.1 612.0,150.1 624.0,150.0 636.0,150.0 648.0,150.0 660.0,150.0"/>
+  <polyline fill="none" stroke="#a94442" stroke-width="2.75"
+    points="420.0,277.8 432.0,277.9 444.0,278.9 456.0,281.2 468.0,284.8 480.0,288.7 492.0,292.1 504.0,294.8 516.0,296.7 528.0,297.9 540.0,298.7 552.0,299.2 564.0,299.5 576.0,299.7 588.0,299.8 600.0,299.9 612.0,299.9 624.0,300.0 636.0,300.0 648.0,300.0 660.0,300.0"/>
+
+  <text x="600" y="144" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="9" font-weight="700">→ 1.0, full strength</text>
+  <text x="600" y="314" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="9" font-weight="700">→ 0.00006, gone</text>
+
+  <text x="540" y="336" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="8.5">MSE sits behind a saturated softmax and is throttled by its flat region</text>
+
+  <!-- animated marker sweeping both panels together -->
+  <g>
+    <circle r="5" fill="#2e7d32">
+      <animate attributeName="cx" values="60;108;156;204;252;300" dur="6s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="280.2;259.7;227.4;191.9;156.0;120.0" dur="6s" repeatCount="indefinite"/>
+    </circle>
+    <circle r="5" fill="#a94442">
+      <animate attributeName="cx" values="60;108;156;204;252;300" dur="6s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="296.0;291.4;288.6;288.1;288.0;288.0" dur="6s" repeatCount="indefinite"/>
+    </circle>
+    <circle r="5" fill="#2e7d32">
+      <animate attributeName="cx" values="420;468;516;564;612;660" dur="6s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="200.0;166.0;152.7;150.4;150.1;150.0" dur="6s" repeatCount="indefinite"/>
+    </circle>
+    <circle r="5" fill="#a94442">
+      <animate attributeName="cx" values="420;468;516;564;612;660" dur="6s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="277.8;284.8;296.7;299.5;299.9;300.0" dur="6s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <text x="360" y="354" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="8.5">left to right on both panels: the model growing more confidently WRONG   (logits [0, 0, w], truth = class 0)</text>
+
+  <!-- footer -->
+  <rect x="30" y="366" width="660" height="26" rx="5" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="379" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#5a4220" font-weight="600">
+    MSE ranks this model correctly — it does say the model is bad
+  </text>
+  <text x="360" y="389" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#a94442">
+    but it cannot produce enough gradient to fix it, and the failure gets worse the more wrong the model is
+  </text>
+
+</svg>
