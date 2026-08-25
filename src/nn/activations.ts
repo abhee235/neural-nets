@@ -100,6 +100,7 @@ import {
   softmax as softmaxTensor,
   sum as sumTensor,
   sigmoid as sigmoidTensor,
+  relu as reluTensor,
 } from "../tensor/index.ts";
 
 
@@ -151,9 +152,9 @@ function accumulate(node: TensorValue, contribution: Tensor): void {
  * slopes to 0.5 and disagrees with every convention.
  */
 export function relu(x: TensorValue): TensorValue {
-  // Forward: max(0, v) applied cell by cell. applyFn walks the Float64Array and
-  // returns a NEW Tensor of the same shape — Tensor itself has no methods.
-  const out = new TensorValue(applyFn(x.data, (v) => Math.max(0, v)));
+  // Forward: Ch 06's tensor-level relu, the same reuse as sigmoid below.
+  // It returns a NEW Tensor of the same shape — Tensor itself has no methods.
+  const out = new TensorValue(reluTensor(x.data));
   out._inputs = [x];
 
   // The local derivative, evaluated at the input we just passed through: 1 where
