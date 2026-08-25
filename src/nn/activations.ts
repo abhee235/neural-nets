@@ -87,7 +87,26 @@
  * to it (recommended: one keyword, and all four activations reuse it) or
  * write those two lines here. Decide once, now, rather than four times.
  */
+// Import from ../tensor/index.ts, not the root ../index.ts barrel: the root
+// re-exports nn/index.ts, which re-exports this file, so going through it
+// would be a circular import. Every sibling in nn/ reaches for tensor directly
+// for the same reason.
 import { TensorValue } from "../autograd/grad.ts";
+import type { Tensor } from "../tensor/index.ts";
+// softmax and sum are aliased: this module exports its own `softmax`, and the
+// tensor-level one would be shadowed by it without a rename.
+import { add, mul, applyFn, sub } from "../tensor/index.ts";
+import {
+  softmax as softmaxTensor,
+  sum as sumTensor,
+  sigmoid as sigmoidTensor,
+} from "../tensor/index.ts";
+
+
+function accumulate(node: TensorValue, contribution: Tensor): void {
+  // First contribution replaces the null; later ones add element-wise.
+  node.grad = node.grad === null ? contribution : add(node.grad, contribution);
+}
 
 /**
  * ReLU: max(0, x).
@@ -132,7 +151,26 @@ import { TensorValue } from "../autograd/grad.ts";
  * slopes to 0.5 and disagrees with every convention.
  */
 export function relu(x: TensorValue): TensorValue {
-  throw new Error("relu not implemented");
+  // Forward: max(0, v) applied cell by cell. applyFn walks the Float64Array and
+  // returns a NEW Tensor of the same shape — Tensor itself has no methods.
+  const out = new TensorValue(applyFn(x.data, (v) => Math.max(0, v)));
+  out._inputs = [x];
+
+  // The local derivative, evaluated at the input we just passed through: 1 where
+  // the input was positive, 0 where it was not. Computed HERE, in the forward
+  // pass, and captured by the closure — it belongs to this evaluation point.
+  // At v = 0 exactly the derivative does not exist; we choose 0, matching Ch 08.
+  const local = applyFn(x.data, (v) => (v > 0 ? 1 : 0));
+
+  out._backward = () => {
+    // x.grad += relu'(x) ⊙ out.grad
+    // Plain tensor `mul`, not TensorValue's `.mul()`: inside a backward pass
+    // everything is a raw Tensor. Calling a TensorValue method here would build
+    // new graph nodes while unwinding the graph.
+    // out.grad! — backward only ever fires after this node's gradient arrived.
+    accumulate(x, mul(local, out.grad!));
+  };
+  return out;
 }
 
 /**
@@ -183,7 +221,21 @@ export function relu(x: TensorValue): TensorValue {
  * from Ch 10 catches that instantly; re-reading the formula does not.
  */
 export function gelu(x: TensorValue): TensorValue {
-  throw new Error("gelu not implemented");
+   const k = Math.sqrt(2 / Math.PI);
+   const out = new TensorValue(
+     applyFn(x.data, (v) => 0.5 * v * (1 + Math.tanh(k * (v + 0.044715 * v ** 3))))
+   );
+   out._inputs = [x];
+   out._backward = () => {
+     const local = applyFn(x.data, (v) => {
+       const u = k * (v + 0.044715 * v ** 3);
+       const tanhU = Math.tanh(u);
+       const sech2U = 1 - tanhU ** 2; // sech^2(u) = 1 - tanh^2(u)
+       return 0.5 * (1 + tanhU + v * sech2U * k * (1 + 3 * 0.044715 * v ** 2));
+     });
+     accumulate(x, mul(local, out.grad!));
+   };
+   return out;
 }
 
 /**
@@ -238,7 +290,18 @@ export function gelu(x: TensorValue): TensorValue {
  * That is the whole reason relu replaced sigmoid in hidden layers.
  */
 export function sigmoid(x: TensorValue): TensorValue {
-  throw new Error("sigmoid not implemented");
+  // Ch 06's sigmoid, not a fresh 1/(1+e^-v). It branches on the sign so the
+  // exponent's argument stays ≤ 0 either way, which keeps tiny positive values
+  // alive out to about x = -745 where the naive form has already reached 0.
+  const out = new TensorValue(sigmoidTensor(x.data));
+  out._inputs = [x];
+  out._backward = () => {
+    // σ' = σ(1 − σ), built from out.data — the value the forward pass actually
+    // produced. Reusing it avoids a second exponential and cannot drift from it.
+    const local = applyFn(out.data, (s) => s * (1 - s));
+    accumulate(x, mul(local, out.grad!));
+  };
+  return out;
 }
 
 /**
@@ -293,5 +356,28 @@ export function sigmoid(x: TensorValue): TensorValue {
  * (Ch 22) uses softmax with no loss attached.
  */
 export function softmax(x: TensorValue, axis?: number): TensorValue {
-  throw new Error("softmax not implemented");
+  // Resolve the axis once — the backward needs the same one the forward used.
+  const dim = axis ?? x.data.ndim - 1;
+
+  // Forward: Ch 05's softmax, which already subtracts the max along the axis.
+  // NOT applyFn — that hands the callback one number at a time, and softmax is
+  // the one function here that needs the whole row at once for its denominator.
+  const out = new TensorValue(softmaxTensor(x.data, dim));
+  out._inputs = [x];
+
+  out._backward = () => {
+    const s = out.data;
+
+    // The Jacobian ∂sᵢ/∂xⱼ = sᵢ(δᵢⱼ − sⱼ) collapses to two elementwise steps.
+    // First the s-weighted average of the upstream gradient: sum the PRODUCT
+    // (out.grad ⊙ s) along the axis — not the sum of s, which is always 1
+    // because softmax rows are normalised, and would make this a no-op.
+    // keepDims keeps a length-1 axis so it broadcasts back against the full row.
+    const weighted = sumTensor(mul(out.grad!, s), dim, true);
+
+    // Then subtract that average from the upstream gradient and scale by s.
+    // No matrix is ever built.
+    accumulate(x, mul(s, sub(out.grad!, weighted)));
+  };
+  return out;
 }
