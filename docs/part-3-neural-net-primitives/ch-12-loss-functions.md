@@ -209,6 +209,72 @@ Three steps, all with operations you already have:
 
 > **Pitfall — putting the target in the graph.** Wrap `targets` in a `TensorValue` and `backward()` will compute a gradient *for the labels*. It is meaningless, wastes memory, and can corrupt real gradients if those tensors are reused.
 
+### Follow one gradient all the way
+
+You have now built a loss, and the checkpoint proves it produces gradients. But gradients *for what*? In the checkpoint the predictions were typed in by hand, so the answer was invisible. In a real network, predictions come **out of a weight** — and the entire point of the loss is what happens to that weight. Walk the whole loop once, with numbers small enough to do in your head.
+
+The smallest possible model: one input, one weight, prediction = input × weight.
+
+```
+  x = 2      w = 3      target = 10
+```
+
+**Forward.** Two hops, both operations you have:
+
+```
+  x = 2          w = 3
+     \           /
+      \         /
+        mul                    p = 2 × 3 = 6        too small — truth is 10
+         │
+       mseLoss                 L = (6 − 10)² = 16
+```
+
+**Backward.** The loss depends on `w` only *through* `p` — the graph is `w → p → L` — so the chain rule (Ch 07) multiplies two local rates:
+
+```
+  hop 1, loss → prediction:    dL/dp = 2(p − y) = 2(6 − 10) = -8
+  hop 2, prediction → weight:  dp/dw = x = 2                       (the mul rule)
+
+  dL/dw = (-8) × 2 = -16
+```
+
+After `loss.backward()`, that `-16` is sitting in `w.grad`. (The engine also computed `x.grad = -24` — the `mul` rule's other output. Nothing will ever read it: `x` is data, not a parameter. Gradients are computed for everything and *used* only where there is something to change.)
+
+**Update.** Now a step that is **not** part of backpropagation — it belongs to Ch 09's `step()`:
+
+```
+  w ← w − lr · dL/dw  =  3 − 0.1 × (-16)  =  3 + 1.6  =  4.6
+```
+
+Read the signs, because they tell the story. The prediction was too *small*, so `dL/dp` came out negative, so `dL/dw` came out negative, so *subtracting* it made `w` go **up** — and a bigger `w` makes `p = xw` bigger, toward the target. The machinery never knew "too small"; the signs carried that information on their own.
+
+**And the loop closes.** Run the forward pass again with the new weight:
+
+```
+  p = 2 × 4.6 = 9.2        L = (9.2 − 10)² = 0.64        was 16
+```
+
+One step, and the loss fell from 16 to 0.64. That is learning — all of it. Every training run in this course, up to and including Ch 30's GPT, is this loop repeated.
+
+Keep the two stages separate in your head, because they are separate in the code:
+
+```
+  LOSS                "how wrong?"                        this chapter
+    ↓
+  BACKPROPAGATION     "which weights caused it,           Ch 08–10, already built
+    ↓                  and in which direction?"
+  GRADIENTS
+    ↓
+  OPTIMIZER           "change those weights"              Ch 09's step(), Ch 14's Adam
+```
+
+**Backpropagation calculates how much each weight contributed to the loss; the optimizer uses those gradients to change the weights.** The loss starts the first stage and never sees the second.
+
+With a real network nothing changes except the count. A thousand weights in, `loss.backward()` fills a thousand `.grad` fields in one sweep — each one answering "if this particular weight moved a little, how would the loss move?" — and the optimizer updates every one of them. Same two hops you just did by hand, repeated down every path of the graph. Ch 13 builds the layer that owns those weights; Ch 15 writes the loop.
+
+All six numbers above — `6, 16, -8, -16, 4.6, 0.64` — are reproduced by your own `mseLoss` and your own engine in the exercise file. Run it and check.
+
 ---
 
 ## 3. Classification: choosing between options

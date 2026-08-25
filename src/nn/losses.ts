@@ -80,6 +80,7 @@
  * (doc section 9), so it carries no gradient.
  */
 import type { Tensor } from "../tensor/index.ts";
+import { mulScalar } from "../tensor/index.ts";
 import { TensorValue } from "../autograd/grad.ts";
 
 /**
@@ -124,7 +125,23 @@ import { TensorValue } from "../autograd/grad.ts";
  * gradient: with sum it would be [-6, 0, 2], not [-2, 0, 0.666667].
  */
 export function mseLoss(predictions: TensorValue, targets: Tensor): TensorValue {
-  throw new Error("mseLoss not implemented");
+  // Negate the RAW tensor first — the truth is a constant, so this step needs
+  // no graph. Then wrap the result once, as a leaf whose gradient nobody reads.
+  const negTargets = new TensorValue(mulScalar(targets, -1));
+
+  // From here on, methods only: forward passes build the graph, so each step
+  // must record its parents. (Free add/mul from tensor/ops.ts would compute
+  // the right numbers and silently sever the graph — Ch 10's matMul bug.)
+  const difference = predictions.add(negTargets);
+
+  // Squaring as x·x: mul records the SAME node as both parents, so backward
+  // accumulates two contributions of (difference ⊙ upstream) — the 2 in
+  // d(x²) = 2x comes out of accumulate, never written by hand.
+  const squared = difference.mul(difference);
+
+  // No axis → collapse everything to the scalar backward() demands,
+  // dividing by n so the loss does not grow with batch size.
+  return squared.mean();
 }
 
 /**
