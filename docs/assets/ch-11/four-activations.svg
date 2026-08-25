@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" width="720" height="420">
+
+  <rect width="720" height="420" fill="#faf7f0" rx="12"/>
+
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">the four activations, each with its derivative — the marker sweeps all four together</text>
+
+  <!--
+    Each panel: x in [-3,3] over 150px, y in [-1.2,2.2] over 96px.
+    y=0 sits at 62.1, y=1 at 33.9, y=0.25 at 55.1 (panel-local coords).
+    Curves generated from the same functions the chapter tabulates.
+  -->
+
+  <g font-family="monospace">
+
+  <!-- ══════════ relu ══════════════════════════════════════════ -->
+  <g transform="translate(40,60)">
+    <rect x="-6" y="-14" width="168" height="130" rx="8" fill="#ffffff" stroke="#c9b88a" stroke-width="1"/>
+    <text x="75" y="-2" text-anchor="middle" fill="#1e6091" font-size="12" font-weight="700">relu</text>
+    <line x1="0" y1="62.1" x2="150" y2="62.1" stroke="#e0d9c5"/>
+    <line x1="75" y1="-8" x2="75" y2="106" stroke="#e0d9c5"/>
+    <polyline points="0.0,62.1 75.0,62.1 150.0,-22.6" fill="none" stroke="#1e6091" stroke-width="2.5"/>
+    <polyline points="0.0,62.1 74.0,62.1 76.0,33.9 150.0,33.9" fill="none" stroke="#a94442" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <circle cx="75" cy="62.1" r="3" fill="#a94442"/>
+    <text x="75" y="122" text-anchor="middle" fill="#8b7355" font-size="9">hard corner at 0</text>
+  </g>
+
+  <!-- ══════════ gelu ══════════════════════════════════════════ -->
+  <g transform="translate(220,60)">
+    <rect x="-6" y="-14" width="168" height="130" rx="8" fill="#ffffff" stroke="#c9b88a" stroke-width="1"/>
+    <text x="75" y="-2" text-anchor="middle" fill="#1e6091" font-size="12" font-weight="700">gelu</text>
+    <line x1="0" y1="62.1" x2="150" y2="62.1" stroke="#e0d9c5"/>
+    <line x1="75" y1="-8" x2="75" y2="106" stroke="#e0d9c5"/>
+    <polyline points="0.0,62.2 15.0,62.7 30.0,63.9 45.0,66.0 55.0,66.9 65.0,66.0 75.0,62.1 85.0,54.7 95.0,44.3 105.0,32.1 120.0,13.1 135.0,-5.1 150.0,-22.5" fill="none" stroke="#1e6091" stroke-width="2.5"/>
+    <polyline points="0.0,62.4 20.0,64.0 37.5,65.7 50.0,64.5 65.0,56.5 75.0,48.0 85.0,39.5 95.0,33.3 110.0,30.2 130.0,32.0 150.0,33.6" fill="none" stroke="#a94442" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <text x="75" y="122" text-anchor="middle" fill="#8b7355" font-size="9">smooth; dips below 0</text>
+  </g>
+
+  <!-- ══════════ sigmoid ═══════════════════════════════════════ -->
+  <g transform="translate(400,60)">
+    <rect x="-6" y="-14" width="168" height="130" rx="8" fill="#ffffff" stroke="#c9b88a" stroke-width="1"/>
+    <text x="75" y="-2" text-anchor="middle" fill="#1e6091" font-size="12" font-weight="700">sigmoid</text>
+    <line x1="0" y1="62.1" x2="150" y2="62.1" stroke="#e0d9c5"/>
+    <line x1="75" y1="-8" x2="75" y2="106" stroke="#e0d9c5"/>
+    <line x1="0" y1="55.1" x2="150" y2="55.1" stroke="#a94442" stroke-width="0.8" stroke-dasharray="2 3" opacity="0.6"/>
+    <polyline points="0.0,60.8 20.0,59.3 40.0,56.5 55.0,53.4 65.0,50.8 75.0,48.0 85.0,45.2 95.0,42.6 110.0,39.5 130.0,36.7 150.0,35.2" fill="none" stroke="#1e6091" stroke-width="2.5"/>
+    <polyline points="0.0,60.8 20.0,59.6 40.0,57.6 55.0,56.1 65.0,55.3 75.0,55.1 85.0,55.3 95.0,56.1 110.0,57.6 130.0,59.6 150.0,60.8" fill="none" stroke="#a94442" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <text x="150" y="52" text-anchor="end" fill="#a94442" font-size="8">max 0.25</text>
+    <text x="75" y="122" text-anchor="middle" fill="#8b7355" font-size="9">saturates both ends</text>
+  </g>
+
+  <!-- ══════════ tanh ══════════════════════════════════════════ -->
+  <g transform="translate(580,60)">
+    <rect x="-6" y="-14" width="126" height="130" rx="8" fill="#ffffff" stroke="#c9b88a" stroke-width="1"/>
+    <text x="56" y="-2" text-anchor="middle" fill="#1e6091" font-size="12" font-weight="700">tanh</text>
+    <line x1="0" y1="62.1" x2="112" y2="62.1" stroke="#e0d9c5"/>
+    <line x1="56" y1="-8" x2="56" y2="106" stroke="#e0d9c5"/>
+    <polyline points="0.0,90.2 15.0,89.9 30.0,88.9 41.0,86.4 50.0,83.6 56.0,77.3 62.0,70.3 70.0,62.1 78.0,51.4 86.0,45.1 97.0,40.6 105.0,37.8 112.0,35.4" fill="none" stroke="#1e6091" stroke-width="2.5" transform="scale(0.747,1)"/>
+    <polyline points="0.0,61.8 20.0,60.8 40.0,56.0 55.0,46.3 65.0,38.0 75.0,33.9 85.0,38.0 95.0,46.3 110.0,56.0 130.0,60.8 150.0,61.8" fill="none" stroke="#a94442" stroke-width="1.5" stroke-dasharray="4 3" transform="scale(0.747,1)"/>
+    <text x="56" y="122" text-anchor="middle" fill="#8b7355" font-size="9">max 1.0 — 4× sigmoid</text>
+  </g>
+
+  <!-- sweeping marker across all four panels in step -->
+  <g>
+    <line y1="46" y2="176" stroke="#6f42c1" stroke-width="1.5" opacity="0.55">
+      <animate attributeName="x1" values="40;70;100;130;160" keyTimes="0;0.25;0.5;0.75;1" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="40;70;100;130;160" keyTimes="0;0.25;0.5;0.75;1" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+    </line>
+    <line y1="46" y2="176" stroke="#6f42c1" stroke-width="1.5" opacity="0.55">
+      <animate attributeName="x1" values="220;250;280;310;340" keyTimes="0;0.25;0.5;0.75;1" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="220;250;280;310;340" keyTimes="0;0.25;0.5;0.75;1" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+    </line>
+    <line y1="46" y2="176" stroke="#6f42c1" stroke-width="1.5" opacity="0.55">
+      <animate attributeName="x1" values="400;430;460;490;520" keyTimes="0;0.25;0.5;0.75;1" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="400;430;460;490;520" keyTimes="0;0.25;0.5;0.75;1" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+    </line>
+    <line y1="46" y2="176" stroke="#6f42c1" stroke-width="1.5" opacity="0.55">
+      <animate attributeName="x1" values="580;602;624;646;668" keyTimes="0;0.25;0.5;0.75;1" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="580;602;624;646;668" keyTimes="0;0.25;0.5;0.75;1" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+    </line>
+  </g>
+
+  <!-- legend -->
+  <line x1="250" y1="200" x2="278" y2="200" stroke="#1e6091" stroke-width="2.5"/>
+  <text x="284" y="204" fill="#1e6091" font-size="10" font-weight="700">f(x)</text>
+  <line x1="330" y1="200" x2="358" y2="200" stroke="#a94442" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="364" y="204" fill="#a94442" font-size="10" font-weight="700">f'(x) — the derivative</text>
+
+  <!-- the shared value table -->
+  <rect x="30" y="216" width="660" height="130" rx="8" fill="#ffffff" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="234" text-anchor="middle" fill="#2c2416" font-size="11" font-weight="700">the chapter's running row, through all four</text>
+
+  <g font-size="11" text-anchor="middle">
+    <text x="150" y="256" fill="#8b7355" font-weight="700">x = -2</text>
+    <text x="245" y="256" fill="#8b7355" font-weight="700">-1</text>
+    <text x="340" y="256" fill="#8b7355" font-weight="700">0</text>
+    <text x="435" y="256" fill="#8b7355" font-weight="700">1</text>
+    <text x="530" y="256" fill="#8b7355" font-weight="700">2</text>
+
+    <text x="70"  y="278" fill="#1e6091" font-weight="700" text-anchor="start">relu</text>
+    <text x="150" y="278" fill="#2c2416">0.0000</text><text x="245" y="278" fill="#2c2416">0.0000</text>
+    <text x="340" y="278" fill="#2c2416">0.0000</text><text x="435" y="278" fill="#2c2416">1.0000</text>
+    <text x="530" y="278" fill="#2c2416">2.0000</text>
+
+    <text x="70"  y="298" fill="#1e6091" font-weight="700" text-anchor="start">gelu</text>
+    <text x="150" y="298" fill="#2c2416">-0.0454</text><text x="245" y="298" fill="#2c2416">-0.1588</text>
+    <text x="340" y="298" fill="#2c2416">0.0000</text><text x="435" y="298" fill="#2c2416">0.8412</text>
+    <text x="530" y="298" fill="#2c2416">1.9546</text>
+
+    <text x="70"  y="318" fill="#1e6091" font-weight="700" text-anchor="start">sigmoid</text>
+    <text x="150" y="318" fill="#2c2416">0.1192</text><text x="245" y="318" fill="#2c2416">0.2689</text>
+    <text x="340" y="318" fill="#2c2416">0.5000</text><text x="435" y="318" fill="#2c2416">0.7311</text>
+    <text x="530" y="318" fill="#2c2416">0.8808</text>
+
+    <text x="70"  y="338" fill="#1e6091" font-weight="700" text-anchor="start">tanh</text>
+    <text x="150" y="338" fill="#2c2416">-0.9640</text><text x="245" y="338" fill="#2c2416">-0.7616</text>
+    <text x="340" y="338" fill="#2c2416">0.0000</text><text x="435" y="338" fill="#2c2416">0.7616</text>
+    <text x="530" y="338" fill="#2c2416">0.9640</text>
+  </g>
+
+  <text x="620" y="278" fill="#a94442" font-size="9" text-anchor="start">hard 0 →</text>
+  <text x="620" y="298" fill="#2e7d32" font-size="9" text-anchor="start">small, not 0</text>
+
+  <!-- formula bar -->
+  <rect x="30" y="354" width="660" height="38" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="371" text-anchor="middle" font-size="11" fill="#5a4220" font-weight="600">
+    at x = -1: relu returns a hard 0 and its gate shuts; gelu returns -0.1588, so a gradient still flows
+  </text>
+  <text x="360" y="385" text-anchor="middle" font-size="9" fill="#8b7355">
+    that difference is why transformers use gelu inside the feedforward block (Ch 25)
+  </text>
+
+  </g>
+</svg>

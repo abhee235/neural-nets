@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">three relu units, added — each one contributes exactly one bend</text>
+
+  <!--
+    LEFT  : the three terms of f(x) = 2·relu(x+2) − 3·relu(x) + 1.5·relu(x−2),
+            drawn separately. Each is a hinge: flat, then one bend, then a line.
+              2·relu(x+2)     bend at x = -2   (blue)
+             -3·relu(x)       bend at x =  0   (red)
+              1.5·relu(x−2)   bend at x =  2   (green)
+    RIGHT : their sum. Bends land at -2, 0, 2 — the same three x-values — and
+            cut the line into four regions, each holding ONE linear function:
+              x < -2      f = 0            slope  0     no unit awake
+              -2 ≤ x < 0  f = 2x + 4       slope +2     h1
+              0 ≤ x < 2   f = -x + 4       slope -1     h1 h2
+              x ≥ 2       f = 0.5x + 1     slope +0.5   h1 h2 h3
+            Formulas verified against f to machine precision.
+    Mini panels : px = 130 + 24.444x
+    Big  panel  : px = 495 + 43.3333x , py = 267 − 46y
+  -->
+
+  <line x1="262" y1="44" x2="262" y2="336" stroke="#e0d9c5" stroke-width="1" stroke-dasharray="4 4"/>
+
+  <!-- ══════════ LEFT — the three units, one at a time ══════════ -->
+  <text x="130" y="40" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10" font-weight="700">one unit = one hinge</text>
+
+  <!-- ── unit 1 : 2·relu(x+2) ── -->
+  <g>
+    <rect x="16" y="46" width="232" height="62" rx="5" fill="#1e6091" opacity="0">
+      <animate attributeName="opacity" values="0.10;0;0;0" keyTimes="0;0.333;0.667;1" dur="6s" calcMode="discrete" repeatCount="indefinite"/>
+    </rect>
+    <text x="20" y="58" fill="#1e6091" font-family="monospace" font-size="9.5" font-weight="700">2·relu(x+2)</text>
+    <line x1="20" y1="105" x2="240" y2="105" stroke="#c9b88a" stroke-width="1"/>
+    <polyline points="20,105 81.1,105 240,50" fill="none" stroke="#1e6091" stroke-width="2.5"/>
+    <circle cx="81.1" cy="105" r="3.5" fill="#1e6091"/>
+    <text x="75" y="101" text-anchor="end" fill="#1e6091" font-family="monospace" font-size="8.5">bend at x = −2</text>
+  </g>
+
+  <!-- ── unit 2 : −3·relu(x) — a downward hinge, zero line on top ── -->
+  <g transform="translate(0,80)">
+    <rect x="16" y="46" width="232" height="62" rx="5" fill="#a94442" opacity="0">
+      <animate attributeName="opacity" values="0;0.10;0;0" keyTimes="0;0.333;0.667;1" dur="6s" calcMode="discrete" repeatCount="indefinite"/>
+    </rect>
+    <text x="20" y="44" fill="#a94442" font-family="monospace" font-size="9.5" font-weight="700">− 3·relu(x)</text>
+    <line x1="20" y1="50" x2="240" y2="50" stroke="#c9b88a" stroke-width="1"/>
+    <polyline points="20,50 130,50 240,105" fill="none" stroke="#a94442" stroke-width="2.5"/>
+    <circle cx="130" cy="50" r="3.5" fill="#a94442"/>
+    <text x="124" y="63" text-anchor="end" fill="#a94442" font-family="monospace" font-size="8.5">bend at x = 0</text>
+  </g>
+
+  <!-- ── unit 3 : 1.5·relu(x−2) ── -->
+  <g transform="translate(0,160)">
+    <rect x="16" y="46" width="232" height="62" rx="5" fill="#2e7d32" opacity="0">
+      <animate attributeName="opacity" values="0;0;0.10;0" keyTimes="0;0.333;0.667;1" dur="6s" calcMode="discrete" repeatCount="indefinite"/>
+    </rect>
+    <text x="20" y="58" fill="#2e7d32" font-family="monospace" font-size="9.5" font-weight="700">+ 1.5·relu(x−2)</text>
+    <line x1="20" y1="105" x2="240" y2="105" stroke="#c9b88a" stroke-width="1"/>
+    <polyline points="20,105 178.9,105 240,50" fill="none" stroke="#2e7d32" stroke-width="2.5"/>
+    <circle cx="178.9" cy="105" r="3.5" fill="#2e7d32"/>
+    <text x="172" y="101" text-anchor="end" fill="#2e7d32" font-family="monospace" font-size="8.5">bend at x = 2</text>
+  </g>
+
+  <text x="130" y="288" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="8.5">flat, then one bend, then a straight line —</text>
+  <text x="130" y="300" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="8.5">the weights choose WHERE the bend sits</text>
+
+  <!-- ══════════ RIGHT — the sum ══════════ -->
+  <text x="495" y="40" text-anchor="middle" fill="#5a4220" font-family="monospace" font-size="10" font-weight="700">their sum: straight pieces hinged together</text>
+
+  <!-- alternating region bands -->
+  <rect x="300"   y="58" width="108.3" height="214" fill="#ede7d3" opacity="0.55"/>
+  <rect x="408.3" y="58" width="86.7"  height="214" fill="#e0d9c5" opacity="0.45"/>
+  <rect x="495"   y="58" width="86.7"  height="214" fill="#ede7d3" opacity="0.55"/>
+  <rect x="581.7" y="58" width="108.3" height="214" fill="#e0d9c5" opacity="0.45"/>
+
+  <!-- gridlines at f = 2 and f = 4 -->
+  <line x1="300" y1="175" x2="690" y2="175" stroke="#d8cfb4" stroke-width="0.8" stroke-dasharray="3 3"/>
+  <line x1="300" y1="83"  x2="690" y2="83"  stroke="#d8cfb4" stroke-width="0.8" stroke-dasharray="3 3"/>
+  <text x="296" y="270" text-anchor="end" fill="#a8956a" font-family="monospace" font-size="8">0</text>
+  <text x="296" y="178" text-anchor="end" fill="#a8956a" font-family="monospace" font-size="8">2</text>
+  <text x="296" y="86"  text-anchor="end" fill="#a8956a" font-family="monospace" font-size="8">4</text>
+
+  <!-- axes -->
+  <line x1="300" y1="267" x2="690" y2="267" stroke="#c9b88a" stroke-width="1.5"/>
+  <line x1="495" y1="58"  x2="495" y2="272" stroke="#c9b88a" stroke-width="0.8" stroke-dasharray="3 3"/>
+
+  <!-- f(x) : (-4.5,0) (-2,0) (0,4) (2,2) (4.5,3.25) -->
+  <polyline points="300,267 408.3,267 495,83 581.7,175 690,117.5" fill="none" stroke="#5a4220" stroke-width="2.75"/>
+
+  <!-- the three bends, appearing one per phase, colour-matched to the units -->
+  <circle cx="408.3" cy="267" r="5" fill="#1e6091" stroke="#faf7f0" stroke-width="1.5"/>
+  <circle cx="495" cy="83" r="5" fill="#a94442" stroke="#faf7f0" stroke-width="1.5" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;1" keyTimes="0;0.333;0.667;1" dur="6s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="581.7" cy="175" r="5" fill="#2e7d32" stroke="#faf7f0" stroke-width="1.5" opacity="0">
+    <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.333;0.667;1" dur="6s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- x ticks -->
+  <text x="321.7" y="284" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="8">−4</text>
+  <text x="408.3" y="284" text-anchor="middle" fill="#1e6091" font-family="monospace" font-size="8" font-weight="700">−2</text>
+  <text x="495"   y="284" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="8" font-weight="700">0</text>
+  <text x="581.7" y="284" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="8" font-weight="700">2</text>
+  <text x="668.3" y="284" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="8">4</text>
+
+  <!-- running caption: pieces so far -->
+  <g font-family="monospace" font-size="9.5" font-weight="700" text-anchor="middle">
+    <text x="495" y="52" fill="#1e6091" opacity="0">1 unit → 1 bend → 2 straight pieces
+      <animate attributeName="opacity" values="1;0;0;0" keyTimes="0;0.333;0.667;1" dur="6s" calcMode="discrete" repeatCount="indefinite"/></text>
+    <text x="495" y="52" fill="#a94442" opacity="0">2 units → 2 bends → 3 straight pieces
+      <animate attributeName="opacity" values="0;1;0;0" keyTimes="0;0.333;0.667;1" dur="6s" calcMode="discrete" repeatCount="indefinite"/></text>
+    <text x="495" y="52" fill="#2e7d32" opacity="0">3 units → 3 bends → 4 straight pieces
+      <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.333;0.667;1" dur="6s" calcMode="discrete" repeatCount="indefinite"/></text>
+  </g>
+
+  <!-- ── region table: one linear function per region ── -->
+  <text x="296" y="305" text-anchor="end" fill="#8b7355" font-family="monospace" font-size="8.5">f(x) =</text>
+  <text x="296" y="319" text-anchor="end" fill="#8b7355" font-family="monospace" font-size="8.5">slope</text>
+  <text x="296" y="333" text-anchor="end" fill="#8b7355" font-family="monospace" font-size="8.5">awake</text>
+
+  <g font-family="monospace" font-size="8.5" text-anchor="middle">
+    <text x="354"   y="305" fill="#2c2416" font-weight="700">0</text>
+    <text x="451.7" y="305" fill="#2c2416" font-weight="700">2x + 4</text>
+    <text x="538.3" y="305" fill="#2c2416" font-weight="700">−x + 4</text>
+    <text x="636"   y="305" fill="#2c2416" font-weight="700">0.5x + 1</text>
+
+    <text x="354"   y="319" fill="#8b7355">0</text>
+    <text x="451.7" y="319" fill="#8b7355">+2</text>
+    <text x="538.3" y="319" fill="#8b7355">−1</text>
+    <text x="636"   y="319" fill="#8b7355">+0.5</text>
+
+    <text x="354"   y="333" fill="#a8956a">none</text>
+    <text x="451.7" y="333" fill="#1e6091">h₁</text>
+    <text x="538.3" y="333" fill="#a94442">h₁ h₂</text>
+    <text x="636"   y="333" fill="#2e7d32">h₁ h₂ h₃</text>
+  </g>
+
+  <!-- formula bar -->
+  <rect x="30" y="348" width="660" height="42" rx="6" fill="#ede7d3" stroke="#c9b88a" stroke-width="1"/>
+  <text x="360" y="364" text-anchor="middle" font-family="monospace" font-size="10" fill="#5a4220" font-weight="600">
+    f(x) = 2·relu(x+2) − 3·relu(x) + 1.5·relu(x−2)
+  </text>
+  <text x="360" y="378" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#8b7355">
+    inside every region the whole network is ONE linear function — a committee of linear models, each owning its patch
+  </text>
+
+</svg>

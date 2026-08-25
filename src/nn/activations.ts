@@ -6,15 +6,172 @@
  *
  * Chapter: 11 — Activation Functions
  * Doc:     docs/part-3-neural-net-primitives/ch-11-activation-functions.md
+ *
+ * ──────────────────────────────────────────────────────────────────────────
+ * WHY THIS FILE EXISTS
+ * ──────────────────────────────────────────────────────────────────────────
+ * `TensorValue` knows seven operations: add, mul, matMul, sum, mean, reshape,
+ * transpose. There is NO combination of them — however long — that produces
+ * relu, sigmoid, tanh or exp. Adds and multiplies build polynomials, and none
+ * of these is a polynomial.
+ *
+ * So a nonlinearity cannot be composed. It has to be ADDED to the engine as a
+ * new primitive: a node that knows its own forward value and its own
+ * derivative. You did exactly this in Ch 08, when Value gained exp, log, tanh
+ * and relu on top of add and mul. This file is that same act, with tensors.
+ *
+ * Without it, depth is worthless — Ch 09's deep dive proved two linear layers
+ * collapse into one. These four functions are what make stacking mean
+ * something.
+ *
+ * ──────────────────────────────────────────────────────────────────────────
+ * THE PATTERN — one recipe, used four times
+ * ──────────────────────────────────────────────────────────────────────────
+ *   1. forward:  apply the function to every cell   → a Tensor
+ *   2. wrap:     const out = new TensorValue(thatTensor)
+ *   3. wire:     out._inputs = [x]                  ← by hand, as in Ch 10
+ *   4. backward: out._backward = () => accumulate into x
+ *   5. return out
+ *
+ * ──────────────────────────────────────────────────────────────────────────
+ * WHY THIS CHAPTER IS EASIER THAN CH 10
+ * ──────────────────────────────────────────────────────────────────────────
+ * Three of these four are ELEMENTWISE: output cell i depends on input cell i
+ * and nothing else. So the shape never changes, and backward has nothing to
+ * repair — no sumToShape, no unsqueeze, no broadcasting:
+ *
+ *     x.grad  +=  f'(x)  ⊙  out.grad          ⊙ = element-wise mul (Ch 03)
+ *
+ * That one line is the backward of relu, sigmoid and gelu. Only softmax is
+ * different, because its outputs are tied together by summing to 1.
+ *
+ * ──────────────────────────────────────────────────────────────────────────
+ * THE RUNNING EXAMPLE — the doc's row, used in every trace below
+ * ──────────────────────────────────────────────────────────────────────────
+ *     x         = [ -2       -1       0       1       2      ]   shape [5]
+ *
+ *     relu(x)   = [  0.0000   0.0000  0.0000  1.0000  2.0000 ]
+ *     gelu(x)   = [ -0.0454  -0.1588  0.0000  0.8412  1.9546 ]
+ *     sigmoid(x)= [  0.1192   0.2689  0.5000  0.7311  0.8808 ]
+ *
+ * and for softmax, a three-element row:
+ *
+ *     [ 1  2  3 ]  →  [ 0.090031  0.244728  0.665241 ]   (sums to 1)
+ *
+ * ──────────────────────────────────────────────────────────────────────────
+ * WHAT YOU WILL NEED TO IMPORT
+ * ──────────────────────────────────────────────────────────────────────────
+ * The FORWARD passes already exist — you are not writing exp from scratch:
+ *
+ *   tensor/math.ts     sigmoid, tanh, exp, pow      ← Ch 06
+ *   tensor/reduce.ts   softmax, sum                 ← Ch 05 (softmax is stable)
+ *   tensor/ops.ts      mul, sub, applyFn            ← Ch 03
+ *
+ * `applyFn(t, v => ...)` maps a plain function over every cell — the simplest
+ * way to build both a forward and a local-derivative tensor.
+ *
+ * THE WORK IN THIS FILE IS THE BACKWARD. That is the part the engine cannot
+ * infer and you must supply.
+ *
+ * ──────────────────────────────────────────────────────────────────────────
+ * ONE DECISION BEFORE YOU START
+ * ──────────────────────────────────────────────────────────────────────────
+ * Every backward below has to accumulate into `x.grad` with the null-aware
+ * pattern from Ch 10 — first contribution assigns, later ones add:
+ *
+ *     if (x.grad === null)  x.grad = contribution;
+ *     else                  x.grad = add(x.grad, contribution);
+ *
+ * You already wrote exactly this as `accumulate` in grad.ts — but it is a
+ * private function there, so this file cannot import it. Either add `export`
+ * to it (recommended: one keyword, and all four activations reuse it) or
+ * write those two lines here. Decide once, now, rather than four times.
  */
+// Import from ../tensor/index.ts, not the root ../index.ts barrel: the root
+// re-exports nn/index.ts, which re-exports this file, so going through it
+// would be a circular import. Every sibling in nn/ reaches for tensor directly
+// for the same reason.
 import { TensorValue } from "../autograd/grad.ts";
+import type { Tensor } from "../tensor/index.ts";
+// softmax and sum are aliased: this module exports its own `softmax`, and the
+// tensor-level one would be shadowed by it without a rename.
+import { add, mul, applyFn, sub } from "../tensor/index.ts";
+import {
+  softmax as softmaxTensor,
+  sum as sumTensor,
+  sigmoid as sigmoidTensor,
+  relu as reluTensor,
+} from "../tensor/index.ts";
+
+
+function accumulate(node: TensorValue, contribution: Tensor): void {
+  // First contribution replaces the null; later ones add element-wise.
+  node.grad = node.grad === null ? contribution : add(node.grad, contribution);
+}
 
 /**
  * ReLU: max(0, x).
  * Gradient: 1 for x > 0, 0 for x ≤ 0.
+ *
+ * ── SCALAR (Ch 08) — your own value.ts, unchanged ───────────────────────────
+ *     relu(): Value {
+ *       const out = new Value(Math.max(0, this.data), [this], "relu");
+ *       out._backward = () => {
+ *         this.grad += (this.data > 0 ? 1 : 0) * out.grad;
+ *       };
+ *       return out;
+ *     }
+ *
+ * ── TENSOR (Ch 11) ──────────────────────────────────────────────────────────
+ * The same three jobs, with "every cell" in place of "the number":
+ *
+ *     forward :  applyFn(x.data, v => Math.max(0, v))
+ *     local   :  applyFn(x.data, v => (v > 0 ? 1 : 0))     ← the 0/1 gate
+ *     backward:  x.grad += mul(local, out.grad)
+ *
+ * ── IT IS A GATE, NOT A SCALE ───────────────────────────────────────────────
+ * Where the input was positive the gradient passes through untouched (×1);
+ * where it was negative nothing passes at all (×0). A unit whose input stays
+ * negative receives exactly zero forever and never learns again — the dying
+ * ReLU, the same mechanism as the frozen parameter in Ch 09's deep dive.
+ *
+ * ── WORKED TRACE — the running row ──────────────────────────────────────────
+ *
+ *     x         = [ -2  -1   0   1   2 ]
+ *     relu(x)   = [  0   0   0   1   2 ]     ← negatives flattened
+ *
+ *     relu'(x)  = [  0   0   0   1   1 ]     ← the gate
+ *     out.grad  = [  1   1   1   1   1 ]     ← say the upstream is all ones
+ *                  ─────────────────────  ⊙
+ *     x.grad    = [  0   0   0   1   1 ]     shape [5] ✓ unchanged
+ *
+ * ── PITFALL: x = 0 exactly ──────────────────────────────────────────────────
+ * The derivative genuinely does not exist at the corner. Pick a convention and
+ * document it — we use 0, matching Ch 08. This is why the test says "(x ≠ 0)":
+ * a centered finite difference across the corner averages the two one-sided
+ * slopes to 0.5 and disagrees with every convention.
  */
 export function relu(x: TensorValue): TensorValue {
-  throw new Error("relu not implemented");
+  // Forward: Ch 06's tensor-level relu, the same reuse as sigmoid below.
+  // It returns a NEW Tensor of the same shape — Tensor itself has no methods.
+  const out = new TensorValue(reluTensor(x.data));
+  out._inputs = [x];
+
+  // The local derivative, evaluated at the input we just passed through: 1 where
+  // the input was positive, 0 where it was not. Computed HERE, in the forward
+  // pass, and captured by the closure — it belongs to this evaluation point.
+  // At v = 0 exactly the derivative does not exist; we choose 0, matching Ch 08.
+  const local = applyFn(x.data, (v) => (v > 0 ? 1 : 0));
+
+  out._backward = () => {
+    // x.grad += relu'(x) ⊙ out.grad
+    // Plain tensor `mul`, not TensorValue's `.mul()`: inside a backward pass
+    // everything is a raw Tensor. Calling a TensorValue method here would build
+    // new graph nodes while unwinding the graph.
+    // out.grad! — backward only ever fires after this node's gradient arrived.
+    accumulate(x, mul(local, out.grad!));
+  };
+  return out;
 }
 
 /**
@@ -23,23 +180,205 @@ export function relu(x: TensorValue): TensorValue {
  *
  * Used inside every FFN block in GPT-2 and most modern transformers.
  * Smoother than ReLU near x = 0.
+ *
+ * ── SCALAR (Ch 08) ──────────────────────────────────────────────────────────
+ * None — Ch 08 never had gelu. But its `tanh` is the closest relative you
+ * have written, and the same shape of backward applies.
+ *
+ * ── TENSOR (Ch 11) ──────────────────────────────────────────────────────────
+ * Forward: the approximation above, cell by cell with `applyFn`. Name the
+ * constant — √(2/π) ≈ 0.7978845608.
+ *
+ * Backward: differentiate the approximation (product rule on `0.5·x·(1+tanh u)`
+ * with `u = k(x + 0.044715x³)`, chain rule through the tanh) and evaluate it
+ * cell by cell with `applyFn`, exactly as relu does. Then the same one line:
+ *
+ *     x.grad += mul(local, out.grad)
+ *
+ * ── WHY IT IS WORTH THE EXTRA ALGEBRA ───────────────────────────────────────
+ * relu makes a hard decision at zero: pass fully, or block fully. gelu makes a
+ * soft one — compare the same inputs:
+ *
+ *     x        = [ -2       -1       0       1       2      ]
+ *     relu(x)  = [  0.0000   0.0000  0.0000  1.0000  2.0000 ]
+ *     gelu(x)  = [ -0.0454  -0.1588  0.0000  0.8412  1.9546 ]
+ *                              ↑
+ *              relu returns a hard 0 here and its gate shuts;
+ *              gelu returns -0.1588, so a gradient still flows
+ *              and the unit can recover
+ *
+ * ── WORKED TRACE — the derivative row ───────────────────────────────────────
+ *
+ *     gelu'(x) = [ -0.0861  -0.0830  0.5000  1.0830  1.0861 ]
+ *
+ * Two surprises worth checking against, because they catch sign errors:
+ * at x = 0 the derivative is 0.5 (half open, not 0 or 1), and at x = -2 and
+ * x = -1 it is NEGATIVE — gelu is not monotonic; it dips below zero before
+ * flattening.
+ *
+ * ── PITFALL: verify this one numerically ────────────────────────────────────
+ * Its derivative has the most terms and the least intuition in this file, so a
+ * dropped constant produces plausible-looking numbers. `checkTensorGradient`
+ * from Ch 10 catches that instantly; re-reading the formula does not.
  */
 export function gelu(x: TensorValue): TensorValue {
-  throw new Error("gelu not implemented");
+   const k = Math.sqrt(2 / Math.PI);
+   const out = new TensorValue(
+     applyFn(x.data, (v) => 0.5 * v * (1 + Math.tanh(k * (v + 0.044715 * v ** 3))))
+   );
+   out._inputs = [x];
+   out._backward = () => {
+     const local = applyFn(x.data, (v) => {
+       const u = k * (v + 0.044715 * v ** 3);
+       const tanhU = Math.tanh(u);
+       const sech2U = 1 - tanhU ** 2; // sech^2(u) = 1 - tanh^2(u)
+       return 0.5 * (1 + tanhU + v * sech2U * k * (1 + 3 * 0.044715 * v ** 2));
+     });
+     accumulate(x, mul(local, out.grad!));
+   };
+   return out;
 }
 
 /**
  * Sigmoid: σ(x) = 1 / (1 + e^{−x}).
  * Output in (0, 1).  Gradient: σ(x)(1 − σ(x)).
+ *
+ * ── SCALAR (Ch 08) ──────────────────────────────────────────────────────────
+ * Ch 08's `tanh` is the pattern to copy — note especially what its backward
+ * reads from:
+ *
+ *     tanh(): Value {
+ *       const out = new Value(Math.tanh(this.data), [this], "tanh");
+ *       out._backward = () => {
+ *         this.grad += (1 - out.data ** 2) * out.grad;   // ← out.data, not this.data
+ *       };
+ *       return out;
+ *     }
+ *
+ * ── TENSOR (Ch 11) ──────────────────────────────────────────────────────────
+ * Forward: `sigmoid(x.data)` from Ch 06 — already written, already careful.
+ *
+ * Backward: σ' = σ(1 − σ), and σ is the value you JUST computed. Build the
+ * local derivative from `out.data`:
+ *
+ *     local = applyFn(out.data, s => s * (1 - s))
+ *     x.grad += mul(local, out.grad)
+ *
+ * Reusing the output is the same trick as Ch 08's exp and tanh, for the same
+ * two reasons: it avoids recomputing an exponential, and it cannot drift from
+ * the value the forward pass actually used.
+ *
+ * ── WORKED TRACE — the running row ──────────────────────────────────────────
+ *
+ *     x           = [ -2       -1       0       1       2      ]
+ *     sigmoid(x)  = [  0.1192   0.2689  0.5000  0.7311  0.8808 ]   ← out.data
+ *     sigmoid'(x) = [  0.1050   0.1966  0.2500  0.1966  0.1050 ]
+ *                                         ↑
+ *                              the maximum — 0.25, at x = 0
+ *
+ * ── PITFALL: out.data, NOT x.data ───────────────────────────────────────────
+ * `x.data * (1 - x.data)` is a real and popular bug: it happens to be right at
+ * x = 0 and is wrong everywhere else — the same trap as Ch 08's tanh backward,
+ * which is why that test is checked at x = 1 rather than the origin.
+ *
+ * ── WHAT THAT 0.25 CEILING COSTS ────────────────────────────────────────────
+ * sigmoid's derivative never exceeds 0.25 anywhere, and Ch 09's deep dive
+ * showed a gradient reaching an early layer is the PRODUCT of every local
+ * derivative on the way. Ten sigmoid layers, best case:
+ *
+ *     0.25¹⁰ ≈ 9.5e-7          vs.   relu:  1¹⁰ = 1
+ *
+ * That is the whole reason relu replaced sigmoid in hidden layers.
  */
 export function sigmoid(x: TensorValue): TensorValue {
-  throw new Error("sigmoid not implemented");
+  // Ch 06's sigmoid, not a fresh 1/(1+e^-v). It branches on the sign so the
+  // exponent's argument stays ≤ 0 either way, which keeps tiny positive values
+  // alive out to about x = -745 where the naive form has already reached 0.
+  const out = new TensorValue(sigmoidTensor(x.data));
+  out._inputs = [x];
+  out._backward = () => {
+    // σ' = σ(1 − σ), built from out.data — the value the forward pass actually
+    // produced. Reusing it avoids a second exponential and cannot drift from it.
+    const local = applyFn(out.data, (s) => s * (1 - s));
+    accumulate(x, mul(local, out.grad!));
+  };
+  return out;
 }
 
 /**
  * Numerically stable softmax along axis (default: last axis).
  * Output sums to 1.0 — a probability distribution.
+ *
+ * ── THE ONE THAT IS NOT ELEMENTWISE ─────────────────────────────────────────
+ * Every function above had output cell i depending on input cell i alone.
+ * softmax breaks that: its denominator sums over EVERY element along the axis,
+ * so changing one input moves all the outputs. They are tied together by
+ * having to sum to 1.
+ *
+ * ── TENSOR (Ch 11) ──────────────────────────────────────────────────────────
+ * Forward: `softmax(x.data, axis)` from Ch 05 — one call. It already subtracts
+ * the max, which is what keeps it safe (see below). Default the axis to the
+ * last one: `axis ?? x.data.ndim - 1`.
+ *
+ * Backward: because outputs are coupled, the local derivatives form a matrix
+ * (a Jacobian) rather than a single number per cell:
+ *
+ *     ∂sᵢ/∂xⱼ = sᵢ(δᵢⱼ − sⱼ)
+ *
+ * which collapses to something much friendlier than it looks. With s = out.data:
+ *
+ *     x.grad += s ⊙ ( out.grad − Σₖ(out.grad ⊙ s) )
+ *                                  └── summed along `axis`, keepDims = true ──┘
+ *
+ * In words: take the upstream gradient, subtract its s-weighted average, then
+ * scale by s. One weighted sum plus two elementwise ops — no matrix is ever
+ * built. `keepDims = true` makes the sum broadcast back cleanly against the
+ * full tensor: the Ch 10 machinery doing exactly what it was built for.
+ *
+ * ── WORKED TRACE — the three-element row ────────────────────────────────────
+ *
+ *     x          = [ 1         2         3        ]
+ *     softmax(x) = [ 0.090031  0.244728  0.665241 ]     sums to 1.0
+ *
+ * Shift invariance — subtracting any constant changes nothing:
+ *
+ *     softmax([0, 1, 2])       = [ 0.090031  0.244728  0.665241 ]   identical
+ *     softmax([1000,1001,1002])= [ 0.090031  0.244728  0.665241 ]   identical
+ *
+ * The last one is why the max subtraction matters: exp(1000) is Infinity, and
+ * Infinity/Infinity is NaN. Ch 05's deep dive proves the invariance:
+ * docs/deep-dives/ch-05-why-subtract-the-max.md
+ *
+ * ── YOU WILL RARELY CALL THIS BACKWARD ──────────────────────────────────────
+ * softmax is almost always followed by cross-entropy, and the two together
+ * have a famously simple combined gradient — s − y_true, the output minus the
+ * one-hot label. Ch 12 implements that fused form, which is both faster and
+ * more stable. You implement the standalone version here because attention
+ * (Ch 22) uses softmax with no loss attached.
  */
 export function softmax(x: TensorValue, axis?: number): TensorValue {
-  throw new Error("softmax not implemented");
+  // Resolve the axis once — the backward needs the same one the forward used.
+  const dim = axis ?? x.data.ndim - 1;
+
+  // Forward: Ch 05's softmax, which already subtracts the max along the axis.
+  // NOT applyFn — that hands the callback one number at a time, and softmax is
+  // the one function here that needs the whole row at once for its denominator.
+  const out = new TensorValue(softmaxTensor(x.data, dim));
+  out._inputs = [x];
+
+  out._backward = () => {
+    const s = out.data;
+
+    // The Jacobian ∂sᵢ/∂xⱼ = sᵢ(δᵢⱼ − sⱼ) collapses to two elementwise steps.
+    // First the s-weighted average of the upstream gradient: sum the PRODUCT
+    // (out.grad ⊙ s) along the axis — not the sum of s, which is always 1
+    // because softmax rows are normalised, and would make this a no-op.
+    // keepDims keeps a length-1 axis so it broadcasts back against the full row.
+    const weighted = sumTensor(mul(out.grad!, s), dim, true);
+
+    // Then subtract that average from the upstream gradient and scale by s.
+    // No matrix is ever built.
+    accumulate(x, mul(s, sub(out.grad!, weighted)));
+  };
+  return out;
 }

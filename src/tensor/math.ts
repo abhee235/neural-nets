@@ -111,3 +111,14 @@ export function sigmoid(t: Tensor): Tensor {
     return ex / (1 + ex);
   });
 }
+
+/**
+ * Element-wise ReLU (Rectified Linear Unit).
+ * Returns the input if positive, zero otherwise.
+ *
+ * @param t The input tensor
+ * @returns The tensor with ReLU applied element-wise
+ */
+export function relu(t: Tensor): Tensor {
+  return applyElementwise(t, (x) => Math.max(0, x));
+}
