@@ -161,6 +161,43 @@ bias
 
 ---
 
+## Where those two words come from
+
+We have now used two words without saying why. Neither was invented for neural networks — both were borrowed, and knowing where from makes them obvious.
+
+**Weight** comes from statistics, where a *weighted sum* is one in which the items do not count equally. The image is a balance scale: a heavier item tips it further. A weight says **how much this input counts**.
+
+That is not a loose analogy. It is precisely what the number does — take our unit, `score = w₁x₁ + 4x₂ + 2` with `x = [1, 2]`, and slide `w₁`:
+
+```text
+   w₁     score    what it means
+   -3       7      feature 1 counts AGAINST the score
+    0      10      feature 1 ignored entirely — as if it were not there
+    1      11      feature 1 counts, but little
+    3      13      our value
+    6      16      feature 1 dominates
+```
+
+A weight of `0` deletes an input from the calculation. A negative weight makes it count against. Everything in between is a dial marked *how much*.
+
+**There is a second thread**, and the two met. Real neurons connect through synapses, and a synapse has a **strength** — how strongly one neuron's firing pushes the next. Donald Hebb proposed in 1949 that learning *is* the changing of those strengths. When Frank Rosenblatt built the perceptron in 1958, the number standing for connection strength was already called a *weight* in the weighted-sum mathematics he was using, and the two readings turned out to be the same idea:
+
+> **how much this input counts**  =  **how strong this connection is**
+
+Which makes the sentence "the model learns" concrete: learning is nothing but adjusting how much each input counts.
+
+**Bias** is also statistical, where it means a *systematic offset* — something that shifts every result regardless of the data. In statistics that is usually a flaw; here it is deliberate, and the shared idea survives: a constant that does not depend on the input. The unit's standing opinion before the input says anything.
+
+And the two together have an umbrella name you will meet in the code:
+
+```text
+weights + biases  =  parameters
+```
+
+The numbers a model fits to data — which is exactly what `parameters()` will hand to the optimizer in section 14.
+
+---
+
 # 2. But we need more than one output
 
 Our language model does not need one score.
@@ -292,6 +329,16 @@ They didn't appear from nowhere.
 They came from a set of weights and biases acting on the input.
 
 That is the job of a linear layer.
+
+And look at what those three rows are actually saying, in the "how much each input counts" reading:
+
+```text
+sat   [1,   0  ]   count feature 1, ignore feature 2 completely
+ran   [0,   1  ]   the exact opposite
+flew  [0.5, 0.5]   count both equally
+```
+
+`flew`'s weights are worth a second look. They are `0.5` and `0.5`, which sum to `1` — so before the bias is added, that unit computes `0.5·1 + 0.5·2 = 1.5`, and the plain average of `1` and `2` is also `1.5`. **It is literally taking the mean of the two features.** A weighted sum whose weights sum to one is a weighted average — the statistical object the word "weight" came from, sitting in the middle of our example.
 
 ---
 
@@ -1214,6 +1261,10 @@ It computes:
 $$
 w\cdot x+b
 $$
+
+**Why is `w` called a weight, and `b` a bias?**
+
+Because a weight says how much an input counts — the statistical weighted sum, and the strength of a synapse, which turn out to be the same idea. A bias is a constant offset that does not depend on the input.
 
 **What does a row of `W` mean?**
 
