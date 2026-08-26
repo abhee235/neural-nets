@@ -564,7 +564,21 @@ So why not train on it?
 
 Let's watch what happens if we gradually improve the model's confidence in the correct word.
 
-Keep the scores for `ran` and `flew` fixed, and increase the score for `sat`:
+Keep the scores for `ran` and `flew` fixed at `2` and `3`, and give `sat` a score `a` that we will slide upward. So the scores are always `[a, 2, 3]`, and each row of the table below is nothing more than: pick an `a`, run Chapter 11's `softmax`, write down what it gives `sat`.
+
+Here is the first row done fully by hand, so the rest are believable. `a = 0.50`, scores `[0.50, 2, 3]`:
+
+```text
+subtract the max (3):    -2.5        -1          0
+exp each:                 0.082085    0.367879    1.000000
+sum:                      0.082085 + 0.367879 + 1.000000 = 1.449964
+
+p(sat) = 0.082085 / 1.449964 = 0.056612
+```
+
+And the mistakes column just asks: *which score is biggest?* At `[0.50, 2, 3]` the biggest is `flew`, the truth is `sat`, so 1 mistake. That is also why the flip will land exactly at a score of `3` — the count only ever asks whether `a` beat `flew`'s frozen `3`, and nothing else about `a` matters to it.
+
+Now the sweep:
 
 ```text
 sat score     p(sat)     mistakes
