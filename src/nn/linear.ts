@@ -66,6 +66,10 @@
  * tests use 2→3 precisely so a flip is a loud shape error.
  */
 import { TensorValue } from "../autograd/grad.ts";
+// Tensor is an interface, not a class — there are no statics and no methods.
+// randn/zeros are free functions from Ch 02, mulScalar from Ch 03.
+import { randn, zeros } from "../tensor/creation.ts";
+import { mulScalar } from "../tensor/ops.ts";
 
 /**
  * A single fully-connected linear transformation.
@@ -127,7 +131,24 @@ export class Linear {
     bias?: boolean,
     init?: "he" | "xavier" | "normal"
   ) {
-    throw new Error("Linear constructor not implemented");
+    // Every scale divides by inputDim — the sum being tamed runs over the
+    // inputs, one product per input.
+    const scale =
+      init === "xavier"
+        ? Math.sqrt(1 / inputDim)
+        : init === "normal"
+        ? 0.02
+        : Math.sqrt(2 / inputDim);
+
+    // Scale the RAW tensor, then wrap once. This wrap is the leaf the
+    // optimizer will update, so it must be a single TensorValue.
+    this.weight = new TensorValue(mulScalar(randn([outputDim, inputDim]), scale));
+
+    this.inputDim = inputDim;
+    this.outputDim = outputDim;
+
+    // null, not a zeros tensor — a dead graph node per forward otherwise.
+    this.bias = bias === false ? null : new TensorValue(zeros([outputDim]));
   }
 
   /**
@@ -171,7 +192,8 @@ export class Linear {
    * — and its gradient accumulates into a tensor no optimizer will ever see.
    */
   forward(x: TensorValue): TensorValue {
-    throw new Error("Linear.forward not implemented");
+    const y = x.matMul(this.weight.transpose());
+    return this.bias === null ? y : y.add(this.bias);
   }
 
   /**
@@ -189,6 +211,6 @@ export class Linear {
    *   - no hole when bias is off: [weight], length 1 — never [weight, null].
    */
   parameters(): TensorValue[] {
-    throw new Error("Linear.parameters not implemented");
+    return this.bias === null ? [this.weight] : [this.weight, this.bias];
   }
 }
