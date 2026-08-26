@@ -80,8 +80,23 @@
  * (doc section 9), so it carries no gradient.
  */
 import type { Tensor } from "../tensor/index.ts";
-import { mulScalar } from "../tensor/index.ts";
+import {
+  mulScalar,
+  add as addTensor,
+  sub as subTensor,
+  mul as mulTensor,
+  exp as expTensor,
+  log as logTensor,
+  max as maxTensor,
+  sum as sumTensor,
+  softmax as softmaxTensor,
+} from "../tensor/index.ts";
 import { TensorValue } from "../autograd/grad.ts";
+
+/** Null-aware gradient accumulation — the Ch 10 pattern, local copy as in activations.ts. */
+function accumulate(node: TensorValue, contribution: Tensor): void {
+  node.grad = node.grad === null ? contribution : addTensor(node.grad, contribution);
+}
 
 /**
  * Mean Squared Error: mean((predictions − targets)²).
@@ -197,7 +212,39 @@ export function mseLoss(predictions: TensorValue, targets: Tensor): TensorValue 
  * sum is wrong.
  */
 export function logSumExp(x: TensorValue, axis?: number): TensorValue {
-  throw new Error("logSumExp not implemented");
+  // Route (b) from the file header: logSumExp is ONE new primitive. The whole
+  // forward runs in plain tensor math — max/sub/exp/sum/log from tensor/*,
+  // no graph nodes in the middle — and a single hand-written _backward covers
+  // all of it, because its derivative is a fact the doc proves in section 15:
+  //     ∂logSumExp/∂z_i = softmax(z)_i
+  const dim = axis ?? x.data.ndim - 1;
+
+  // 1. The max, keepDims so it broadcasts back. A CONSTANT read from .data —
+  //    it cancels exactly in the mathematics, so it carries no gradient.
+  const maxAlongAxis = maxTensor(x.data, dim, true);
+
+  // 2-4. Shift (everything now ≤ 0), exp (the biggest value it sees is
+  //      e⁰ = 1, so no overflow), sum, log (the sum contains the max's own
+  //      term, exactly 1, so it is ≥ 1 and log(0) is impossible), add the
+  //      max back. keepDims on the sum keeps a length-1 axis, so the output
+  //      broadcasts cleanly against full rows — crossEntropyFromLogits
+  //      relies on that.
+  const shifted = subTensor(x.data, maxAlongAxis);
+  const summed = sumTensor(expTensor(shifted), dim, true);
+  const out = new TensorValue(addTensor(logTensor(summed), maxAlongAxis));
+
+  // The three jobs of a primitive, as everywhere since Ch 08: value, parent,
+  // closure. Wrapping intermediate steps in their own TensorValues would
+  // build graph nodes with no backward — severed history, null gradients.
+  out._inputs = [x];
+  out._backward = () => {
+    // x.grad += softmax(x) ⊙ out.grad
+    // Full-shape softmax times the reduced-shape upstream: tensor mul
+    // broadcasts the length-1 axis back across the row, exactly reversing
+    // the sum. Plain tensor ops only — no graph building during backward.
+    accumulate(x, mulTensor(softmaxTensor(x.data, dim), out.grad!));
+  };
+  return out;
 }
 
 /**
