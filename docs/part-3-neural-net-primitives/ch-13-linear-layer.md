@@ -507,6 +507,65 @@ So the transpose is mostly bookkeeping:
 
 > **We store one row per output, so the matrix has to be transposed during the multiplication.**
 
+## But why `x` on the left? Textbooks write `Wx + b`
+
+They do, and this is worth settling, because you will read `y = Wx + b` in almost every paper.
+
+First, the literal version of the question. Can we write `Wᵀ @ x`? Try it:
+
+```text
+Wᵀ.shape = [2, 3]
+x.shape  = [1, 2]
+
+Wᵀ @ x   →  matMul inner dims mismatch: A has 3 columns, B has 1 rows
+```
+
+Not a valid multiply at all. The inner dimensions have to touch, and `3` and `1` do not.
+
+What *does* work is `W @ xᵀ` — with `x` standing up as a **column**:
+
+```text
+xᵀ.shape = [2, 1]           x as a column
+
+W @ xᵀ  =  [3, 1]  =  [1, 2, 1.5]          ← a column of three scores
+x @ Wᵀ  =  [1, 3]  =  [1, 2, 1.5]          ← a row of three scores
+```
+
+**Same three numbers.** One is standing up, the other lying down. They are transposes of each other, which is exactly the identity:
+
+$$
+(Wx)^T = x^T W^T
+$$
+
+So both forms are correct, and neither is more "true" than the other. The real question hiding underneath is:
+
+> **Is one example a row, or a column?**
+
+Textbooks pick column, because a mathematician writing `Wx` is thinking about *one* vector at a time, and a vector is conventionally a column.
+
+We pick row. Here is why — put four examples through both and watch where the batch dimension lands:
+
+```text
+examples as ROWS                        examples as COLUMNS
+
+X   = [4, 2]                            Xᵀ  = [2, 4]
+X @ Wᵀ  →  [4, 3]                       W @ Xᵀ  →  [3, 4]
+
+row i is example i's scores             column j is example j's scores
+batch stays FIRST                       batch ends up LAST
+```
+
+Both compute the same thing. But with examples as columns, the batch dimension gets pushed to the end, and one example is no longer a row of your data — it is a vertical slice through it:
+
+```text
+rows-form   X[0]      →  [1, 2]      one contiguous piece of memory
+cols-form   Xᵀ[:, 0]  →  a strided gather down a column
+```
+
+Data arrives as rows. Our tensors are stored **row-major** (Chapter 01), and every shape in this course puts batch first — `[batch, inputDim]` here, `[batch, seqLen, dModel]` from Chapter 18 onward. The row form is the one that agrees with all of that.
+
+So: `Wx + b` in the papers, `x @ Wᵀ + b` in the code, same mathematics, and the difference is only whether you are holding one example upright or a whole batch flat.
+
 ---
 
 # 7. And batches work automatically
@@ -1277,6 +1336,10 @@ One row per output and one column per input.
 **Why does the forward pass use `Wᵀ`?**
 
 Because of that storage layout: transposing makes the matrix dimensions line up for `x @ Wᵀ`.
+
+**Papers write `Wx + b`. Why do we write `x @ Wᵀ + b`?**
+
+Same mathematics — the two are transposes, `(Wx)ᵀ = xᵀWᵀ`. The difference is whether one example is a column or a row. We use rows so the batch dimension stays first, matching row-major storage and every other shape in the course.
 
 **Why is `b.grad` equal to the output gradient?**
 
