@@ -30,8 +30,10 @@ console.log("\nW.grad shape:", W!.grad?.shape,  "  expected: [2, 4]");
 console.log("b.grad shape:", b!.grad?.shape,  "  expected: [2]");
 
 // ─── E4: Weight initialisation comparison ────────────────────────────────────
-// He init → weights scale with sqrt(2/fanIn)  — appropriate before ReLU/GELU.
-// Xavier  → scale with sqrt(2/(fanIn+fanOut)) — appropriate for output layers.
+// He init → weights scale with sqrt(2/inputDim)  — appropriate before ReLU/GELU.
+// Xavier  → scale with sqrt(1/inputDim)          — the doc's forward-only form.
+//   (Glorot's original averages forward and backward: sqrt(2/(in+out)). The
+//    chapter's section 18 explains the difference; we use the simpler one.)
 const heLayer  = new Linear(512, 256, false, "he");
 const xvLayer  = new Linear(512, 256, false, "xavier");
 const normLayer = new Linear(512, 256, false, "normal");
@@ -43,7 +45,7 @@ function weightStd(l: Linear): number {
   return Math.sqrt(variance);
 }
 console.log("\nHe    std:", weightStd(heLayer).toFixed(4),   "  expected: ≈", (Math.sqrt(2/512)).toFixed(4));
-console.log("Xavier std:", weightStd(xvLayer).toFixed(4),   "  expected: ≈", (Math.sqrt(2/(512+256))).toFixed(4));
+console.log("Xavier std:", weightStd(xvLayer).toFixed(4),   "  expected: ≈", (Math.sqrt(1/512)).toFixed(4));
 console.log("Normal std:", weightStd(normLayer).toFixed(4), "  expected: ≈ 0.0200");
 
 // ─── STRETCH ─────────────────────────────────────────────────────────────────
