@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">a linear layer, unit by unit — each output owns one row of weights and one bias</text>
+
+  <!--
+    Inputs x = [1, 2] at left; three output units at right.
+    Weights (hand-set, doc section 2):
+        sat  [1,   0  ]  b 0     -> 1·1 + 0·2   + 0   = 1
+        ran  [0,   1  ]  b 0     -> 0·1 + 1·2   + 0   = 2
+        flew [0.5, 0.5]  b 1.5   -> 0.5·1+0.5·2 + 1.5 = 3
+    y = [1, 2, 3] — exactly Ch 12's logits.
+    Animation: each unit's edges + calc line highlight in turn, 3 phases, 9s.
+  -->
+
+  <!-- input nodes -->
+  <g font-family="monospace">
+    <circle cx="150" cy="150" r="26" fill="#ede7d3" stroke="#c9b88a" stroke-width="1.5"/>
+    <text x="150" y="146" text-anchor="middle" font-size="11" fill="#2c2416">x₁</text>
+    <text x="150" y="160" text-anchor="middle" font-size="12" font-weight="700" fill="#1e6091">1</text>
+    <circle cx="150" cy="270" r="26" fill="#ede7d3" stroke="#c9b88a" stroke-width="1.5"/>
+    <text x="150" y="266" text-anchor="middle" font-size="11" fill="#2c2416">x₂</text>
+    <text x="150" y="280" text-anchor="middle" font-size="12" font-weight="700" fill="#1e6091">2</text>
+    <text x="150" y="105" text-anchor="middle" font-size="9" fill="#8b7355">two features of "the cat"</text>
+  </g>
+
+  <!-- output units, edges, biases: one group per unit, highlighted in turn -->
+  <!-- unit sat: edges (150,150)->(520,110), (150,270)->(520,110) -->
+  <g font-family="monospace">
+    <animate attributeName="opacity" values="1;0.3;0.3" keyTimes="0;0.333;0.667" calcMode="discrete" dur="9s" repeatCount="indefinite"/>
+    <line x1="176" y1="150" x2="488" y2="110" stroke="#2e7d32" stroke-width="2.5"/>
+    <line x1="176" y1="270" x2="488" y2="118" stroke="#c9b88a" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <text x="300" y="122" font-size="10" font-weight="700" fill="#2e7d32">1</text>
+    <text x="305" y="205" font-size="10" fill="#a8956a">0</text>
+    <rect x="490" y="88" width="150" height="44" rx="8" fill="#e4efe4" stroke="#2e7d32" stroke-width="1.5"/>
+    <text x="565" y="106" text-anchor="middle" font-size="10" font-weight="700" fill="#2c2416">sat   row [1, 0]  b 0</text>
+    <text x="565" y="122" text-anchor="middle" font-size="11" fill="#2e7d32" font-weight="700">1·1 + 0·2 + 0 = 1</text>
+  </g>
+
+  <!-- unit ran -->
+  <g font-family="monospace">
+    <animate attributeName="opacity" values="0.3;1;0.3" keyTimes="0;0.333;0.667" calcMode="discrete" dur="9s" repeatCount="indefinite"/>
+    <line x1="176" y1="150" x2="488" y2="202" stroke="#c9b88a" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <line x1="176" y1="270" x2="488" y2="210" stroke="#1e6091" stroke-width="2.5"/>
+    <text x="300" y="168" font-size="10" fill="#a8956a">0</text>
+    <text x="300" y="252" font-size="10" font-weight="700" fill="#1e6091">1</text>
+    <rect x="490" y="184" width="150" height="44" rx="8" fill="#ede7d3" stroke="#1e6091" stroke-width="1.5"/>
+    <text x="565" y="202" text-anchor="middle" font-size="10" font-weight="700" fill="#2c2416">ran   row [0, 1]  b 0</text>
+    <text x="565" y="218" text-anchor="middle" font-size="11" fill="#1e6091" font-weight="700">0·1 + 1·2 + 0 = 2</text>
+  </g>
+
+  <!-- unit flew -->
+  <g font-family="monospace">
+    <animate attributeName="opacity" values="0.3;0.3;1" keyTimes="0;0.333;0.667" calcMode="discrete" dur="9s" repeatCount="indefinite"/>
+    <line x1="176" y1="150" x2="488" y2="296" stroke="#a94442" stroke-width="2.25"/>
+    <line x1="176" y1="270" x2="488" y2="304" stroke="#a94442" stroke-width="2.25"/>
+    <text x="315" y="240" font-size="10" font-weight="700" fill="#a94442">0.5</text>
+    <text x="300" y="298" font-size="10" font-weight="700" fill="#a94442">0.5</text>
+    <!-- bias arrow -->
+    <line x1="565" y1="356" x2="565" y2="326" stroke="#a94442" stroke-width="1.75" stroke-dasharray="3 2"/>
+    <text x="600" y="352" font-size="9.5" font-weight="700" fill="#a94442">bias 1.5</text>
+    <rect x="490" y="280" width="150" height="44" rx="8" fill="#f3e6e4" stroke="#a94442" stroke-width="1.5"/>
+    <text x="565" y="298" text-anchor="middle" font-size="10" font-weight="700" fill="#2c2416">flew  row [0.5, 0.5]  b 1.5</text>
+    <text x="565" y="314" text-anchor="middle" font-size="11" fill="#a94442" font-weight="700">0.5·1 + 0.5·2 + 1.5 = 3</text>
+  </g>
+
+  <!-- result -->
+  <g font-family="monospace">
+    <text x="672" y="110" font-size="13" font-weight="700" fill="#2e7d32">1</text>
+    <text x="672" y="206" font-size="13" font-weight="700" fill="#1e6091">2</text>
+    <text x="672" y="302" font-size="13" font-weight="700" fill="#a94442">3</text>
+  </g>
+
+  <!-- footer -->
+  <rect x="30" y="366" width="660" height="26" rx="6" fill="#ede7d3" stroke="#c9b88a"/>
+  <text x="360" y="378" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#5a4220" font-weight="600">
+    y = [1, 2, 3] — exactly Chapter 12's logits. one unit = Ch 12's one-weight model, widened;
+  </text>
+  <text x="360" y="389" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#5a4220" font-weight="600">
+    a layer = several units sharing the same input.  stacked as a matrix: y = x @ Wᵀ + b
+  </text>
+
+</svg>
