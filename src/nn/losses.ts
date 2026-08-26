@@ -310,5 +310,26 @@ export function crossEntropyFromLogits(
   logits: TensorValue,
   targets: Tensor
 ): TensorValue {
-  throw new Error("crossEntropyFromLogits not implemented");
+  // CONVENTION (the decision the guidance asks for): `targets` is ONE-HOT,
+  // same shape as `logits` — [1, 0, 0] for "sat". One-hot needs only mul and
+  // sum, which TensorValue already has as graph-aware methods.
+  const dim = logits.data.ndim - 1;
+
+  // The MASK is a constant — but the true logit is NOT. The −1 at the true
+  // class in the gradient p − y is the derivative of −z_y, so z_y must STAY
+  // in the graph (doc section 14's care point). Reading the logit's VALUE out
+  // of .data and wrapping it as a fresh leaf severs exactly that link: the
+  // loss comes out right and the gradient comes out as p instead of p − y —
+  // the −y silently gone. So: negate the constant mask, and let mul/sum pick
+  // the logit out INSIDE the graph.
+  const negOneHot = new TensorValue(mulScalar(targets, -1));
+
+  // −z_y per row: every wrong-class term is × 0, only the true logit
+  // survives, already negated. keepDims so the shape matches logSumExp's.
+  const negTrueLogit = logits.mul(negOneHot).sum(dim, true);
+
+  // L = logSumExp(z) − z_y per row, then mean over the batch (no axis → the
+  // scalar root backward() demands; mean, not sum, so the learning rate does
+  // not depend on batch size).
+  return logSumExp(logits).add(negTrueLogit).mean();
 }
