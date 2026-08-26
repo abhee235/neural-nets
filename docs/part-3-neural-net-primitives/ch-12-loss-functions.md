@@ -314,6 +314,14 @@ weight update
 better prediction
 ```
 
+Here is that same loop as one moving picture. Watch it cycle: forward, backward, update, forward again — the four numbers you just calculated, in the order they happen.
+
+<p align="center">
+  <img src="../assets/ch-12/one-weight-loop.svg" alt="An animated computation graph cycling through four phases on a loop. The static skeleton shows x equals 2 and w equals 3 feeding a mul node, producing p, which feeds an mseLoss node whose truth is 10. Phase one, forward: p equals 6 appears and the loss box shows L equals 16, with a note that 6 is too small since the truth is 10. Phase two, backward: red dashed arrows flow right to left carrying dL by dp equals minus 8 from the loss back to p, then dL by dw equals minus 8 times 2 equals minus 16 into the weight, captioned that the chain rule takes two hops and the gradient flows through p into w. Phase three, update: a green optimizer box appears, labelled as Chapter 9's step and not backprop, computing w becomes 3 minus 0.1 times minus 16 equals 4.6, with a note that subtracting a negative raises w — the sign carried too-small by itself. Phase four, forward again: a box shows p equals 2 times 4.6 equals 9.2 and L equals 0.64, concluding loss fell from 16 to 0.64, the model learned. A phase indicator at the bottom highlights forward, backward, update, forward again in turn, and a footer notes every training run in this course up to Chapter 30's GPT is this loop repeated." />
+</p>
+
+*Figure 1: the whole of learning, on loop. Forward makes a guess, backward finds who to blame, the optimizer moves the weight, and the next guess is better.*
+
 Keep one distinction clear because it will matter throughout this chapter:
 
 > **The loss measures the problem. Backpropagation calculates the gradients. The optimizer changes the weights.**
@@ -603,7 +611,7 @@ Here is the whole sweep as one picture — the middle column and the `p(sat)` co
   <img src="../assets/ch-12/why-accuracy-fails.svg" alt="Two stacked panels sharing one x-axis, which is the score given to the true word sat, sweeping from 0 to 6 while ran and flew stay at 2 and 3. The top panel, in red, plots the number of mistakes: a staircase sitting flat at 1 across the whole left half, dropping vertically to 0 at a score of 3, then flat at 0 across the right half, with both flat stretches labelled slope 0 and the drop labelled jump. A caption notes the model improves the whole way while this number never moves. The bottom panel, in green, plots the probability softmax assigns to sat over the same range: a smooth curve rising continuously from 0.0351 through 0.0900, 0.2119, 0.4223 and 0.6652 to 0.9362, never flat anywhere. Two animated markers sweep the panels in step, the red one jumping once while the green one moves continuously. On the right, two boxes compare what gradient descent sees: for the mistake count the slope is 0 everywhere it is defined and undefined at the jump, so step() updates nothing; for the probability the slope is never zero because it responds to every change made to the score, so there is always something to follow. A note says a usable loss has to be built out of the probability rather than the count, and the footer reads that the count is flat until it is too late while the thing that moves smoothly is what a loss must be built from." />
 </p>
 
-*Figure 1: the same sweep, measured two ways. The mistake count is flat and then jumps; the probability moves the whole time.*
+*Figure 2: the same sweep, measured two ways. The mistake count is flat and then jumps; the probability moves the whole time.*
 
 And notice the green curve. The probability of the true word responds to every single improvement. Whatever loss we design next should be built out of *that*.
 
@@ -718,6 +726,14 @@ p        -log(p)
 As the probability of the truth increases, the loss falls.
 
 As the probability approaches zero, the loss grows without bound.
+
+The table is the function at eight points. Here is its whole shape — and the shape is the argument:
+
+<p align="center">
+  <img src="../assets/ch-12/neg-log-curve.svg" alt="A plot of loss equals minus log p against p from 0 to 1. The curve starts near the top-left against a dashed red vertical wall at p equals 0 labelled goes to infinity, no ceiling — total confidence in the wrong word can be punished arbitrarily hard — then falls steeply, passing a red point at p equals 0.01 giving loss 4.61, a larger red point labelled our model at p equals 0.09 giving loss 2.41 where the truth sat was given only nine percent, a blue point at p equals 0.665 giving 0.408, and finally reaches a green point at p equals 1 giving loss exactly 0, labelled a perfect answer costs nothing. An animated green marker slides down the curve as p improves, captioned that the loss slides downhill and the slope never flattens to zero while the model is still wrong. A panel lists the four requirements checked off: high p gives low loss, p equals 1 gives zero, low p gives high loss, p to zero gives infinity — concluding minus log is simply a function with this shape." />
+</p>
+
+*Figure 3: `−log(p)`. Steep where the model is badly wrong, zero where it is perfectly right, and a wall at `p = 0`.*
 
 For our original example:
 
@@ -856,7 +872,7 @@ Cross-entropy escapes because its `log` undoes the exponential inside softmax �
   <img src="../assets/ch-12/mse-vs-crossentropy.svg" alt="Two panels, both sweeping left to right as the model becomes more confidently wrong, using logits [0, 0, w] with the true class first. The left panel plots the loss value: cross-entropy in green climbs steadily and without limit from about 1.1 to 10, while MSE in red rises briefly then flattens against a dashed ceiling line at 0.667 and stays there, captioned that probabilities are boxed into zero to one so a squared error cannot get large. The right panel plots the size of the gradient actually reaching the logits: cross-entropy in green rises toward 1.0 and holds at full strength, while MSE in red decays toward 0.00006 and effectively disappears, captioned that MSE sits behind a saturated softmax and is throttled by its flat region. Animated markers sweep both panels together. The footer states that MSE ranks this model correctly and does say the model is bad, but cannot produce enough gradient to fix it, and that the failure gets worse the more wrong the model is." />
 </p>
 
-*Figure 2: as the model gets more confidently wrong, cross-entropy's gradient grows toward full strength while MSE's decays to nothing.*
+*Figure 4: as the model gets more confidently wrong, cross-entropy's gradient grows toward full strength while MSE's decays to nothing.*
 
 So MSE can correctly report:
 
@@ -1211,6 +1227,12 @@ wrong class:
 ```
 
 The most overconfident wrong class gets the largest push downward.
+
+<p align="center">
+  <img src="../assets/ch-12/p-minus-y.svg" alt="Two panels. The left shows three bars for sat, ran and flew: solid blue bars at heights 0.090, 0.245 and 0.665 for the predicted probabilities, and a tall dashed green outline of height 1 over sat marking the one-hot truth. A caption says the gap between each bar and its truth IS the gradient, p minus y equals minus 0.910, 0.245, 0.665. The right panel reads the same numbers as instructions to the scores, with pulsing arrows: sat, gradient minus 0.910, a thick green arrow pointing up labelled up hard, the truth given far too little; ran, gradient plus 0.245, a small red arrow pointing down; flew, gradient plus 0.665, a thick red arrow pointing down labelled down hardest, it took the most it should not have. A box notes minus 0.910 plus 0.245 plus 0.665 equals zero always — the loss only redistributes confidence, never pushing everything up or everything down. The footer contrasts this with the mistake count, whose slope was zero everywhere." />
+</p>
+
+*Figure 5: the gradient as a bar gap on the left, and as instructions on the right. The arrows are the numbers, drawn.*
 
 The gradient is literally:
 

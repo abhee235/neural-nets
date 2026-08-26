@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">−log(p): the shape that turns confidence into punishment</text>
+
+  <!--
+    x axis: p, the probability given to the TRUE word, 0 → 1.  px = 80 + 560p
+    y axis: loss = −log(p), 0 → ~6.9.                          py = 340 − 44·(−log p)
+    Marked points (machine-verified):
+      p = 1.0       loss 0         perfect answer costs nothing
+      p = 0.665241  loss 0.4076    (our row, if truth were "flew")
+      p = 0.090031  loss 2.4076    our model, truth "sat"
+      p = 0.01      loss 4.6052    confidently wrong
+      p → 0        loss → ∞       no ceiling
+  -->
+
+  <!-- axes -->
+  <line x1="80" y1="340" x2="660" y2="340" stroke="#c9b88a" stroke-width="1.5"/>
+  <line x1="80" y1="40"  x2="80"  y2="346" stroke="#c9b88a" stroke-width="1.5"/>
+  <text x="370" y="372" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="10">p — probability the model gave the word that actually happened</text>
+  <text x="30" y="190" fill="#8b7355" font-family="monospace" font-size="10" transform="rotate(-90 30 190)">loss = −log(p)</text>
+
+  <!-- x ticks -->
+  <g font-family="monospace" font-size="8.5" fill="#a8956a" text-anchor="middle">
+    <text x="80"  y="354">0</text>
+    <text x="220" y="354">0.25</text>
+    <text x="360" y="354">0.5</text>
+    <text x="500" y="354">0.75</text>
+    <text x="640" y="354">1</text>
+  </g>
+  <!-- y ticks -->
+  <g font-family="monospace" font-size="8.5" fill="#a8956a" text-anchor="end">
+    <text x="74" y="344">0</text>
+    <text x="74" y="256">2</text>
+    <text x="74" y="168">4</text>
+    <text x="74" y="80">6</text>
+  </g>
+
+  <!-- the wall at p = 0 -->
+  <line x1="80" y1="40" x2="80" y2="340" stroke="#a94442" stroke-width="0.8" stroke-dasharray="3 3" opacity="0.6"/>
+  <text x="90" y="50" fill="#a94442" font-family="monospace" font-size="9" font-weight="700">→ ∞  no ceiling</text>
+  <text x="90" y="63" fill="#8b7355" font-family="monospace" font-size="8">total confidence in the wrong word</text>
+  <text x="90" y="74" fill="#8b7355" font-family="monospace" font-size="8">can be punished arbitrarily hard</text>
+
+  <!-- the curve -->
+  <polyline fill="none" stroke="#5a4220" stroke-width="2.75"
+    points="81.1,66.6 82.2,97.1 83.9,121.7 86.7,145.4 91.2,167.9 96.8,185.7 108.0,208.2 119.2,223.0 130.4,234.1 147.2,246.7 169.6,259.4 197.6,271.3 231.2,282.4 270.4,292.5 315.2,301.8 360.0,309.5 404.8,316.0 455.2,322.4 505.6,327.9 561.6,333.4 640.0,340.0"/>
+
+  <!-- marked points -->
+  <g font-family="monospace">
+    <circle cx="640.0" cy="340.0" r="5" fill="#2e7d32"/>
+    <text x="628" y="326" text-anchor="end" font-size="9" font-weight="700" fill="#2e7d32">p = 1 → loss 0</text>
+    <text x="628" y="338" text-anchor="end" font-size="8" fill="#8b7355">a perfect answer costs nothing</text>
+
+    <circle cx="452.5" cy="322.1" r="4.5" fill="#1e6091"/>
+    <text x="452" y="305" text-anchor="middle" font-size="9" fill="#1e6091">0.665 → 0.408</text>
+
+    <circle cx="130.4" cy="234.1" r="5.5" fill="#a94442"/>
+    <text x="146" y="228" font-size="9.5" font-weight="700" fill="#a94442">our model: p = 0.09 → loss 2.41</text>
+    <text x="146" y="240" font-size="8" fill="#8b7355">truth "sat", given only 9%</text>
+
+    <circle cx="85.6" cy="137.4" r="4.5" fill="#a94442"/>
+    <text x="100" y="135" font-size="9" fill="#a94442">0.01 → 4.61</text>
+  </g>
+
+  <!-- animated marker sliding down the curve as p improves -->
+  <circle r="6" fill="#2e7d32" opacity="0.85">
+    <animate attributeName="cx" values="85.6;130.4;248.0;452.5;640.0" dur="6s" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="137.4;234.1;287.0;322.1;340.0" dur="6s" repeatCount="indefinite"/>
+  </circle>
+  <text x="360" y="120" text-anchor="middle" font-family="monospace" font-size="9" fill="#2e7d32">as the model gives the truth more probability, the loss slides downhill —</text>
+  <text x="360" y="133" text-anchor="middle" font-family="monospace" font-size="9" fill="#2e7d32">and the slope never flattens to zero while the model is still wrong</text>
+
+  <!-- the four requirements, checked -->
+  <rect x="390" y="160" width="264" height="94" rx="8" fill="#ede7d3" stroke="#c9b88a"/>
+  <g font-family="monospace" font-size="8.5" fill="#2c2416">
+    <text x="402" y="178" font-weight="700" fill="#5a4220">the four requirements, met:</text>
+    <text x="402" y="194">1. high p → low loss        ✓ falls</text>
+    <text x="402" y="208">2. p = 1 → loss = 0         ✓ hits zero</text>
+    <text x="402" y="222">3. low p → high loss        ✓ climbs</text>
+    <text x="402" y="236">4. p → 0 → loss → ∞        ✓ the wall</text>
+    <text x="402" y="250" fill="#8b7355">−log is simply a function with this shape</text>
+  </g>
+
+</svg>
