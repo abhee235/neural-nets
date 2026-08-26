@@ -579,21 +579,45 @@ sat score     p(sat)     mistakes
 5.00          0.843795      0
 ```
 
-Look at what happened.
+Before reading the table, notice one thing: **we moved that score by hand.** The table is a tour of positions, taken to see what each column would say along the way. The model did not do this walk — and whether it ever *could* is exactly the question.
 
-The model improved from roughly `5.7%` confidence in the correct answer to roughly `42%`.
+Because in training, nothing moves a score except one force:
 
-But the mistake count stayed at `1` the entire time.
+```text
+new score = old score − learning_rate × gradient of the loss
+```
 
-Then, when the correct class finally became the top choice, the loss suddenly changed.
+There is no other hand. Whatever the loss's slope says, that is the whole engine.
 
-This is a terrible training signal.
+So look at the mistake column, sitting at the first row. The count is `1` at a score of `0.50`. It is also `1` a tiny step up, and `1` a tiny step down — flat in every direction the model can feel. The gradient is `0`, so the update is:
 
-A flat region has zero slope.
+```text
+new score = 0.50 − learning_rate × 0 = 0.50
+```
 
-Zero slope gives zero gradient.
+The model does not move. Not slowly — the step is literally of size zero, every step, forever. The flip down at `3.01` is real, but it sits three units away, and getting there takes steps the model cannot generate. **Every row below the first one is a place this model never visits.**
 
-Zero gradient means the weights do not move.
+Run the experiment and this stops being an argument. Train the same model twice from a score of `0.50`, once on each signal:
+
+```text
+          trained on mistakes            trained on a proper loss
+ step     score     gradient            score     gradient
+   0      0.500      0.0000             0.500     −0.9434
+   1      0.500      0.0000             2.387     −0.7164
+   2      0.500      0.0000             3.819     −0.3761
+   8      0.500      0.0000             5.911     −0.0693
+```
+
+The first model is not learning slowly. It is parked. The second walked the whole road and made `sat` its top choice. (The "proper loss" is `−log p(sat)` — built two sections from now.)
+
+Meanwhile the `p(sat)` column moved on every single row of the table. That is the difference between the two questions a signal can answer:
+
+```text
+"you haven't found it yet"        true, and useless — every direction sounds the same
+"warmer... warmer... colder"      tells you, from where you stand, which way to step
+```
+
+The mistake count only ever says the first. And the one place it does change — the jump at `3.01` — is no better: a cliff is infinitely steep for one instant and flat again on both sides. Neither flat nor cliff is a direction you can follow.
 
 So accuracy is very useful for answering:
 
