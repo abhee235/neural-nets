@@ -329,7 +329,9 @@ The exact data manipulation depends on your tensor representation.
 
 **The parameters go in the constructor, not into `step()`.** You already chose this shape in Chapter 09, and it is PyTorch's: an optimizer is *bound* to a list of parameters once, then `step()` and `zeroGrad()` take no arguments. It also means the optimizer can hold per-parameter state — which momentum and Adam are about to need.
 
-> **A note on Chapter 09's SGD.** The class in `src/optim/sgd.ts` operates on scalar `Value` objects, because Chapter 09 came before `TensorValue` existed. It is correct for what it was, and its tests still pass. Everything in *this* chapter operates on `TensorValue[]` — which is exactly what `Linear.parameters()` returned in Chapter 13, so the optimizer can consume a real layer.
+> **You have written this before.** Chapter 09 built `SGD` and `SGDMomentum` on scalar `Value` objects, because Ch 09 comes before `TensorValue` exists. That version is kept as [`src/optim/sgd-scalar.ts`](../../src/optim/sgd-scalar.ts), untouched and still passing its 16 tests, so you can read it beside what you write here.
+>
+> The rule is identical. Only the type of `.data` and `.grad` moves from `number` to `Tensor`, so `a - b` becomes `sub(a, b)` and `lr * g` becomes `mulScalar(g, lr)`. What the rebuild buys you is that `TensorValue[]` is exactly what `Linear.parameters()` returns — so this optimizer can train a real layer, and the scalar one cannot.
 
 But the important idea is:
 

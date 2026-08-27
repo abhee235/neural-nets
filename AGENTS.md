@@ -160,7 +160,7 @@ Do not consider a chapter complete until the gate passes:
 | 07 | Calculus for ML | `utils/numerical.ts` | `numericalGradient`, `relativeError`, `checkGradient` |
 | 08a | Autograd Forward | `value.ts` | `Value` class — forward ops recording `_inputs` and `_op` |
 | 08b | Autograd Backward | `value.ts` + `engine.ts` | `topoSort`, `Value.backward()`, `_backward` for all ops |
-| 09 | Gradient Descent | `optim/sgd.ts` | `SGD`, `step()`, `zeroGrad()` |
+| 09 | Gradient Descent | `optim/sgd-scalar.ts` | `SGD`, `step()`, `zeroGrad()` (scalar `Value`; Ch 14 rebuilds on tensors) |
 | 10 | Tensor Autograd Bridge | `autograd/grad.ts` | `TensorValue`, `sumToShape`, `checkTensorGradient` |
 
 ### Part 3 — Neural Net Primitives → `src/nn/`, `src/optim/`

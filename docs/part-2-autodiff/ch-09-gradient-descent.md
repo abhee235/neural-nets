@@ -1,8 +1,8 @@
 # Chapter 09: Gradient Descent
 
 > **Part 2 of 6 — Autodiff Engine**
-> Source: [`src/optim/sgd.ts`](../../src/optim/sgd.ts)
-> Tests: [`src/optim/sgd.test.ts`](../../src/optim/sgd.test.ts)
+> Source: [`src/optim/sgd-scalar.ts`](../../src/optim/sgd-scalar.ts)
+> Tests: [`src/optim/sgd-scalar.test.ts`](../../src/optim/sgd-scalar.test.ts)
 > Exercise: [`exercises/ch-09-gradient-descent.ts`](../../exercises/ch-09-gradient-descent.ts)
 
 ---
@@ -372,7 +372,9 @@ If you want to see this for yourself before Ch 13, the STRETCH at the bottom of 
 
 ## 7. Build it — `SGD`
 
-You now know enough to write the class. Open [`sgd.ts`](../../src/optim/sgd.ts); the per-method comments there carry the recipe and the traps.
+You now know enough to write the class. Open [`sgd-scalar.ts`](../../src/optim/sgd-scalar.ts); the per-method comments there carry the recipe and the traps.
+
+> **Why the file says `sgd-scalar`.** At this point in the course a parameter is a single number, because `TensorValue` does not arrive until Chapter 10. So this optimizer's update is plain arithmetic on two numbers, and that is exactly right for now. Chapter 14 rebuilds the same two classes on tensors — same rule, same trace, `a - b` simply becomes `sub(a, b)` — and *that* version is the one the library exports as `SGD`. This file stays, with its tests still passing, so the two can be read side by side.
 
 The API is: you hand the optimizer its parameters **once**, at construction, and afterwards `step()` and `zeroGrad()` take no arguments.
 
@@ -429,7 +431,7 @@ Two details in there are easy to miss and both matter:
 ✅ *Checkpoint:* reproduce the hand trace from section 3 exactly — `1.0`, `1.8`, `2.44`. If it disagrees, print `w.data`, `w.grad` and `learningRate`; one of the three is wrong and the trace tells you which.
 
 **Milestone 3 — `zeroGrad()`.** Loop over the parameters and set each `.grad` back to 0. One line of work.
-✅ *Checkpoint:* `bun test src/optim/sgd` — the `SGD` block should now go green.
+✅ *Checkpoint:* `bun test src/optim/sgd-scalar` — the `SGD` block should now go green.
 
 **Milestone 4 — the loop.** Assemble all five stages and minimise `(w−5)²` for 100 iterations from `w = 0`.
 ✅ *Checkpoint:* `w ≈ 5.0`. Then sweep the learning rate and check Figure 1's predictions: `0.05` crawls, `0.2` converges cleanly, `0.9` oscillates but still converges, `1.1` diverges.

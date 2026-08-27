@@ -9,7 +9,7 @@
  * trajectory, those numbers are the ones worked out in the chapter doc.
  */
 import { describe, it, expect } from "bun:test";
-import { SGD, SGDMomentum } from "./sgd.ts";
+import { SGDScalar as SGD, SGDMomentumScalar as SGDMomentum } from "./sgd-scalar.ts";
 import { Value } from "../autograd/value.ts";
 
 const EPSILON = 1e-6;
