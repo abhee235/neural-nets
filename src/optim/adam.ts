@@ -71,7 +71,17 @@
  * rule, one level up: forward passes build the graph, everything else does
  * not.
  */
-import type { Tensor } from "../tensor/index.ts";
+import {
+  add,
+  addScalar,
+  div,
+  mul,
+  mulScalar,
+  sqrt,
+  sub,
+  zeros,
+  type Tensor,
+} from "../tensor/index.ts";
 import { TensorValue } from "../autograd/grad.ts";
 
 export class Adam {
@@ -80,6 +90,13 @@ export class Adam {
   readonly beta1: number;
   readonly beta2: number;
   readonly epsilon: number;
+
+  /** First moments — "which way", one per parameter, same order as params. */
+  private readonly ms: Tensor[];
+  /** Second moments — "how big", one per parameter. */
+  private readonly vs: Tensor[];
+  /** Steps taken so far. Drives bias correction, so it must persist. */
+  private t: number;
 
   /**
    * ── STEPS ─────────────────────────────────────────────────────────────────
@@ -103,9 +120,19 @@ export class Adam {
     beta2?: number,
     epsilon?: number
   ) {
-    throw new Error(
-      "Adam constructor not implemented — defaults: lr=1e-3, β1=0.9, β2=0.999, ε=1e-8"
-    );
+    this.params = params;
+    this.learningRate = learningRate !== undefined ? learningRate : 1e-3;
+    this.beta1 = beta1 !== undefined ? beta1 : 0.9;
+    this.beta2 = beta2 !== undefined ? beta2 : 0.999;
+    this.epsilon = epsilon !== undefined ? epsilon : 1e-8;
+
+    // The state, allocated ONCE. One m and one v per parameter, each matching
+    // that parameter's own shape. Building these inside step() would restart
+    // both averages from zero every iteration — no error, and Adam silently
+    // stops being Adam.
+    this.ms = params.map((param) => zeros(param.data.shape));
+    this.vs = params.map((param) => zeros(param.data.shape));
+    this.t = 0;
   }
 
   /**
@@ -131,7 +158,40 @@ export class Adam {
    * little learning-rate tuning, and why its steps are bounded near lr.
    */
   step(): void {
-    throw new Error("Adam.step not implemented");
+    // Once per step, before the loop — every parameter shares this clock.
+    this.t += 1;
+
+    // Bias-correction denominators depend only on t, so compute them once.
+    const correctM = 1 - Math.pow(this.beta1, this.t);
+    const correctV = 1 - Math.pow(this.beta2, this.t);
+
+    this.params.forEach((param, i) => {
+      const g = param.grad;
+      if (g === null) return;
+
+      // m = β₁·m + (1−β₁)·g          which way the gradient usually points
+      this.ms[i] = add(
+        mulScalar(this.ms[i]!, this.beta1),
+        mulScalar(g, 1 - this.beta1),
+      );
+
+      // v = β₂·v + (1−β₂)·g⊙g        how large the gradients usually are.
+      // mul(g, g), not mulScalar — squaring is elementwise, tensor by tensor.
+      this.vs[i] = add(
+        mulScalar(this.vs[i]!, this.beta2),
+        mulScalar(mul(g, g), 1 - this.beta2),
+      );
+
+      // Dividing a tensor by a NUMBER is mulScalar by its reciprocal;
+      // div() expects two tensors.
+      const mHat = mulScalar(this.ms[i]!, 1 / correctM);
+      const vHat = mulScalar(this.vs[i]!, 1 / correctV);
+
+      // θ -= lr · m̂ / (√v̂ + ε). The ε is added AFTER the root, and addScalar
+      // is what adds a number to a tensor.
+      const update = div(mHat, addScalar(sqrt(vHat), this.epsilon));
+      param.data = sub(param.data, mulScalar(update, this.learningRate));
+    });
   }
 
   /**
@@ -146,6 +206,8 @@ export class Adam {
    * null as "first contribution" and assigns rather than adds.
    */
   zeroGrad(): void {
-    throw new Error("Adam.zeroGrad not implemented");
+    for (const param of this.params) {
+      param.grad = null;
+    }
   }
 }
