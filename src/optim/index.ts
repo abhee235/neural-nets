@@ -1,7 +1,7 @@
 /**
  * optim/index.ts — public API for the optimizer module.
  *
- * import { SGD, SGDMomentum, Adam } from "../optim/index.ts";
+ * import { SGD, SGDMomentum, Adam, AdamW } from "../optim/index.ts";
  *
  * All three operate on TensorValue, which is what Ch 13's
  * Linear.parameters() hands back.

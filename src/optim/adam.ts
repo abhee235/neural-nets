@@ -92,11 +92,11 @@ export class Adam {
   readonly epsilon: number;
 
   /** First moments — "which way", one per parameter, same order as params. */
-  private readonly ms: Tensor[];
+  protected readonly ms: Tensor[];
   /** Second moments — "how big", one per parameter. */
-  private readonly vs: Tensor[];
+  protected readonly vs: Tensor[];
   /** Steps taken so far. Drives bias correction, so it must persist. */
-  private t: number;
+  protected t: number;
 
   /**
    * ── STEPS ─────────────────────────────────────────────────────────────────
@@ -209,5 +209,80 @@ export class Adam {
     for (const param of this.params) {
       param.grad = null;
     }
+  }
+}
+
+/**
+ * AdamW — Adam with **decoupled** weight decay.
+ *
+ *     θ ← θ − η·λ·θ            the decay, applied straight to the parameter
+ *     θ ← θ − η·m̂/(√v̂ + ε)     then Adam's ordinary update
+ *
+ * ── WHY THIS IS A SEPARATE CLASS, AND NOT AN OPTION ON Adam ───────────────
+ * Because the distinction the "W" marks is exactly the one an option would
+ * blur. PyTorch's torch.optim.Adam DOES take a weight_decay argument — and
+ * it does the OTHER thing: it adds λθ into the gradient, which then flows
+ * into m and v and gets rescaled by Adam's own normalisation. The decay
+ * ends up divided by √v̂ along with everything else, so parameters with
+ * large gradients get decayed less. That coupling is the bug AdamW fixes,
+ * and it confused the field for years.
+ *
+ * Keeping the classes separate keeps the two behaviours impossible to mix
+ * up, which is the whole reason the paper gave it a new name.
+ *
+ * ── WHY IT SUBCLASSES ────────────────────────────────────────────────────
+ * The difference is one subtraction. Written as a subclass, that subtraction
+ * is the entire body of the override and you can see at a glance what AdamW
+ * adds — a copy of Adam's step() with one extra line buried in it would hide
+ * exactly the thing worth noticing.
+ *
+ * ── DECOUPLED MEANS: THE DECAY NEVER TOUCHES m OR v ──────────────────────
+ * It is applied to `param.data` directly, before Adam's update runs. It is
+ * never written into `param.grad`, so it cannot enter either moment and
+ * cannot be rescaled by the normalisation. Every parameter is pulled toward
+ * zero by the same fraction, η·λ, regardless of its gradient history.
+ *
+ * ── WORKED CHECK ─────────────────────────────────────────────────────────
+ * With λ = 0 this is Adam exactly — the decay term is zero and nothing else
+ * differs. That is the first test to write.
+ *
+ * With θ = 10, η = 0.1, λ = 0.01 and a gradient of 0, the Adam part
+ * contributes nothing and the parameter moves only by the decay:
+ *
+ *     θ ← 10 − 0.1 · 0.01 · 10  =  10 − 0.01  =  9.99
+ *
+ * @param weightDecay λ — the fraction of itself each parameter gives up per
+ *                    step. Typically 0.01 for transformers.
+ */
+export class AdamW extends Adam {
+  readonly weightDecay: number;
+
+  constructor(
+    params: TensorValue[],
+    learningRate?: number,
+    weightDecay?: number,
+    beta1?: number,
+    beta2?: number,
+    epsilon?: number
+  ) {
+    super(params, learningRate, beta1, beta2, epsilon);
+    this.weightDecay = weightDecay !== undefined ? weightDecay : 0.01;
+  }
+
+  override step(): void {
+    // The decay, straight onto the parameter — never into the gradient, so
+    // m and v never see it and it is never rescaled by √v̂.
+    if (this.weightDecay !== 0) {
+      for (const param of this.params) {
+        if (param.grad === null) continue;
+        param.data = sub(
+          param.data,
+          mulScalar(param.data, this.learningRate * this.weightDecay),
+        );
+      }
+    }
+
+    // Then Adam's update, entirely unchanged.
+    super.step();
   }
 }

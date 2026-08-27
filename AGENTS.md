@@ -170,7 +170,7 @@ Do not consider a chapter complete until the gate passes:
 | 11 | Activation Functions | `nn/activations.ts` | `relu`, `sigmoid`, `tanh`, `softmax`, `gelu`, `leakyRelu` |
 | 12 | Loss Functions | `nn/losses.ts` | `mseLoss`, `crossEntropyLoss` (log-sum-exp trick), `binaryCrossEntropy` |
 | 13 | Linear Layer | `nn/linear.ts` | `Linear` class (Xavier/He init, `forward`, `parameters()`) |
-| 14 | Optimizers | `optim/sgd.ts`, `optim/adam.ts` | `SGD`, `SGDMomentum`, `Adam` (m1/m2 moments, bias correction) |
+| 14 | Optimizers | `optim/sgd.ts`, `optim/adam.ts` | `SGD`, `SGDMomentum`, `Adam` (m1/m2 moments, bias correction), `AdamW` (decoupled decay) |
 | 15 | Training Loop | demo | Full MLP on XOR: forward → loss → backward → step |
 
 ### Part 4 — Language Model Inputs → `src/tokenizer/`, `src/nn/`
