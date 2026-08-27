@@ -66,6 +66,7 @@
  */
 import type { Tensor } from "../tensor/index.ts";
 import { TensorValue } from "../autograd/grad.ts";
+import { sub, mulScalar, add, zeros } from "../tensor/index.ts";
 
 /**
  * Plain stochastic gradient descent:  θ ← θ − lr · g
@@ -108,15 +109,22 @@ export class SGD {
   readonly learningRate: number;
 
   constructor(params: TensorValue[], learningRate: number) {
-    throw new Error("SGD constructor not implemented");
+    this.params = params;
+    this.learningRate = learningRate;
   }
 
   step(): void {
-    throw new Error("SGD.step not implemented");
+    for (const param of this.params) {
+      if (param.grad !== null) {
+        param.data = sub(param.data, mulScalar(param.grad, this.learningRate));
+      }
+    }
   }
 
   zeroGrad(): void {
-    throw new Error("SGD.zeroGrad not implemented");
+    for (const param of this.params) {
+      param.grad = null;
+    }
   }
 }
 
@@ -177,15 +185,41 @@ export class SGDMomentum {
   readonly learningRate: number;
   readonly momentum: number;
 
+  /** One velocity per parameter, same shape, in the same order as `params`. */
+  private readonly velocities: Tensor[];
+
   constructor(params: TensorValue[], learningRate: number, momentum?: number) {
-    throw new Error("SGDMomentum constructor not implemented");
+    this.params = params;
+    this.learningRate = learningRate;
+    this.momentum = momentum !== undefined ? momentum : 0.9;
+
+    // Allocated ONCE, here — this is the memory that makes it momentum.
+    // Building these inside step() would restart from v = 0 every iteration
+    // and silently collapse the update back to plain SGD.
+    this.velocities = params.map((param) => zeros(param.data.shape));
   }
 
   step(): void {
-    throw new Error("SGDMomentum.step not implemented");
+    this.params.forEach((param, i) => {
+      if (param.grad === null) return;
+
+      // Velocity first, then step with the NEW velocity.
+      this.velocities[i] = add(
+        mulScalar(this.velocities[i]!, this.momentum),
+        param.grad,
+      );
+      param.data = sub(
+        param.data,
+        mulScalar(this.velocities[i]!, this.learningRate),
+      );
+    });
   }
 
   zeroGrad(): void {
-    throw new Error("SGDMomentum.zeroGrad not implemented");
+    // Clears gradients only. The velocities are deliberately untouched —
+    // they are the history this class exists to keep.
+    for (const param of this.params) {
+      param.grad = null;
+    }
   }
 }
