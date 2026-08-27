@@ -720,17 +720,26 @@ And that leads to Adam.
 
 # Adam starts by asking two questions
 
-For every parameter, Adam keeps track of two pieces of information.
+Momentum kept one number per parameter: a running average of the gradient. Adam keeps **two**, and the second is the new idea.
 
-First:
+For every parameter it tracks:
 
 > **What direction has the gradient usually been pointing?**
 
-Second:
-
 > **How large have the gradients usually been?**
 
-The first becomes the **first moment**:
+Momentum only ever asked the first. And you can already see why that is not enough — a running average cannot tell these two situations apart:
+
+```text
+  gradients  +0.01, +0.01, +0.01, +0.01     average ≈  0.01
+  gradients  +3,    −3,    +3,    −3        average ≈  0
+```
+
+One parameter is receiving tiny gradients. The other is being thrown around violently and happening to cancel. To momentum they look nearly the same — a small average — so it takes a small step in both cases. But they call for opposite responses: the first parameter should probably move *more*, the second should move *carefully*.
+
+Telling them apart needs a second number, one that measures size while ignoring sign.
+
+The first question becomes the **first moment**:
 
 $$m_t = \underbrace{\beta_1 m_{t-1}}_{\text{the running average so far}} + \underbrace{(1 - \beta_1) g_t}_{\text{a little of the new gradient}}$$
 
@@ -788,68 +797,103 @@ Square them:
 9
 ```
 
-Now the second moment tells us:
+and the average of those is `9`, nowhere near zero.
 
-> "The gradients have substantial magnitude."
+So the two numbers now disagree, and that disagreement is exactly the information we wanted:
 
-That's useful information.
+```text
+  m ≈ 0     "these gradients have no consistent direction"
+  v ≈ 9     "but they are not small"
+```
+
+Squaring is what makes the second number blind to sign. `+3` and `−3` both become `9`, so cancellation cannot happen — which is the entire reason it is squared rather than just averaged.
+
+(Absolute value would also remove the sign. Squaring is chosen for the same two reasons as in Chapter 12's MSE: it is smooth everywhere, and it weighs large gradients disproportionately, which is what you want in a size estimate.)
 
 So Adam keeps:
 
 ```text
-m → direction
-v → scale
+m → which way          can cancel, and should
+v → how big            cannot cancel, by construction
 ```
 
 ---
 
 # Now we can normalize the update
 
-Suppose one parameter consistently receives large gradients.
-
-Its second moment becomes large:
-
-```text
-vₜ large
-```
-
-so:
-
-```text
-√vₜ large
-```
-
-and dividing by it makes the step smaller.
-
-A parameter receiving tiny gradients has a smaller denominator and can retain a larger normalized step.
-
-This produces an update of the form:
+We have two running numbers per parameter. Here is what to do with them, and it is one division.
 
 $$\theta_t = \theta_{t-1} - \eta \frac{m_t}{\sqrt{v_t} + \epsilon}$$
 
-The fraction is the whole trick:
-
 $$\frac{\overbrace{m_t}^{\text{which way to go}}}{\underbrace{\sqrt{v_t} + \epsilon}_{\text{how big the gradients have been}}}$$
 
-Conceptually:
+Two questions about that fraction are worth answering properly, because they are where Adam actually lives.
+
+## Why the square ROOT, and not just `v`?
+
+Because of units, and this is easier than it sounds.
+
+`m` is an average of gradients, so it is measured in gradient units. But `v` is an average of gradients **squared**, so it is in gradient *squared* units. Dividing one by the other would leave a quantity in `1/gradient` — a number that still depends on how large the gradients are.
+
+Taking the square root puts `v` back into gradient units, so the division cancels them completely and the result is a **pure number**.
+
+Watch it on a steady gradient of `g = 100`, at step 20:
 
 ```text
-             direction
-                │
-                ▼
-             m_t
-                │
-                │ divide by
-                ▼
-       recent gradient scale
-                │
-                ▼
-        normalized update
+m̂  = 100.0000        √v̂ = 100.0000        m̂ / √v̂  = 1.000000     ✓ a pure number
+                                           m̂ / v̂   = 0.01        ✗ shrinks as g grows
 ```
 
-This is the central idea behind Adam.
+The square root is not decoration. Without it the update would still scale with the gradients, which is the exact thing we are trying to remove.
 
-> **Estimate direction, estimate magnitude, then normalize the direction by the recent magnitude.**
+## What does that fraction actually come out to?
+
+This is the part worth remembering: **it is almost always close to ±1.**
+
+`m̂` estimates the gradient and `√v̂` estimates the size of the same gradient, so their ratio is roughly "gradient ÷ its own size". Feed Adam wildly different gradients and the answer barely moves:
+
+```text
+  gradients                   m̂ / √v̂  (last four steps)
+
+  all +1                       1.000    1.000    1.000    1.000
+  all +1000                    1.000    1.000    1.000    1.000
+  alternating +3, −3           0.074   −0.053    0.069   −0.053
+  noisy, mixed signs           0.331    0.374    0.472    0.310
+```
+
+Two things fall straight out of that table.
+
+**The size of the gradients has vanished from the answer.** `+1` and `+1000` give the identical result. That is what the division was for.
+
+**What survives is agreement.** Gradients that point the same way give a ratio near ±1 — a full-size step. Gradients that fight each other give a ratio near zero — Adam takes a small step, because it is not sure. The alternating `±3` case from the previous section lands at `0.074`: the second moment noticed those gradients were large, and the first moment noticed they cancelled, so the step is tiny even though the gradients were not.
+
+So the step Adam takes is **about `η`, always** — not `η · g`. The learning rate stops being a number you scale by, and becomes something closer to a speed limit.
+
+## Back to the two parameters
+
+The previous section left a problem hanging: parameter `A` receives gradients around `100`, parameter `B` around `0.001`. Why should one global learning rate suit both?
+
+Under plain SGD with `η = 0.001`, it does not:
+
+```text
+  A moves  0.001 × 100    = 0.1        per step
+  B moves  0.001 × 0.001  = 0.000001   per step
+
+  a ratio of 100,000 to 1 — one lurches while the other crawls
+```
+
+Under Adam, the `m̂/√v̂` ratio for both is:
+
+```text
+  A:  1.0000  1.0000  1.0000  1.0000  1.0000  1.0000
+  B:  1.0000  1.0000  1.0000  1.0000  1.0000  1.0000
+```
+
+**Identical.** Both parameters move by about `η` per step, and the hundred-thousand-fold difference in their gradients simply does not reach the update.
+
+That is the whole of Adam:
+
+> **Estimate the direction, estimate the size, and divide the first by the second — so what reaches the parameter is which way to go, with how hard stripped out.**
 
 ---
 
