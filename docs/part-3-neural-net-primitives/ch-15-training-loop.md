@@ -1,283 +1,283 @@
-# Chapter 15: Training Loop
+# Chapter 15: The Training Loop
 
 > **Part 3 of 6 — Neural Net Primitives**
-> Source: [`src/nn/linear.ts`](../../src/nn/linear.ts) · [`src/optim/sgd.ts`](../../src/optim/sgd.ts) · [`src/optim/adam.ts`](../../src/optim/adam.ts)
-> Tests: [`src/nn/linear.test.ts`](../../src/nn/linear.test.ts)
-> Exercise: [`exercises/ch-15-training-loop.ts`](../../exercises/ch-15-training-loop.ts)
+>
+> Exercise: `exercises/ch-15-training-loop.ts`
+>
+> This chapter adds no new machinery. Everything it uses, you have already built.
 
 ---
 
-## Learning Goals
+# Nothing left to build
 
-By the end of this chapter you can:
-
-- Build a small MLP from `Linear` + activation + `Linear`.
-- Wire forward → loss → zeroGrad → backward → step into one training step.
-- Iterate over batches, log loss, and confirm the loss curve goes down.
-- Fit a non-trivial dataset (spiral, XOR, or moons) and visualise the decision boundary.
-- Detect divergence and recover by lowering the learning rate.
-
----
-
-## Intuition First
-
-Every neural-network training routine — from a 2-layer MLP to GPT-4 — is the same five-line ritual:
-
-1. `predictions = model.forward(inputs)`
-2. `loss = lossFn(predictions, targets)`
-3. `optimizer.zeroGrad()`
-4. `loss.backward()`
-5. `optimizer.step()`
-
-The rest is data plumbing, logging, and validation.
-
----
-
-## Mental Model
+Look at what is finished.
 
 ```text
-  ┌──────────────────────────────────────────┐
-  │ for epoch in 0..E:                      │
-  │   for batch in shuffle(dataset):        │
-  │     y_hat = model.forward(batch.x)      │
-  │     loss  = lossFn(y_hat, batch.y)      │
-  │     optimizer.zeroGrad()                │
-  │     loss.backward()                     │
-  │     optimizer.step()                    │
-  │   log(epoch, mean_loss, val_loss)       │
-  └──────────────────────────────────────────┘
+Ch 10   TensorValue      records operations, and backward() fills every gradient
+Ch 11   relu             bends the line, so depth means something
+Ch 12   mseLoss          turns "how wrong?" into one number
+Ch 13   Linear           owns weights and hands them over via parameters()
+Ch 14   SGD, Adam        take that list and move it downhill
 ```
+
+Five chapters, five pieces, and they have never once run together.
+
+This chapter runs them. It introduces nothing new — no class, no formula, no derivation. Its whole content is the order the pieces go in, and what happens when you turn the handle.
 
 ---
 
-## Concepts
+# The five lines
 
-### Multi-Layer Perceptron (MLP)
-
-An MLP stacks Linear layers with activation functions in between:
-
-```
-Input: [batchSize, inputDim]
-   ↓  Linear(inputDim, hiddenDim)
-   ↓  ReLU
-   ↓  Linear(hiddenDim, hiddenDim)
-   ↓  ReLU
-   ↓  Linear(hiddenDim, outputDim)
-Output: [batchSize, outputDim]   ← logits (before softmax/sigmoid)
-```
-
-The depth (number of layers) and width (hiddenDim) are hyperparameters.
-More depth → more expressive, harder to train. More width → more capacity.
-
-### The Full Training Loop
-
-```
-Initialize model parameters (random weights)
-Initialize optimizer
-
-for epoch in range(numEpochs):
-  for batch in batches:
-    # 1. Forward pass: run input through the model
-    predictions = model.forward(batchInputs)
-
-    # 2. Compute loss: how wrong are the predictions?
-    loss = crossEntropyFromLogits(predictions, batchLabels)
-
-    # 3. Zero gradients: must clear before backward (or they accumulate)
-    optimizer.zeroGrad(model.parameters())
-
-    # 4. Backward pass: compute gradients via autograd
-    loss.backward()
-
-    # 5. Update parameters: move in the direction that reduces loss
-    optimizer.step(model.parameters())
-
-  # Log progress
-  print(`Epoch ${epoch}: loss = ${loss.data.toFixed(4)}`)
-```
-
-### Batching
-
-Instead of processing one sample at a time, process many samples simultaneously (a "batch").
-Benefits:
-1. **Speed:** matrix operations on batches are much faster than loops over single samples
-2. **Gradient quality:** the gradient averaged over a batch is less noisy than a single sample
-3. **Stability:** smoother loss curve, more stable convergence
-
-Typical batch sizes: 32, 64, 128, 256. For transformers: 8–64 depending on sequence length.
-
-### Train vs Eval Mode
-
-Some components behave differently during training vs inference:
-- **Dropout** (Ch 20): randomly zeroes activations during training, does nothing during eval
-- **BatchNorm**: uses batch statistics during training, running statistics during eval
-
-Best practice: models have a `mode` flag, and `train()` / `eval()` methods:
+Here is the entire thing. Every training run in this course, and every training run in machine learning, is this:
 
 ```typescript
-model.train();   // enable dropout, etc.
-// ... training loop ...
-model.eval();    // disable dropout for evaluation
+optimizer.zeroGrad();                       // 1. forget the last gradients
+const prediction = model.forward(input);    // 2. guess
+const loss = lossFn(prediction, target);    // 3. score the guess
+loss.backward();                            // 4. assign blame
+optimizer.step();                           // 5. move the weights
 ```
 
-### Learning Curves
+Repeat until the loss stops falling.
 
-Track and log:
-- **Training loss**: loss on the training set. Should decrease.
-- **Validation loss**: loss on held-out data. Should also decrease; if it rises, you're overfitting.
-- **Training accuracy** (for classification): fraction of correct predictions.
+That is not a simplification. GPT is trained with those five lines, wrapped in data loading and logging and distributed plumbing — but the loop at the centre is exactly this.
 
-When training loss drops but validation loss rises → **overfitting**: the model memorized
-training data and fails to generalize. Solutions: more data, dropout, weight decay.
-
-### The Toy Dataset: Spiral Classification
-
-A classic 2D toy problem: two interleaved spirals that can't be separated linearly.
-Any model that achieves > 90% accuracy has truly learned a non-linear boundary.
-
-Data: N points from each class, sampled around a spiral in 2D space:
-```
-for i in range(N):
-  angle = i / N * turns * 2π + classOffset
-  radius = i / N
-  x = radius * cos(angle) + noise
-  y = radius * sin(angle) + noise
-  label = classIndex
-```
+What is worth spending a chapter on is **why they are in that order**, because three of the five can be moved and only one arrangement is correct.
 
 ---
 
-## What to Implement
+# Why the order is the order
 
-| Symbol | Description |
-|--------|-------------|
-| `class MLP` | Multi-layer perceptron. Constructor takes `[inputDim, ...hiddenDims, outputDim]`. |
-| `MLP.forward(x)` | Stack linear layers with ReLU in between. Last layer has no activation. |
-| `MLP.parameters()` | Flatten all layer parameters into a single array. |
-| `generateSpiral(n, classes)` | Generate the spiral toy dataset. Returns `{inputs, labels}`. |
-| `accuracy(predictions, labels)` | Compute classification accuracy. |
-| `train(model, data, opts)` | Run the full training loop; return loss history. |
+## `backward()` must come after the loss
+
+Obvious once said: `backward()` walks the graph from the loss downward. There is no graph until the forward pass has built one, and no root to start from until the loss has collapsed it to a single number (Ch 10's guard exists to say exactly this).
+
+## `step()` must come after `backward()`
+
+`step()` reads `.grad`. Before `backward()` those are all `null` — so a `step()` placed earlier would find nothing to do and silently move nothing. The parameters would sit still while everything else appeared to run.
+
+## `zeroGrad()` is the one with a real choice
+
+`backward()` **accumulates** with `+=`. Ch 08 measured what happens when nothing clears it: gradients went `-3`, then `-9`, then `-18` — not merely doubling, because interior nodes compound the contamination with depth. In a loop that inflates the effective learning rate on every iteration, and the loss climbs. It looks exactly like a learning rate set far too high, which is why it is such an annoying bug to find.
+
+So it has to be called. The question is where, and there are two correct answers and one wrong one:
+
+```text
+  zeroGrad → forward → loss → backward → step        ✓ correct
+  forward → loss → backward → step → zeroGrad        ✓ correct, same thing
+  forward → loss → backward → zeroGrad → step        ✗ erases the gradients
+                                                       before step() uses them
+```
+
+The third runs without error and trains nothing. `step()` finds every gradient `null`, skips every parameter, and the loss sits perfectly still while the loop spins.
+
+The rule underneath: **`zeroGrad()` goes anywhere between one `step()` and the next `backward()`.** Both correct orderings above satisfy that; the broken one does not.
 
 ---
 
-## TypeScript Hints
+# Build it — XOR, with the real classes
+
+The problem is the one this part of the course opened with. Chapter 11 introduced XOR as the thing a linear model provably cannot solve, and its exercise trained a net on it with a hand-rolled loop, because `Linear`, `mseLoss` and `Adam` did not exist yet.
+
+Now they do. Same problem, real classes:
+
+```text
+  inputs            targets
+  [0, 0]      →       0
+  [0, 1]      →       1
+  [1, 0]      →       1
+  [1, 1]      →       0
+```
+
+The model needs a hidden layer — that is the whole lesson of Ch 11 — so two `Linear` layers with a `relu` between them:
 
 ```typescript
-export class MLP {
-  layers: Linear[];
+const layer1 = new Linear(2, 8);
+const layer2 = new Linear(8, 1);
 
-  // dims: [inputDim, hidden1, hidden2, ..., outputDim]
-  constructor(dims: number[]) {
-    this.layers = [];
-    for (let i = 0; i < dims.length - 1; i++) {
-      this.layers.push(new Linear(dims[i]!, dims[i + 1]!, "he"));
-    }
-  }
+const forward = (x: TensorValue) => layer2.forward(relu(layer1.forward(x)));
+```
 
-  forward(x: Value): Value {
-    let out = x;
-    for (let i = 0; i < this.layers.length; i++) {
-      out = this.layers[i]!.forward(out);
-      // Apply ReLU on all layers except the last (output) layer
-      if (i < this.layers.length - 1) {
-        out = out.relu();   // (add relu() to Value in Ch 11)
-      }
-    }
-    return out;
-  }
+Collecting the parameters is where Ch 13's contract pays off. Two layers, one flat list:
 
-  parameters(): Value[] {
-    return this.layers.flatMap(layer => layer.parameters());
-  }
-}
+```typescript
+const params = [...layer1.parameters(), ...layer2.parameters()];
+const optimizer = new SGD(params, 0.1);
+```
 
-// Training loop
-export function train(
-  model: MLP,
-  inputs: Value,
-  labels: Value,
-  opts: { epochs: number; lr: number; batchSize: number }
-): number[] {
-  const optimizer = new Adam(opts.lr);
-  const lossHistory: number[] = [];
+That list is **4 tensors and 33 numbers** — shapes `[8,2]`, `[8]`, `[1,8]`, `[1]`. The optimizer walks it without knowing a layer exists, which is exactly what `parameters()` was for.
 
-  for (let epoch = 0; epoch < opts.epochs; epoch++) {
-    // Forward
-    const logits = model.forward(inputs);
-    const loss = crossEntropyFromLogits(logits, labels);
+Then the five lines, in a loop:
 
-    // Backward
-    optimizer.zeroGrad(model.parameters());
-    loss.backward();
-    optimizer.step(model.parameters());
-
-    lossHistory.push(loss.data as number);
-    if (epoch % 100 === 0) {
-      console.log(`Epoch ${epoch}: loss = ${(loss.data as number).toFixed(4)}`);
-    }
-  }
-
-  return lossHistory;
+```typescript
+for (let step = 0; step < 600; step++) {
+  optimizer.zeroGrad();
+  const loss = mseLoss(forward(inputs), targets);
+  loss.backward();
+  optimizer.step();
 }
 ```
 
----
-
-## Common Pitfalls
-
-- Forgetting `zeroGrad()` — gradients accumulate and the model explodes after a few steps.
-- Computing loss on the *training* set and never on a held-out set — you cannot detect overfitting.
-- Logging the last batch's loss instead of the epoch mean — too noisy to read.
-- Shuffling the labels but not the inputs (or vice versa) by accident.
-- Letting `dropout`/`train` mode leak into evaluation — turn it off for validation.
+✅ *Checkpoint:* after 600 steps the loss is `0.000000` and the four predictions are `0, 1, 1, 0` to four decimals.
 
 ---
 
-## How to Verify
+# What you actually watch
 
-Run the tests and the exercise. Both should pass cleanly with no warnings:
+A training loop prints two numbers, and Chapter 12 explained why they are two rather than one. Here is that argument as a real run — `SGD`, `lr = 0.1`:
+
+```text
+  step     loss       accuracy
+     0    0.725774      50%
+    50    0.071295     100%
+   100    0.010616     100%
+   200    0.000094     100%
+   600    0.000000     100%
+```
+
+Weights start random, so your exact numbers will differ. The *shape* does not, and it is the shape that matters.
+
+**Accuracy reaches 100% early and then never moves again.** Across eight runs it first hit 100% somewhere between step 4 and step 62 — and in every one of them the loss at that moment was still around `0.09`–`0.20`, nowhere near zero. The model was already answering all four questions correctly, and training then ran for hundreds more steps.
+
+**Accuracy changed on a handful of steps — between 2 and 6 of the 600.** The loss changed on all 600.
+
+That is Chapter 12's figure, live: accuracy is a staircase, the loss is smooth. It is the reason you cannot train on accuracy, and the reason you report it anyway. **The loss is the thing you can descend. Accuracy is the thing you care about.** Once accuracy saturates, only one of them still has anything to say.
+
+---
+
+# What goes wrong
+
+The loop is five lines and cannot really be written incorrectly once the order is right. Everything that goes wrong is in the numbers you hand it — so the useful part of this chapter is knowing what failure looks like.
+
+Here is the same XOR setup, 3000 steps, run 30 times from different random initialisations, counting how often it actually solves the problem:
+
+```text
+  optimizer / learning rate     solved
+
+  SGD          lr 0.05          30/30   ████████████████████
+  SGD          lr 0.1           30/30   ████████████████████
+  SGD          lr 0.5           11/30   ███████
+  SGD          lr 1.0            0/30
+  SGDMomentum  lr 0.05          23/30   ███████████████
+  Adam         lr 0.01          29/30   ███████████████████
+  Adam         lr 0.05          25/30   █████████████████
+```
+
+## The learning rate has a cliff, not a slope
+
+`0.1` works every time. `0.5` works a third of the time. `1.0` never works. There is no gentle degradation — the model goes from perfect to hopeless across one factor of ten.
+
+What is happening at `lr = 1.0` is Ch 11's dying ReLU. One oversized step drives a unit's input negative for all four inputs at once; its gradient becomes exactly `0` and it never updates again. Enough dead units and there is no hidden layer left — the network can only output a constant.
+
+That collapse has a signature you can check for, and it is not the loss value:
+
+```text
+  lr = 1.0, 3000 steps, 12 different initialisations
+
+  all four predictions identical:   12 / 12
+  loss anywhere near 0.25:           0 / 12
+```
+
+**The tell is that every input produces the same output.** Feed the network four different things and get one number back, and the hidden layer is gone. The loss meanwhile is large and unstable — 21, 33, 217 across runs — because the surviving output bias is being driven by the same oversized step and oscillates instead of settling.
+
+(A loss of exactly `0.25` with every prediction `0.5` is a *different* failure — that is a network that is dead but *stable*, so its output bias settles on the mean of the targets. Chapter 11's exercise E10(a) measured it from zero-initialised weights. Same "network became a constant", different cause and different arithmetic.)
+
+## The optimizer is not a magic switch
+
+Read the table again. **Plain SGD at a sensible learning rate is the most reliable thing on it** — 30/30, beating Adam's 25/30 at the same rate.
+
+That is worth sitting with, because the expectation runs the other way. Adam is what transformers train with, and Chapter 14 spent a lot of pages on why. But on a small, clean, well-conditioned problem, plain gradient descent at a sane step size is hard to beat.
+
+What Adam buys is not speed here — it is a **wider band of learning rates that work**, and per-parameter scaling that matters when different parameters see gradients of wildly different sizes. XOR has neither problem. GPT has both.
+
+Notice `SGDMomentum` at `lr = 0.05` scoring `23/30`, worse than plain SGD at the same rate. Chapter 14 predicted this: momentum with `β = 0.9` amplifies the effective step by `1/(1−0.9) = 10`, so `lr = 0.05` behaves like `lr ≈ 0.5` — and plain SGD at `0.5` scores `11/30`. The two numbers agree about the cause.
+
+---
+
+# The three failures worth recognising
+
+Everything above collapses into a short diagnostic list. When training does not work, it is almost always one of these, and each has a signature:
+
+```text
+  loss climbs steadily             zeroGrad() missing — gradients accumulate,
+                                   so the effective learning rate grows
+
+  loss does not move AT ALL        zeroGrad() called between backward() and
+                                   step() — the gradients are erased unused
+
+  every input gives the SAME       dead units, lr too high. the hidden layer
+  output, loss large and erratic   is gone; only a constant is left
+
+  every prediction is 0.5 and      dead but stable — usually zero init.
+  the loss sits at 0.25            the output bias settled on the mean
+
+  loss falls then flattens         working. the lr may be too small, or the
+  far above zero                   model too small for the problem
+```
+
+The first four are bugs. The last is a decision.
+
+---
+
+# What to implement
+
+Nothing new — that is the point of this chapter. The exercise file assembles what you have:
+
+| | |
+|---|---|
+| the loop | five lines, in the order above |
+| the model | two `Linear` layers with `relu` between them |
+| the parameters | `[...layer1.parameters(), ...layer2.parameters()]` |
+| accuracy | three lines: threshold at 0.5, compare, average |
+
+There is no `MLP` class and no dataset generator, deliberately. Two layers written out are clearer than a container that hides them, and XOR is four rows you can read.
+
+---
+
+# Verify
 
 ```bash
 bun run exercises/ch-15-training-loop.ts
 ```
 
----
-
-## Self-Check Questions
-
-1. Why must `zeroGrad` come BEFORE `backward()`, not after `step()`?
-2. In the spiral dataset, a linear model (single `Linear` layer, no activation) achieves
-   ~50% accuracy. Why can't it do better?
-3. What is "epoch" vs "step" (or "iteration")? If your dataset has 1000 samples and
-   batch size 32, how many steps are in one epoch?
-4. Train the MLP twice: once with ReLU, once without any activation (just stacked linears).
-   What do you expect to see?
-5. What is the difference between training loss at epoch 1 vs epoch 100 for a properly
-   training model? What should both values tell you?
+You should see the loss reach `0.000000`, predictions of `0, 1, 1, 0`, and — if you run the learning-rate sweep — the cliff between `0.1` and `1.0`.
 
 ---
 
-## End of Part 3
+# What you should now be able to explain
 
-You now have a complete working neural network framework:
-- Tensor math (Part 1)
-- Automatic differentiation (Part 2)
-- Activations, losses, layers, optimizers, and training loop (Part 3)
-
-This is essentially a tiny PyTorch. From here, we build the components specifically needed
-for language models and transformers.
-
----
-
-## Further Reading
-
-- [Karpathy — A Recipe for Training Neural Networks](https://karpathy.github.io/2019/04/25/recipe/) — the *exact* habits this chapter trains you to develop.
-- [Smith — Cyclical Learning Rates](https://arxiv.org/abs/1506.01186) — an early but practical look at LR scheduling.
-- [Stanford CS231n — practical training notes](https://cs231n.github.io/neural-networks-3/) — babysitting the learning process; how to read loss curves.
-- [PyTorch — training loop tutorial](https://pytorch.org/tutorials/beginner/basics/optimization_tutorial.html) — the same ritual in a production library.
+1. Why must `backward()` come after the loss and not after the forward pass?
+2. Where can `zeroGrad()` go, and which single position breaks training silently?
+3. What does a loop with no `zeroGrad()` look like from the outside, and why is it mistaken for a learning rate problem?
+4. Two layers produce four parameter tensors. How does the optimizer know what to do with them without knowing what a layer is?
+5. Accuracy reached 100% at step 14 and training ran to step 600. Was that wasted?
+6. Why can you not train on accuracy directly?
+7. `lr = 0.1` solves XOR 30 times out of 30 and `lr = 1.0` zero times out of 30. What is physically happening at the higher rate?
+8. Two runs both end with the network outputting a constant. In one the loss is `0.25` and every prediction is `0.5`; in the other the loss is `217` and every prediction is `-14.2`. What is different about the two failures?
+9. Plain SGD beat Adam on this problem. What does Adam actually buy, and why does XOR not benefit?
 
 ---
 
-## Next Chapter
+# End of Part 3
 
-**[Char Tokenizer](../part-4-tokenizer-and-inputs/ch-16-char-tokenizer.md)** — switch from synthetic data to text, the input format every language model needs.
+You can now build and train a neural network from nothing.
+
+```text
+  tensors            Ch 01–06     the arithmetic
+  autodiff           Ch 07–10     gradients, for free, through any graph
+  activations        Ch 11        the bend that makes depth mean something
+  losses             Ch 12        one number to descend
+  layers             Ch 13        parameters, owned and handed over
+  optimizers         Ch 14        the list, moved downhill
+  the loop           Ch 15        all of it, turning
+```
+
+Everything after this point is **architecture** — new arrangements of these same parts. Attention (Ch 22) is `Linear` layers and a `softmax`. A transformer block is those, plus a normalisation and a residual connection. GPT is that block, stacked.
+
+None of it adds a new kind of thing. The engine is finished.
+
+---
+
+# Next Chapter
+
+**Ch 16: Character Tokenizer** — Part 4 begins, and the question changes from *how does a network learn* to *how does text become something a network can read*.
