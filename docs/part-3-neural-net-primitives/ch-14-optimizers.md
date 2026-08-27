@@ -242,7 +242,9 @@ The simplest optimizer is just the rule we already used.
 
 For every parameter:
 
-$$\theta \leftarrow \theta - \eta g$$
+$$\boxed{\;\theta \leftarrow \theta - \eta g\;}$$
+
+where $\eta$ is the learning rate and $g = \partial L / \partial \theta$ is that parameter's gradient.
 
 "Stochastic" usually means that the gradient was computed from a mini-batch rather than the entire training dataset.
 
@@ -417,9 +419,13 @@ we keep a running velocity:
 
 $$v_t = \beta v_{t-1} + g_t$$
 
-and then update:
+Read the two halves, because that is the whole idea:
 
-$$\theta_t = \theta_{t-1} - \eta v_t$$
+$$v_t = \underbrace{\beta v_{t-1}}_{\text{where we were already going}} + \underbrace{g_t}_{\text{what this step says}}$$
+
+and then update using the velocity rather than the raw gradient:
+
+$$\boxed{\;\theta_t = \theta_{t-1} - \eta v_t\;}$$
 
 The parameter now has memory.
 
@@ -726,7 +732,7 @@ Second:
 
 The first becomes the **first moment**:
 
-$$m_t = \beta_1 m_{t-1} + (1 - \beta_1) g_t$$
+$$m_t = \underbrace{\beta_1 m_{t-1}}_{\text{the running average so far}} + \underbrace{(1 - \beta_1) g_t}_{\text{a little of the new gradient}}$$
 
 This is similar to momentum.
 
@@ -821,6 +827,10 @@ This produces an update of the form:
 
 $$\theta_t = \theta_{t-1} - \eta \frac{m_t}{\sqrt{v_t} + \epsilon}$$
 
+The fraction is the whole trick:
+
+$$\frac{\overbrace{m_t}^{\text{which way to go}}}{\underbrace{\sqrt{v_t} + \epsilon}_{\text{how big the gradients have been}}}$$
+
 Conceptually:
 
 ```text
@@ -888,9 +898,11 @@ $$\hat{m}_t = \frac{m_t}{1 - \beta_1^t}$$
 
 $$\hat{v}_t = \frac{v_t}{1 - \beta_2^t}$$
 
-Now the update uses:
+Now the update uses the corrected moments:
 
-$$\theta_t = \theta_{t-1} - \eta \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon}$$
+$$\boxed{\;\theta_t = \theta_{t-1} - \eta \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon}\;}$$
+
+where $\hat{m}_t = m_t / (1 - \beta_1^t)$ and $\hat{v}_t = v_t / (1 - \beta_2^t)$.
 
 The hats mean:
 
@@ -1134,7 +1146,7 @@ AdamW uses **decoupled weight decay**.
 
 Conceptually, Adam first computes its adaptive update, and weight decay is then applied separately:
 
-$$\theta \leftarrow \theta - \eta\frac{\hat{m}}{\sqrt{\hat{v}} + \epsilon} - \eta\lambda\theta$$
+$$\theta \leftarrow \theta - \underbrace{\eta\frac{\hat{m}}{\sqrt{\hat{v}} + \epsilon}}_{\text{the Adam update}} - \underbrace{\eta\lambda\theta}_{\text{weight decay, kept separate}}$$
 
 The important idea is the separation:
 
