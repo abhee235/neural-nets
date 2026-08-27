@@ -72,7 +72,7 @@ That machinery is an **optimizer**.
 
 ---
 
-# 1. Start with the simplest possible rule
+# Start with the simplest possible rule
 
 Let's forget the word "optimizer" for a moment.
 
@@ -110,7 +110,7 @@ The learning rate controls how large a step we take.
 
 ---
 
-# 2. Watch one parameter learn
+# Watch one parameter learn
 
 Let's use a deliberately simple problem.
 
@@ -195,7 +195,7 @@ Nothing else is required.
 
 ---
 
-# 3. So why do we need an optimizer class?
+# So why do we need an optimizer class?
 
 Because we don't want to write:
 
@@ -248,7 +248,7 @@ And the optimizer does not need to know what the model is.
 
 ---
 
-# 4. Our first optimizer: SGD
+# Our first optimizer: SGD
 
 The simplest optimizer is just the rule we already used.
 
@@ -298,7 +298,7 @@ Every parameter follows its own gradient.
 
 ---
 
-# 5. Build SGD
+# Build SGD
 
 At this point the implementation should feel almost trivial.
 
@@ -349,7 +349,7 @@ use gradients
 
 ---
 
-# 6. There's a problem with plain SGD
+# There's a problem with plain SGD
 
 Let's return to the hill analogy.
 
@@ -414,7 +414,7 @@ That leads us to momentum.
 
 ---
 
-# 7. The idea of momentum
+# The idea of momentum
 
 Imagine pushing a heavy ball downhill.
 
@@ -460,7 +460,7 @@ The parameter now has memory.
 
 ---
 
-# 8. Watch momentum on a simple sequence
+# Watch momentum on a simple sequence
 
 Suppose the gradients over several steps are:
 
@@ -551,7 +551,7 @@ rapidly changing direction
 
 ---
 
-# 9. Momentum is still gradient descent
+# Momentum is still gradient descent
 
 It is important not to think of momentum as replacing gradients.
 
@@ -585,7 +585,7 @@ The optimizer is simply using more than one moment of that information.
 
 ---
 
-# 10. Build SGD with momentum
+# Build SGD with momentum
 
 Our optimizer now needs some memory.
 
@@ -634,7 +634,7 @@ and those vectors remain between training steps.
 
 ---
 
-# 11. Why does the velocity need to belong to the parameter?
+# Why does the velocity need to belong to the parameter?
 
 Suppose your network has:
 
@@ -659,7 +659,7 @@ This idea will become even more important with Adam.
 
 ---
 
-# 12. Momentum has a small mathematical consequence
+# Momentum has a small mathematical consequence
 
 If the gradient stays constant:
 
@@ -715,7 +715,7 @@ The important idea is:
 
 ---
 
-# 13. Momentum solved one problem
+# Momentum solved one problem
 
 We can now say:
 
@@ -753,7 +753,7 @@ And that leads to Adam.
 
 ---
 
-# 14. Adam starts by asking two questions
+# Adam starts by asking two questions
 
 For every parameter, Adam keeps track of two pieces of information.
 
@@ -795,7 +795,7 @@ how large?
 
 ---
 
-# 15. Why square the gradient?
+# Why square the gradient?
 
 Suppose gradients are:
 
@@ -842,7 +842,7 @@ v → scale
 
 ---
 
-# 16. Now we can normalize the update
+# Now we can normalize the update
 
 Suppose one parameter consistently receives large gradients.
 
@@ -890,7 +890,7 @@ This is the central idea behind Adam.
 
 ---
 
-# 17. Why can't we use `m` and `v` immediately?
+# Why can't we use `m` and `v` immediately?
 
 There's a small problem.
 
@@ -961,7 +961,7 @@ And notice what kind of fix it is. The factor `1 / (1 − β₁ᵗ)` is a **×10
 
 ---
 
-# 18. Let's watch the first Adam step
+# Let's watch the first Adam step
 
 Take:
 
@@ -1014,7 +1014,7 @@ That is what bias correction is doing.
 
 ---
 
-# 19. The complete Adam picture
+# The complete Adam picture
 
 Adam is now easier to read:
 
@@ -1051,7 +1051,7 @@ and the optimizer combines them.
 
 ---
 
-# 20. Why is Adam less sensitive to gradient scale?
+# Why is Adam less sensitive to gradient scale?
 
 Suppose every gradient is multiplied by 10.
 
@@ -1109,7 +1109,7 @@ The main idea is simply:
 
 ---
 
-# 21. We still haven't talked about large weights
+# We still haven't talked about large weights
 
 So far we've been asking:
 
@@ -1141,7 +1141,7 @@ This is called **weight decay**.
 
 ---
 
-# 22. Weight decay
+# Weight decay
 
 A simple way to express weight decay is:
 
@@ -1185,7 +1185,7 @@ It discourages unnecessarily large parameters.
 
 ---
 
-# 23. Why AdamW has its own name
+# Why AdamW has its own name
 
 You may see:
 
@@ -1225,7 +1225,7 @@ That is why the "W" matters.
 
 ---
 
-# 24. Put the optimizers side by side
+# Put the optimizers side by side
 
 Now the three ideas are easy to compare.
 
@@ -1301,7 +1301,7 @@ decoupled weight decay
 
 ---
 
-# 25. The optimizer is not the learner by itself
+# The optimizer is not the learner by itself
 
 This distinction is easy to miss.
 
@@ -1351,7 +1351,7 @@ That last question is what this chapter answers.
 
 ---
 
-# 26. One more important piece: `zeroGrad()`
+# One more important piece: `zeroGrad()`
 
 Suppose we run:
 
@@ -1401,7 +1401,7 @@ Notice that the optimizer doesn't necessarily have to own this responsibility in
 
 ---
 
-# 27. The complete training step
+# The complete training step
 
 We've accumulated enough pieces to write a real training step.
 
@@ -1438,7 +1438,7 @@ That loop is the engine behind training.
 
 ---
 
-# 28. Choosing an optimizer
+# Choosing an optimizer
 
 For this course, keep the decision simple.
 
@@ -1456,7 +1456,7 @@ A poor learning rate can still make any optimizer fail.
 
 ---
 
-# 29. The learning rate is still important
+# The learning rate is still important
 
 Even with Adam:
 

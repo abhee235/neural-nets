@@ -45,7 +45,7 @@
  * any history. The `t` counter must persist too; it drives bias correction.
  *
  * ──────────────────────────────────────────────────────────────────────────
- * WORKED TRACE — the doc's section 18, first step with g = 1
+ * WORKED TRACE — the doc's "Let's watch the first Adam step", g = 1
  * ──────────────────────────────────────────────────────────────────────────
  *     β₁ = 0.9   β₂ = 0.999   m₀ = 0   v₀ = 0   t = 1
  *
@@ -123,7 +123,7 @@ export class Adam {
    * from tensor/ops.ts cover everything. No new backward: this is not part
    * of the graph at all.
    *
-   * ── WHY THE DIVISION IS THE WHOLE POINT (doc section 20) ──────────────────
+   * ── WHY THE DIVISION IS THE POINT ─────────────────────────────────────────
    * m̂ tracks the gradient and √v̂ tracks its size, so their ratio is roughly
    * ±1 regardless of how large the gradients are. Multiply every gradient by
    * 10 and m̂ scales by 10, √v̂ scales by 10, and the update is unchanged —
