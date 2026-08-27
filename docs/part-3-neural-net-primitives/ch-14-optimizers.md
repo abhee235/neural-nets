@@ -355,40 +355,23 @@ use gradients
 
 Let's return to the hill analogy.
 
-Imagine the landscape is shaped like a long narrow valley:
+Imagine the landscape is shaped like a long narrow **valley** — steep walls up and down, and a floor that slopes only gently toward the goal.
 
-```text
-                 steep wall
-                    /\\
-                   /  \\
-                  /    \\
------------------/------\\----------------
-                /        \\
-               /          \\
-```
+A concrete one: `L = 0.5x² + 10y²`. Move a little up or down and the loss changes a lot; move left or right and it barely changes at all.
 
-The bottom of the valley runs mostly left-to-right.
+Plain SGD follows every gradient literally. The up-and-down gradient is twenty times larger than the left-to-right one, so almost all of every step is spent crossing the valley rather than travelling along it.
 
-Suppose the gradient points strongly toward the walls but only weakly toward the bottom.
+Here is what that actually looks like — the same 28 steps, walked twice:
 
-Plain SGD follows every gradient literally.
+<p align="center">
+  <img src="../assets/ch-14/ravine-sgd-vs-momentum.svg" alt="A narrow valley drawn as horizontal bands, palest green along the centre floor and reddening toward steep walls above and below, with a start marker at the upper left and a goal marker at the centre right. Two paths cross it. The red plain SGD path zigzags violently up and down, crossing the valley floor twenty-eight times while creeping only slowly rightward, and ends short of the goal. The blue momentum path swings across a few times at the start, settles onto the valley floor, and runs along it to finish much closer to the goal, crossing only eight times. Two animated markers walk both paths in step. Result boxes report plain SGD at learning rate 0.09 crossing the valley twenty-eight times and finishing 0.642 from the goal, against momentum at learning rate 0.03 with beta 0.7 crossing eight times and finishing 0.142 away, four and a half times closer. A note records that both runs use the same effective step size because beta amplifies by one over one minus 0.7, so 0.03 times 3.3 is about 0.09, and closes: up-and-down gradients disagree and cancel, left-to-right gradients agree and accumulate." />
+</p>
 
-So it can do this:
+*Figure 1: the same valley, the same number of steps, the same effective step size.*
 
-```text
-        ↘
-         ↗
-        ↘
-         ↗
-        ↘
-         ↗
-```
+SGD crossed the floor **28 times** and finished `0.642` from the goal. Momentum crossed it **8 times** and finished `0.142` away — four and a half times closer.
 
-It keeps bouncing from one side to the other.
-
-The model is moving.
-
-But not efficiently.
+Look at why, because it is the whole idea in one sentence. Going up and down, consecutive gradients **disagree**, so they cancel. Going left to right, they **agree**, so they accumulate. Momentum does not know anything about valleys; it just adds up recent gradients, and that arithmetic alone separates the two directions.
 
 This is one reason the learning rate is difficult to choose.
 
