@@ -50,9 +50,7 @@ learning rate = 0.1
 
 and manually performed:
 
-```text
-w  ←  w − lr · g
-```
+$$w \leftarrow w - \eta g$$
 
 which gave:
 
@@ -90,21 +88,17 @@ That's the basic idea behind gradient descent.
 
 For a parameter `θ`, let:
 
-```text
-g  =  ∂L / ∂θ
-```
+$$g = \frac{\partial L}{\partial \theta}$$
 
 The simplest update is:
 
-```text
-θ  ←  θ − lr · g
-```
+$$\theta \leftarrow \theta - \eta g$$
 
 where:
 
 - `θ` is the parameter
 - `g` is its gradient
-- `lr` is the learning rate
+- `η` is the learning rate
 
 The learning rate controls how large a step we take.
 
@@ -116,9 +110,7 @@ Let's use a deliberately simple problem.
 
 Suppose our loss is:
 
-```text
-L = (θ − 5)²
-```
+$$L = (\theta - 5)^2$$
 
 We want the parameter to eventually reach:
 
@@ -128,9 +120,7 @@ We want the parameter to eventually reach:
 
 The derivative is:
 
-```text
-dL/dθ  =  2(θ − 5)
-```
+$$\frac{dL}{d\theta} = 2(\theta - 5)$$
 
 Start at:
 
@@ -140,9 +130,7 @@ Start at:
 
 Then:
 
-```text
-g = 2(0 − 5) = −10
-```
+$$g = 2(0 - 5) = -10$$
 
 Take a step with:
 
@@ -152,9 +140,7 @@ learning rate = 0.1
 
 so:
 
-```text
-θ = 0 − 0.1·(−10) = 1
-```
+$$\theta = 0 - 0.1 \cdot (-10) = 1$$
 
 Now the parameter is closer to 5.
 
@@ -256,9 +242,7 @@ The simplest optimizer is just the rule we already used.
 
 For every parameter:
 
-```text
-θ  ←  θ − lr · g
-```
+$$\theta \leftarrow \theta - \eta g$$
 
 "Stochastic" usually means that the gradient was computed from a mini-batch rather than the entire training dataset.
 
@@ -431,15 +415,11 @@ gₜ
 
 we keep a running velocity:
 
-```text
-vₜ  =  β · vₜ₋₁  +  gₜ
-```
+$$v_t = \beta v_{t-1} + g_t$$
 
 and then update:
 
-```text
-θₜ  =  θₜ₋₁  −  lr · vₜ
-```
+$$\theta_t = \theta_{t-1} - \eta v_t$$
 
 The parameter now has memory.
 
@@ -658,15 +638,11 @@ g
 
 then:
 
-```text
-vₜ  =  β · vₜ₋₁  +  g
-```
+$$v_t = \beta v_{t-1} + g$$
 
 approaches:
 
-```text
-v  ≈  g / (1 − β)
-```
+$$v \approx \frac{g}{1 - \beta}$$
 
 For:
 
@@ -676,9 +652,7 @@ For:
 
 that is:
 
-```text
-1 / (1 − 0.9)  =  10
-```
+$$\frac{1}{1 - 0.9} = 10$$
 
 times the gradient.
 
@@ -752,17 +726,13 @@ Second:
 
 The first becomes the **first moment**:
 
-```text
-mₜ  =  β₁ · mₜ₋₁  +  (1 − β₁) · gₜ
-```
+$$m_t = \beta_1 m_{t-1} + (1 - \beta_1) g_t$$
 
 This is similar to momentum.
 
 The second is the **second raw moment**:
 
-```text
-vₜ  =  β₂ · vₜ₋₁  +  (1 − β₂) · gₜ²
-```
+$$v_t = \beta_2 v_{t-1} + (1 - \beta_2) g_t^2$$
 
 Notice the square.
 
@@ -849,9 +819,7 @@ A parameter receiving tiny gradients has a smaller denominator and can retain a 
 
 This produces an update of the form:
 
-```text
-θₜ  =  θₜ₋₁  −  lr · mₜ / (√vₜ + ε)
-```
+$$\theta_t = \theta_{t-1} - \eta \frac{m_t}{\sqrt{v_t} + \epsilon}$$
 
 Conceptually:
 
@@ -894,9 +862,7 @@ g₁ = 1
 
 Then:
 
-```text
-m₁  =  (1 − β₁)
-```
+$$m_1 = (1 - \beta_1)$$
 
 With:
 
@@ -918,19 +884,13 @@ The averages start artificially close to zero simply because they had no history
 
 Adam corrects this initial bias:
 
-```text
-m̂ₜ  =  mₜ / (1 − β₁ᵗ)
-```
+$$\hat{m}_t = \frac{m_t}{1 - \beta_1^t}$$
 
-```text
-v̂ₜ  =  vₜ / (1 − β₂ᵗ)
-```
+$$\hat{v}_t = \frac{v_t}{1 - \beta_2^t}$$
 
 Now the update uses:
 
-```text
-θₜ  =  θₜ₋₁  −  lr · m̂ₜ / (√v̂ₜ + ε)
-```
+$$\theta_t = \theta_{t-1} - \eta \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon}$$
 
 The hats mean:
 
@@ -965,33 +925,23 @@ v₀ = 0
 
 After one step:
 
-```text
-m₁ = 0.9·0 + 0.1·1 = 0.1
-```
+$$m_1 = 0.9 \cdot 0 + 0.1 \cdot 1 = 0.1$$
 
 and:
 
-```text
-v₁ = 0.999·0 + 0.001·1 = 0.001
-```
+$$v_1 = 0.999 \cdot 0 + 0.001 \cdot 1 = 0.001$$
 
 Without bias correction, these values would look much smaller than the actual gradient information.
 
 Correct them:
 
-```text
-m̂₁ = 0.1 / (1 − 0.9) = 1
-```
+$$\hat{m}_1 = \frac{0.1}{1 - 0.9} = 1$$
 
-```text
-v̂₁ = 0.001 / (1 − 0.999) = 1
-```
+$$\hat{v}_1 = \frac{0.001}{1 - 0.999} = 1$$
 
 So the normalized update becomes approximately:
 
-```text
-1 / (√1 + ε)  ≈  1
-```
+$$\frac{1}{\sqrt{1} + \epsilon} \approx 1$$
 
 The first step therefore has a sensible scale.
 
@@ -1066,15 +1016,11 @@ v → 100v
 
 so:
 
-```text
-√v  →  10·√v
-```
+$$\sqrt{v} \rightarrow 10\sqrt{v}$$
 
 The ratio therefore stays roughly the same:
 
-```text
-10·m / (10·√v)   =   m / √v
-```
+$$\frac{10m}{10\sqrt{v}} = \frac{m}{\sqrt{v}}$$
 
 That gives Adam a useful degree of scale adaptation.
 
@@ -1130,15 +1076,11 @@ This is called **weight decay**.
 
 A simple way to express weight decay is:
 
-```text
-θ  ←  θ  −  lr · ( update direction  +  λ·θ )
-```
+$$\theta \leftarrow \theta - \eta\left(\text{update direction} + \lambda\theta\right)$$
 
 The extra term:
 
-```text
-λ · θ
-```
+$$\lambda \theta$$
 
 pulls parameters toward zero.
 
@@ -1192,9 +1134,7 @@ AdamW uses **decoupled weight decay**.
 
 Conceptually, Adam first computes its adaptive update, and weight decay is then applied separately:
 
-```text
-θ  ←  θ  −  lr · m̂ / (√v̂ + ε)  −  lr · λ · θ
-```
+$$\theta \leftarrow \theta - \eta\frac{\hat{m}}{\sqrt{\hat{v}} + \epsilon} - \eta\lambda\theta$$
 
 The important idea is the separation:
 
@@ -1236,13 +1176,9 @@ running velocity
 step
 ```
 
-```text
-vₜ  =  β · vₜ₋₁  +  gₜ
-```
+$$v_t = \beta v_{t-1} + g_t$$
 
-```text
-θₜ  =  θₜ₋₁  −  lr · vₜ
-```
+$$\theta_t = \theta_{t-1} - \eta v_t$$
 
 ### Adam
 
@@ -1256,25 +1192,15 @@ gradient
             step
 ```
 
-```text
-mₜ  =  β₁ · mₜ₋₁  +  (1 − β₁) · gₜ
-```
+$$m_t = \beta_1 m_{t-1} + (1 - \beta_1) g_t$$
 
-```text
-vₜ  =  β₂ · vₜ₋₁  +  (1 − β₂) · gₜ²
-```
+$$v_t = \beta_2 v_{t-1} + (1 - \beta_2) g_t^2$$
 
-```text
-m̂ₜ  =  mₜ / (1 − β₁ᵗ)
-```
+$$\hat{m}_t = \frac{m_t}{1 - \beta_1^t}$$
 
-```text
-v̂ₜ  =  vₜ / (1 − β₂ᵗ)
-```
+$$\hat{v}_t = \frac{v_t}{1 - \beta_2^t}$$
 
-```text
-θₜ  =  θₜ₋₁  −  lr · m̂ₜ / (√v̂ₜ + ε)
-```
+$$\theta_t = \theta_{t-1} - \eta \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon}$$
 
 ### AdamW
 
