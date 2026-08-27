@@ -1,243 +1,294 @@
 /**
- * Tests for optim/sgd.ts
- * Chapters 09 & 14 — Gradient Descent / Optimizers
+ * Tests for optim/sgd.ts — the TensorValue rebuild
+ * Chapter 14 — Optimizers
  *
  * Run: bun test src/optim/sgd.test.ts
  *
- * The loss throughout is the chapter's bowl, L(w) = (w − c)², whose gradient
- * 2(w − c) can be checked by hand at every step. Where a test asserts an exact
- * trajectory, those numbers are the ones worked out in the chapter doc.
+ * Fixtures are the chapter's own numbers:
+ *
+ *   the bowl      L = (θ − 5)², θ₀ = 0, lr = 0.1
+ *                 → 1, 1.8, 2.44, 2.952, each step 0.8× the last
+ *
+ *   momentum      β = 0.9, v₀ = 0, gradient +1 every step
+ *                 → 1, 1.9, 2.71, 3.439 … 5.695 after 8
+ *                 gradient alternating ±1 → 1, −0.1, 0.91, −0.181 … −0.300
+ *
+ * The scalar originals live in sgd-scalar.ts and have their own tests; these
+ * check the same rules on tensors, plus the things only tensors can get
+ * wrong — shape, graph leakage, and per-parameter state.
  */
 import { describe, it, expect } from "bun:test";
 import { SGD, SGDMomentum } from "./sgd.ts";
-import { Value } from "../autograd/value.ts";
+import { TensorValue } from "../autograd/grad.ts";
+import { createTensor } from "../tensor/types.ts";
+import { Linear } from "../nn/linear.ts";
+import { mseLoss } from "../nn/losses.ts";
 
-const EPSILON = 1e-6;
-const close = (a: number, b: number) => Math.abs(a - b) < EPSILON;
+const EPSILON = 1e-9;
 
-/** A fresh graph for L = (w − target)². Rebuilt every step, as the loop requires. */
-function bowlLoss(w: Value, target: number): Value {
-  return w.add(new Value(-target)).pow(2);
+function expectRow(actual: number[], expected: number[], tol = EPSILON): void {
+  expect(actual.length).toBe(expected.length);
+  for (let i = 0; i < expected.length; i++) {
+    expect(Math.abs(actual[i]! - expected[i]!)).toBeLessThan(tol);
+  }
 }
 
-/** Run the five-stage loop and return |w − target| at the end. */
-function descend(
-  makeOpt: (p: Value[]) => { step(): void; zeroGrad(): void },
-  target: number,
-  start: number,
-  steps: number,
-): number {
-  const w = new Value(start);
-  const opt = makeOpt([w]);
-  for (let i = 0; i < steps; i++) {
-    bowlLoss(w, target).backward();
-    opt.step();
-    opt.zeroGrad();
-  }
-  return Math.abs(w.data - target);
+/** A leaf holding one number, so hand-computed traces are readable. */
+const scalarParam = (v: number) => new TensorValue(createTensor([v], [1]));
+
+/** Put a gradient on a parameter directly, standing in for a backward pass. */
+function setGrad(p: TensorValue, ...values: number[]): void {
+  p.grad = createTensor(values, p.data.shape);
 }
 
 describe("SGD", () => {
-  it("step moves a parameter in the direction that reduces loss", () => {
-    const w = new Value(0);
-    const opt = new SGD([w], 0.1);
-    const before = bowlLoss(w, 5);
-    before.backward();
-    // ∂/∂w (w−5)² = 2(w−5) = −10 at w = 0. Negative, so the loss falls as w rises.
-    expect(close(w.grad, -10)).toBe(true);
-    opt.step();
-    // θ ← 0 − 0.1×(−10) = 1.0. Subtracting a negative moves w UP, toward the minimum.
-    expect(close(w.data, 1.0)).toBe(true);
-    // …and the loss really did decrease: 25 → 16.
-    expect(before.data).toBe(25);
-    expect(close(bowlLoss(w, 5).data, 16)).toBe(true);
-  });
-
-  it("reproduces the chapter's hand-computed trajectory", () => {
-    const w = new Value(0);
-    const opt = new SGD([w], 0.1);
-    const trace: number[] = [];
-    for (let i = 0; i < 3; i++) {
-      bowlLoss(w, 5).backward();
-      opt.step();
+  it("takes the chapter's bowl trace: 1, 1.8, 2.44, 2.952", () => {
+    // L = (θ−5)², so dL/dθ = 2(θ−5). mseLoss on one element is exactly that.
+    const theta = scalarParam(0);
+    const opt = new SGD([theta], 0.1);
+    const target = createTensor([5], [1]);
+    const seen: number[] = [];
+    for (let i = 0; i < 4; i++) {
       opt.zeroGrad();
-      trace.push(w.data);
+      mseLoss(theta, target).backward();
+      opt.step();
+      seen.push(theta.data.data[0]!);
     }
-    // The doc's §3 trace: 1.0, 1.8, 2.44 — each step 0.8× the last, because the
-    // distance to the minimum shrinks by exactly (1 − 2η) = 0.8 per step.
-    expect(close(trace[0]!, 1.0)).toBe(true);
-    expect(close(trace[1]!, 1.8)).toBe(true);
-    expect(close(trace[2]!, 2.44)).toBe(true);
+    expectRow(seen, [1, 1.8, 2.44, 2.952], 1e-9);
   });
 
-  it("on L=(w−3)², SGD converges w toward 3", () => {
-    // The error obeys eₙ = e₀(1 − 2η)ⁿ, so at η = 0.1 it decays by 0.8 per step
-    // and after 100 steps is ~1e-9 — indistinguishable from arrival.
-    expect(descend((p) => new SGD(p, 0.1), 3, 0, 100)).toBeLessThan(1e-6);
+  it("each step is 0.8× the previous one, because the slope flattens", () => {
+    const theta = scalarParam(0);
+    const opt = new SGD([theta], 0.1);
+    const target = createTensor([5], [1]);
+    const steps: number[] = [];
+    let previous = 0;
+    for (let i = 0; i < 4; i++) {
+      opt.zeroGrad();
+      mseLoss(theta, target).backward();
+      opt.step();
+      steps.push(theta.data.data[0]! - previous);
+      previous = theta.data.data[0]!;
+    }
+    for (let i = 1; i < steps.length; i++) {
+      expect(Math.abs(steps[i]! / steps[i - 1]! - 0.8)).toBeLessThan(1e-9);
+    }
   });
 
-  it("converges from either side of the minimum", () => {
-    // The sign of the gradient chooses the direction; no per-parameter logic
-    // is involved, so starting above the minimum must work identically.
-    expect(descend((p) => new SGD(p, 0.1), 3, 10, 100)).toBeLessThan(1e-6);
+  it("moves a parameter DOWN when its gradient is positive", () => {
+    // The sign is the whole rule: θ ← θ − lr·g.
+    const p = scalarParam(3);
+    setGrad(p, 2);
+    new SGD([p], 0.1).step();
+    expect(Math.abs(p.data.data[0]! - 2.8)).toBeLessThan(EPSILON);
   });
 
-  it("zeroGrad resets all parameter gradients to 0", () => {
-    const a = new Value(1);
-    const b = new Value(2);
-    const opt = new SGD([a, b], 0.1);
-    a.mul(b).backward();
-    // ∂(ab)/∂a = b = 2 and ∂(ab)/∂b = a = 1 — both non-zero before clearing.
-    expect(a.grad).toBe(2);
-    expect(b.grad).toBe(1);
+  it("updates every element of a multi-element parameter independently", () => {
+    const p = new TensorValue(createTensor([1, 2, 3], [3]));
+    setGrad(p, 10, 0, -10);
+    new SGD([p], 0.1).step();
+    // element 1 has zero gradient and must not move at all
+    expectRow(Array.from(p.data.data), [0, 2, 4]);
+  });
+
+  it("preserves parameter shape", () => {
+    const p = new TensorValue(createTensor([1, 2, 3, 4, 5, 6], [3, 2]));
+    setGrad(p, 1, 1, 1, 1, 1, 1);
+    new SGD([p], 0.1).step();
+    expect(p.data.shape).toEqual([3, 2]);
+  });
+
+  it("never builds graph nodes — the parameter stays a leaf", () => {
+    // If step() used TensorValue methods instead of tensor functions, the
+    // graph would grow by a node per parameter per iteration, forever.
+    const theta = scalarParam(0);
+    const opt = new SGD([theta], 0.1);
+    const target = createTensor([5], [1]);
+    for (let i = 0; i < 5; i++) {
+      opt.zeroGrad();
+      mseLoss(theta, target).backward();
+      opt.step();
+    }
+    expect(theta._inputs.length).toBe(0);
+  });
+
+  it("skips a parameter whose gradient is still null", () => {
+    // A parameter that took no part in the forward pass must not crash.
+    const used = scalarParam(1);
+    const unused = scalarParam(7);
+    setGrad(used, 1);
+    new SGD([used, unused], 0.1).step();
+    expect(unused.data.data[0]).toBe(7);
+  });
+
+  it("zeroGrad resets to null, not to a zeros tensor", () => {
+    // Ch 10's accumulate() treats null as "first contribution" and assigns.
+    // A zeros tensor would make it take the add-branch instead.
+    const p = scalarParam(0);
+    setGrad(p, -10);
+    const opt = new SGD([p], 0.1);
+    expect(p.grad).not.toBe(null);
     opt.zeroGrad();
-    // Every owned parameter is cleared, not just the first.
-    expect(a.grad).toBe(0);
-    expect(b.grad).toBe(0);
+    expect(p.grad).toBe(null);
   });
 
-  it("step does not clear gradients — that is zeroGrad's job", () => {
-    const w = new Value(0);
-    const opt = new SGD([w], 0.1);
-    bowlLoss(w, 5).backward();
-    opt.step();
-    // The two responsibilities stay separate, so gradients can still be
-    // inspected after a step. Fusing them would make debugging impossible.
-    expect(close(w.grad, -10)).toBe(true);
+  it("holds the caller's own objects, not copies", () => {
+    // An optimizer given copies would update tensors nothing reads.
+    const p = scalarParam(1);
+    expect(new SGD([p], 0.1).params[0]).toBe(p);
   });
 
-  it("larger learning rate produces a larger parameter change", () => {
-    // Same starting point, same gradient, two learning rates.
-    const wSmall = new Value(0);
-    const wBig = new Value(0);
-    bowlLoss(wSmall, 5).backward();
-    bowlLoss(wBig, 5).backward();
-    new SGD([wSmall], 0.01).step();
-    new SGD([wBig], 0.1).step();
-    // The gradient is −10 for both, so the moves are 0.1 and 1.0. The step is
-    // exactly proportional to η — a 10× learning rate gives a 10× step.
-    expect(close(wSmall.data, 0.1)).toBe(true);
-    expect(close(wBig.data, 1.0)).toBe(true);
-    expect(Math.abs(wBig.data)).toBeGreaterThan(Math.abs(wSmall.data));
-  });
-
-  it("updates parameters in place, without extending the graph", () => {
-    const w = new Value(0);
-    const opt = new SGD([w], 0.1);
-    bowlLoss(w, 5).backward();
-    opt.step();
-    // The update must write to .data directly. If it went through Value ops it
-    // would return a NEW node, leaving the model pointing at the old one — and
-    // the parameter would still look like a leaf here while never training.
-    expect(w._inputs).toHaveLength(0);
-    expect(w._op).toBe("");
-    // The optimizer holds the same object it was given, not a copy of its value.
-    expect(opt.params[0]).toBe(w);
-  });
-
-  it("updates every parameter it owns, from one backward pass", () => {
-    // L = (a−3)² + (b+1)², the chapter's two-parameter checkpoint.
-    const a = new Value(0);
-    const b = new Value(0);
-    const opt = new SGD([a, b], 0.1);
-    for (let i = 0; i < 200; i++) {
-      bowlLoss(a, 3).add(bowlLoss(b, -1)).backward();
-      opt.step();
+  it("trains a real Ch 13 Linear layer through parameters()", () => {
+    // The contract closing: the optimizer walks a flat list and never knows
+    // a layer exists.
+    const layer = new Linear(2, 3);
+    const opt = new SGD(layer.parameters(), 0.05);
+    const x = new TensorValue(createTensor([1, 2], [1, 2]));
+    const want = createTensor([1, 2, 3], [1, 3]);
+    for (let i = 0; i < 60; i++) {
       opt.zeroGrad();
+      mseLoss(layer.forward(x), want).backward();
+      opt.step();
     }
-    // Both descend together, from a single backward() call, with nothing in
-    // step() aware that there is more than one parameter.
-    expect(close(a.data, 3)).toBe(true);
-    expect(close(b.data, -1)).toBe(true);
+    expectRow(Array.from(layer.forward(x).data.data), [1, 2, 3], 1e-3);
   });
 });
 
 describe("SGDMomentum", () => {
-  it("velocity accumulates across steps", () => {
-    const w = new Value(0);
-    const opt = new SGDMomentum([w], 0.1, 0.9);
-    const vs: number[] = [];
-    for (let i = 0; i < 3; i++) {
-      bowlLoss(w, 5).backward();
+  it("builds velocity on agreement: 1, 1.9, 2.71, 3.439", () => {
+    // v ← 0.9v + g with g = +1 every step. Read the velocity back out of the
+    // parameter: with lr = 1, each step moves θ by exactly −v.
+    const p = scalarParam(0);
+    const opt = new SGDMomentum([p], 1, 0.9);
+    const seen: number[] = [];
+    let previous = 0;
+    for (let i = 0; i < 4; i++) {
+      setGrad(p, 1);
       opt.step();
-      opt.zeroGrad();
-      vs.push(opt.velocities[0]!);
+      seen.push(previous - p.data.data[0]!);
+      previous = p.data.data[0]!;
     }
-    // v ← βv − η·grad, so with grads −10, −8, −4.6 the velocity grows
-    // 1.0 → 1.7 → 1.99 even as the gradient shrinks. That growth is the whole
-    // point: it only happens because the previous velocity survived the call.
-    expect(close(vs[0]!, 1.0)).toBe(true);
-    expect(close(vs[1]!, 1.7)).toBe(true);
-    expect(close(vs[2]!, 1.99)).toBe(true);
-    // The parameter moves BY the velocity, so w tracks the running sum.
-    expect(close(w.data, 4.69)).toBe(true);
+    expectRow(seen, [1, 1.9, 2.71, 3.439], 1e-9);
   });
 
-  it("allocates velocity once, so it survives between steps", () => {
-    const a = new Value(0);
-    const b = new Value(0);
-    const opt = new SGDMomentum([a, b], 0.1, 0.9);
-    // One entry per parameter, all starting at rest.
-    expect(opt.velocities).toHaveLength(2);
-    expect(opt.velocities[0]).toBe(0);
-    const first = opt.velocities;
-    bowlLoss(a, 5).add(bowlLoss(b, 5)).backward();
+  it("reaches 5.695 after eight agreeing steps", () => {
+    const p = scalarParam(0);
+    const opt = new SGDMomentum([p], 1, 0.9);
+    let previous = 0, last = 0;
+    for (let i = 0; i < 8; i++) {
+      setGrad(p, 1);
+      opt.step();
+      last = previous - p.data.data[0]!;
+      previous = p.data.data[0]!;
+    }
+    expect(Math.abs(last - 5.695)).toBeLessThan(1e-3);
+  });
+
+  it("cancels on disagreement: alternating gradients stay near zero", () => {
+    // Same rule, same |g|, only the signs differ — and after eight steps the
+    // velocity is −0.300 instead of 5.695.
+    const p = scalarParam(0);
+    const opt = new SGDMomentum([p], 1, 0.9);
+    let previous = 0, last = 0;
+    for (let i = 0; i < 8; i++) {
+      setGrad(p, i % 2 === 0 ? 1 : -1);
+      opt.step();
+      last = previous - p.data.data[0]!;
+      previous = p.data.data[0]!;
+    }
+    expect(Math.abs(last + 0.300)).toBeLessThan(1e-3);
+  });
+
+  it("with β = 0 it is exactly plain SGD", () => {
+    // v ← 0·v + g = g, so the update collapses to θ − lr·g.
+    const a = scalarParam(3);
+    const b = scalarParam(3);
+    setGrad(a, 2);
+    setGrad(b, 2);
+    new SGDMomentum([a], 0.1, 0).step();
+    new SGD([b], 0.1).step();
+    expect(a.data.data[0]).toBe(b.data.data[0]!);
+  });
+
+  it("defaults momentum to 0.9", () => {
+    expect(new SGDMomentum([scalarParam(0)], 0.1).momentum).toBe(0.9);
+  });
+
+  it("keeps one velocity per parameter, never shared", () => {
+    // Different shapes and different histories: a shared velocity would
+    // either crash on shape or contaminate one parameter with the other's
+    // gradient.
+    const w = new TensorValue(createTensor([0, 0, 0, 0, 0, 0], [3, 2]));
+    const b = new TensorValue(createTensor([0, 0, 0], [3]));
+    const opt = new SGDMomentum([w, b], 1, 0.9);
+    setGrad(w, 1, 1, 1, 1, 1, 1);
+    setGrad(b, 2, 2, 2);
     opt.step();
-    // Re-allocating inside step() would reset the velocity to 0 every call and
-    // silently degrade momentum into vanilla SGD — which still converges, so
-    // only a test that inspects the array itself catches it.
-    expect(opt.velocities).toBe(first);
-    expect(opt.velocities[0]).not.toBe(0);
+    opt.step();
+    // w's velocity: 1 then 1.9  → moved 2.9 total.  b's: 2 then 3.8 → 5.8.
+    expectRow(Array.from(w.data.data), [-2.9, -2.9, -2.9, -2.9, -2.9, -2.9], 1e-9);
+    expectRow(Array.from(b.data.data), [-5.8, -5.8, -5.8], 1e-9);
   });
 
-  it("momentum=0 is equivalent to vanilla SGD", () => {
-    // With β = 0 the previous velocity is discarded entirely and the rule
-    // collapses to θ ← θ − η·grad. The two classes must then agree exactly,
-    // not merely closely — this is an algebraic identity, not an approximation.
-    const withMomentum = descend((p) => new SGDMomentum(p, 0.1, 0), 5, 0, 20);
-    const vanilla = descend((p) => new SGD(p, 0.1), 5, 0, 20);
-    expect(withMomentum).toBe(vanilla);
+  it("velocity persists across steps — it is not rebuilt each time", () => {
+    // The silent bug: allocating velocities inside step() gives 1, 1, 1, 1
+    // instead of 1, 1.9, 2.71 — plain SGD wearing a momentum costume.
+    const p = scalarParam(0);
+    const opt = new SGDMomentum([p], 1, 0.9);
+    setGrad(p, 1);
+    opt.step();
+    const first = -p.data.data[0]!;
+    const before = p.data.data[0]!;
+    setGrad(p, 1);
+    opt.step();
+    const second = before - p.data.data[0]!;
+    expect(second).toBeGreaterThan(first);
+    expect(Math.abs(second - 1.9)).toBeLessThan(1e-9);
   });
 
-  it("defaults to momentum 0.9 when omitted", () => {
-    // The default is what every worked example in the chapter assumes.
-    expect(new SGDMomentum([new Value(0)], 0.1).momentum).toBe(0.9);
-    // An explicit 0 must survive as 0, not be replaced by the default — the
-    // reason the constructor tests for undefined rather than falsiness.
-    expect(new SGDMomentum([new Value(0)], 0.1, 0).momentum).toBe(0);
-  });
-
-  it("converges faster than vanilla SGD when the learning rate is conservative", () => {
-    // Momentum's steady-state step is η/(1−β) — ten times vanilla's at β = 0.9.
-    // That is a win only when η is SMALL. At η = 0.01 over 100 steps vanilla is
-    // still 0.66 away while momentum is 0.021 away, a 30× improvement.
-    const vanilla = descend((p) => new SGD(p, 0.01), 5, 0, 100);
-    const momentum = descend((p) => new SGDMomentum(p, 0.01, 0.9), 5, 0, 100);
-    expect(momentum).toBeLessThan(vanilla);
-    expect(momentum).toBeLessThan(vanilla / 10);
-  });
-
-  it("overshoots the minimum when the learning rate is already well tuned", () => {
-    // The honest other half, and the reason Ch 14 spends effort on tuning β.
-    // At η = 0.1 the effective rate becomes ~1.0, past this bowl's stability
-    // threshold for plain descent, so momentum oscillates while vanilla — whose
-    // error decays by a clean 0.8 per step — has essentially arrived.
-    const vanilla = descend((p) => new SGD(p, 0.1), 5, 0, 100);
-    const momentum = descend((p) => new SGDMomentum(p, 0.1, 0.9), 5, 0, 100);
-    expect(vanilla).toBeLessThan(momentum);
-    // It is still converging, just slowly and from alternating sides.
-    expect(momentum).toBeLessThan(0.1);
-  });
-
-  it("zeroGrad resets all parameter gradients to 0", () => {
-    const a = new Value(1);
-    const b = new Value(2);
-    const opt = new SGDMomentum([a, b], 0.1, 0.9);
-    a.mul(b).backward();
+  it("zeroGrad clears gradients but NOT the velocity", () => {
+    // Gradients are per-iteration scratch; velocity is the memory.
+    const p = scalarParam(0);
+    const opt = new SGDMomentum([p], 1, 0.9);
+    setGrad(p, 1);
+    opt.step();
+    const before = p.data.data[0]!;
     opt.zeroGrad();
-    // Clearing gradients must not disturb the velocity — they are separate state.
-    expect(a.grad).toBe(0);
-    expect(b.grad).toBe(0);
-    expect(opt.velocities[0]).toBe(0);
+    expect(p.grad).toBe(null);
+    setGrad(p, 1);
+    opt.step();
+    // velocity survived, so this step is 1.9, not another 1.0
+    expect(Math.abs(before - p.data.data[0]! - 1.9)).toBeLessThan(1e-9);
+  });
+
+  it("never builds graph nodes", () => {
+    const theta = scalarParam(0);
+    const opt = new SGDMomentum([theta], 0.01, 0.9);
+    const target = createTensor([5], [1]);
+    for (let i = 0; i < 5; i++) {
+      opt.zeroGrad();
+      mseLoss(theta, target).backward();
+      opt.step();
+    }
+    expect(theta._inputs.length).toBe(0);
+  });
+
+  it("skips a parameter whose gradient is still null", () => {
+    const unused = scalarParam(7);
+    new SGDMomentum([unused], 0.1, 0.9).step();
+    expect(unused.data.data[0]).toBe(7);
+  });
+
+  it("trains a real Linear layer", () => {
+    const layer = new Linear(2, 3);
+    const opt = new SGDMomentum(layer.parameters(), 0.01, 0.9);
+    const x = new TensorValue(createTensor([1, 2], [1, 2]));
+    const want = createTensor([1, 2, 3], [1, 3]);
+    for (let i = 0; i < 200; i++) {
+      opt.zeroGrad();
+      mseLoss(layer.forward(x), want).backward();
+      opt.step();
+    }
+    expectRow(Array.from(layer.forward(x).data.data), [1, 2, 3], 1e-2);
   });
 });

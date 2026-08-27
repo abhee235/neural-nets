@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">multiply every gradient by 10 — Adam does not notice, SGD falls apart</text>
+
+  <!--
+    Same problem for all three runs: L = (θ−5)², θ₀ = 0, lr = 0.1, 18 steps.
+    px = 90 + 28·t ,  py = 300 − 24·θ   (θ = 0 at 300, θ = 5 at 180, θ = 10 at 60)
+      Adam ×1  and Adam ×10  -> IDENTICAL paths (measured equal to 2.6e-9)
+      SGD  ×10 -> flips 0, 10, 0, 10, ... forever, never converging
+    Adam's m̂/√v̂ ratio cancels the scale: 10m / 10√v = m / √v.
+  -->
+
+  <!-- axes -->
+  <line x1="70" y1="300" x2="660" y2="300" stroke="#c9b88a" stroke-width="1.5"/>
+  <line x1="70" y1="50"  x2="70"  y2="306" stroke="#c9b88a" stroke-width="1.5"/>
+  <g font-family="monospace" font-size="8.5" fill="#a8956a" text-anchor="end">
+    <text x="64" y="304">0</text>
+    <text x="64" y="184">5</text>
+    <text x="64" y="64">10</text>
+  </g>
+  <text x="30" y="190" fill="#8b7355" font-family="monospace" font-size="9.5" transform="rotate(-90 30 190)">parameter θ</text>
+
+  <!-- target line -->
+  <line x1="70" y1="180" x2="660" y2="180" stroke="#2e7d32" stroke-width="1" stroke-dasharray="5 4" opacity="0.7"/>
+  <text x="666" y="184" fill="#2e7d32" font-family="monospace" font-size="8.5">target 5</text>
+
+  <!-- SGD x10: the sawtooth -->
+  <polyline fill="none" stroke="#a94442" stroke-width="2.25" opacity="0.9"
+    points="90,300.0 118,60.0 146,300.0 174,60.0 202,300.0 230,60.0 258,300.0 286,60.0 314,300.0 342,60.0 370,300.0 398,60.0 426,300.0 454,60.0 482,300.0 510,60.0 538,300.0 566,60.0 594,300.0"/>
+  <text x="330" y="48" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="10" font-weight="700">SGD, gradients ×10 — flips 0 → 10 → 0 → 10 forever</text>
+
+  <!-- Adam x10 drawn thick underneath, Adam x1 thin on top: they coincide exactly -->
+  <polyline fill="none" stroke="#1e6091" stroke-width="6" opacity="0.35"
+    points="90,300.0 118,297.6 146,295.2 174,292.8 202,290.4 230,288.0 258,285.6 286,283.3 314,280.9 342,278.5 370,276.2 398,273.8 426,271.5 454,269.2 482,266.9 510,264.6 538,262.3 566,260.1 594,257.9"/>
+  <polyline fill="none" stroke="#1e6091" stroke-width="2"
+    points="90,300.0 118,297.6 146,295.2 174,292.8 202,290.4 230,288.0 258,285.6 286,283.3 314,280.9 342,278.5 370,276.2 398,273.8 426,271.5 454,269.2 482,266.9 510,264.6 538,262.3 566,260.1 594,257.9"/>
+
+  <text x="612" y="252" fill="#1e6091" font-family="monospace" font-size="9.5" font-weight="700">Adam ×1</text>
+  <text x="612" y="264" fill="#1e6091" font-family="monospace" font-size="9.5" font-weight="700">Adam ×10</text>
+  <text x="612" y="277" fill="#8b7355" font-family="monospace" font-size="8">exactly on top</text>
+  <text x="612" y="287" fill="#8b7355" font-family="monospace" font-size="8">of each other</text>
+
+  <!-- marker sweeping the Adam path -->
+  <circle r="5" fill="#1e6091">
+    <animate attributeName="cx" values="90;594" dur="5s" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="300;257.9" dur="5s" repeatCount="indefinite"/>
+  </circle>
+
+  <text x="330" y="320" text-anchor="middle" fill="#a8956a" font-family="monospace" font-size="8.5">step  (L = (θ − 5)², θ₀ = 0, lr = 0.1, 18 steps)</text>
+
+  <!-- the reason -->
+  <rect x="70" y="332" width="290" height="54" rx="7" fill="#ede7d3" stroke="#c9b88a"/>
+  <text x="215" y="349" text-anchor="middle" font-family="monospace" font-size="9" fill="#5a4220" font-weight="700">why Adam cannot tell</text>
+  <text x="215" y="365" text-anchor="middle" font-family="monospace" font-size="10" fill="#2c2416">10·m̂ / (10·√v̂)  =  m̂ / √v̂</text>
+  <text x="215" y="379" text-anchor="middle" font-family="monospace" font-size="8" fill="#8b7355">the scale appears above and below, and cancels</text>
+
+  <rect x="378" y="332" width="290" height="54" rx="7" fill="#f3e6e4" stroke="#a94442"/>
+  <text x="523" y="349" text-anchor="middle" font-family="monospace" font-size="9" fill="#a94442" font-weight="700">why SGD does</text>
+  <text x="523" y="365" text-anchor="middle" font-family="monospace" font-size="10" fill="#2c2416">θ ← θ − lr · (10·g)</text>
+  <text x="523" y="379" text-anchor="middle" font-family="monospace" font-size="8" fill="#8b7355">the scale multiplies the step directly — lr must be retuned</text>
+
+</svg>

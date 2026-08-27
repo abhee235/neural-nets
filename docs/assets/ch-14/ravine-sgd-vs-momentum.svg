@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <text x="360" y="22" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">a narrow valley, walked twice — the bouncing is the problem momentum solves</text>
+
+  <!--
+    L = 0.5x² + 10y².  Shallow left-to-right, steep up-and-down: the classic
+    ill-conditioned valley. Both runs start at (-9, 1.2) and aim for (0, 0).
+      SGD       lr 0.09
+      momentum  lr 0.03, beta 0.7  — beta amplifies the step by 1/(1-0.7) = 3.3,
+                so 0.03 x 3.3 matches SGD's 0.09. Same effective step size.
+    After 28 steps: SGD is at x = -0.642, momentum at x = -0.142, and the
+    vertical sign flips are 28 against 8.
+    px = 80 + (x+10)·(570/11) ,  py = 195 − 78·y
+  -->
+
+  <!-- valley floor and walls, drawn as the loss actually is -->
+  <rect x="80" y="97.5" width="570" height="195" fill="#f3e6e4" opacity="0.35"/>
+  <rect x="80" y="132.6" width="570" height="124.8" fill="#ede7d3" opacity="0.55"/>
+  <rect x="80" y="167.7" width="570" height="54.6" fill="#e4efe4" opacity="0.7"/>
+  <line x1="80" y1="195" x2="650" y2="195" stroke="#2e7d32" stroke-width="1" stroke-dasharray="6 4" opacity="0.8"/>
+  <text x="86" y="110" fill="#a94442" font-family="monospace" font-size="8.5">steep wall — a small move up or down changes the loss a lot</text>
+  <text x="86" y="288" fill="#a94442" font-family="monospace" font-size="8.5">steep wall</text>
+  <text x="300" y="191" fill="#2e7d32" font-family="monospace" font-size="8.5">valley floor — the loss barely changes along this direction</text>
+
+  <!-- goal -->
+  <circle cx="598.2" cy="195" r="7" fill="none" stroke="#2e7d32" stroke-width="2"/>
+  <circle cx="598.2" cy="195" r="2.5" fill="#2e7d32"/>
+  <text x="612" y="199" fill="#2e7d32" font-family="monospace" font-size="9" font-weight="700">goal</text>
+
+  <!-- start -->
+  <circle cx="131.8" cy="101.4" r="5" fill="#5a4220"/>
+  <text x="122" y="94" text-anchor="end" fill="#5a4220" font-family="monospace" font-size="9" font-weight="700">start</text>
+
+  <!-- SGD: the zigzag -->
+  <polyline fill="none" stroke="#a94442" stroke-width="1.75" opacity="0.9"
+    points="131.8,101.4 173.8,269.9 212.0,135.1 246.7,242.9 278.4,156.7 307.2,225.7 333.3,170.5 357.2,214.6 378.9,179.3 398.6,207.6 416.6,184.9 432.9,203.0 447.8,188.6 461.3,200.1 473.6,190.9 484.9,198.3 495.1,192.4 504.3,197.1 512.8,193.3 520.5,196.3 527.5,193.9 533.8,195.9 539.6,194.3 544.9,195.6 549.7,194.6 554.0,195.4 558.0,194.7 561.6,195.2 564.9,194.8"/>
+  <circle cx="564.9" cy="194.8" r="5" fill="#a94442"/>
+
+  <!-- momentum: damped -->
+  <polyline fill="none" stroke="#1e6091" stroke-width="2.5"
+    points="131.8,101.4 145.8,157.6 169.2,219.3 198.4,248.0 230.9,236.2 264.6,203.3 298.2,175.2 330.7,167.5 361.5,178.5 390.2,196.2 416.5,207.8 440.4,208.3 461.8,200.6 480.9,191.9 497.8,187.7 512.6,189.1 525.6,193.6 536.8,197.6 546.5,198.9 554.9,197.4 562.0,194.9 568.1,193.3 573.3,193.1 577.6,194.2 581.3,195.4 584.4,196.0 586.9,195.8 589.1,195.2 590.8,194.6"/>
+  <circle cx="590.8" cy="194.6" r="5" fill="#1e6091"/>
+
+  <!-- markers walking both paths together -->
+  <circle r="5.5" fill="#a94442">
+    <animate attributeName="cx" values="131.8;173.8;212.0;246.7;278.4;307.2;333.3;357.2;378.9;398.6;416.6;432.9;447.8;461.3;473.6;484.9;495.1;504.3;512.8;520.5;527.5;533.8;539.6;544.9;549.7;554.0;558.0;561.6;564.9" dur="7s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="101.4;269.9;135.1;242.9;156.7;225.7;170.5;214.6;179.3;207.6;184.9;203.0;188.6;200.1;190.9;198.3;192.4;197.1;193.3;196.3;193.9;195.9;194.3;195.6;194.6;195.4;194.7;195.2;194.8" dur="7s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <circle r="5.5" fill="#1e6091">
+    <animate attributeName="cx" values="131.8;145.8;169.2;198.4;230.9;264.6;298.2;330.7;361.5;390.2;416.5;440.4;461.8;480.9;497.8;512.6;525.6;536.8;546.5;554.9;562.0;568.1;573.3;577.6;581.3;584.4;586.9;589.1;590.8" dur="7s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="101.4;157.6;219.3;248.0;236.2;203.3;175.2;167.5;178.5;196.2;207.8;208.3;200.6;191.9;187.7;189.1;193.6;197.6;198.9;197.4;194.9;193.3;193.1;194.2;195.4;196.0;195.8;195.2;194.6" dur="7s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- results -->
+  <rect x="80" y="308" width="278" height="50" rx="7" fill="#f3e6e4" stroke="#a94442"/>
+  <text x="219" y="324" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#a94442" font-weight="700">plain SGD  —  lr 0.09</text>
+  <text x="219" y="339" text-anchor="middle" font-family="monospace" font-size="9" fill="#2c2416">crossed the valley 28 times</text>
+  <text x="219" y="352" text-anchor="middle" font-family="monospace" font-size="9" fill="#2c2416">still 0.642 from the goal</text>
+
+  <rect x="372" y="308" width="278" height="50" rx="7" fill="#ede7d3" stroke="#1e6091"/>
+  <text x="511" y="324" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#1e6091" font-weight="700">momentum  —  lr 0.03, β 0.7</text>
+  <text x="511" y="339" text-anchor="middle" font-family="monospace" font-size="9" fill="#2c2416">crossed it 8 times</text>
+  <text x="511" y="352" text-anchor="middle" font-family="monospace" font-size="9" fill="#2c2416">0.142 from the goal — 4.5× closer</text>
+
+  <text x="360" y="374" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#8b7355">
+    same 28 steps, same effective step size (β amplifies by 1/(1−0.7) = 3.3, so 0.03 × 3.3 ≈ 0.09)
+  </text>
+  <text x="360" y="388" text-anchor="middle" font-family="monospace" font-size="9" fill="#5a4220" font-weight="600">
+    up-and-down gradients disagree and cancel; left-to-right gradients agree and accumulate
+  </text>
+
+</svg>

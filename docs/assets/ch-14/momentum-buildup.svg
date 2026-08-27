@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">momentum: agreement accumulates, disagreement cancels</text>
+
+  <!--
+    v = 0.9·v + g over 8 steps, from the doc's section 8.
+      consistent  g = +1 every step  ->  1, 1.9, 2.71, 3.439, 4.095, 4.686, 5.217, 5.695
+      alternating g = +1,-1,+1,-1... ->  1, -0.1, 0.91, -0.181, 0.837, -0.247, 0.778, -0.300
+    px = 90 + 66·i ,  py = 250 − 30·v   (so v = 0 sits on the 250 baseline)
+    Both runs use the SAME rule and the SAME |g| = 1 — only the signs differ.
+  -->
+
+  <!-- zero line -->
+  <line x1="70" y1="250" x2="660" y2="250" stroke="#c9b88a" stroke-width="1.5"/>
+  <text x="64" y="254" text-anchor="end" fill="#a8956a" font-family="monospace" font-size="8.5">v = 0</text>
+  <line x1="70" y1="220" x2="660" y2="220" stroke="#d8cfb4" stroke-width="0.8" stroke-dasharray="3 3"/>
+  <text x="64" y="224" text-anchor="end" fill="#a8956a" font-family="monospace" font-size="8.5">1</text>
+  <line x1="70" y1="130" x2="660" y2="130" stroke="#d8cfb4" stroke-width="0.8" stroke-dasharray="3 3"/>
+  <text x="64" y="134" text-anchor="end" fill="#a8956a" font-family="monospace" font-size="8.5">4</text>
+
+  <!-- consistent run -->
+  <polyline fill="none" stroke="#2e7d32" stroke-width="3"
+    points="90,220.0 156,193.0 222,168.7 288,146.8 354,127.1 420,109.4 486,93.5 552,79.1"/>
+  <g fill="#2e7d32">
+    <circle cx="90" cy="220.0" r="4"/><circle cx="156" cy="193.0" r="4"/>
+    <circle cx="222" cy="168.7" r="4"/><circle cx="288" cy="146.8" r="4"/>
+    <circle cx="354" cy="127.1" r="4"/><circle cx="420" cy="109.4" r="4"/>
+    <circle cx="486" cy="93.5" r="4"/><circle cx="552" cy="79.1" r="5.5"/>
+  </g>
+  <text x="576" y="74" fill="#2e7d32" font-family="monospace" font-size="10" font-weight="700">5.695</text>
+  <text x="576" y="87" fill="#8b7355" font-family="monospace" font-size="8">and still climbing</text>
+  <text x="300" y="60" fill="#2e7d32" font-family="monospace" font-size="10.5" font-weight="700">gradients all +1 — the same push, every step</text>
+
+  <!-- alternating run -->
+  <polyline fill="none" stroke="#a94442" stroke-width="3"
+    points="90,220.0 156,253.0 222,222.7 288,255.4 354,224.9 420,257.4 486,226.7 552,259.0"/>
+  <g fill="#a94442">
+    <circle cx="90" cy="220.0" r="4"/><circle cx="156" cy="253.0" r="4"/>
+    <circle cx="222" cy="222.7" r="4"/><circle cx="288" cy="255.4" r="4"/>
+    <circle cx="354" cy="224.9" r="4"/><circle cx="420" cy="257.4" r="4"/>
+    <circle cx="486" cy="226.7" r="4"/><circle cx="552" cy="259.0" r="5.5"/>
+  </g>
+  <text x="576" y="263" fill="#a94442" font-family="monospace" font-size="10" font-weight="700">−0.300</text>
+  <text x="576" y="276" fill="#8b7355" font-family="monospace" font-size="8">going nowhere</text>
+  <text x="300" y="290" fill="#a94442" font-family="monospace" font-size="10.5" font-weight="700">gradients +1, −1, +1, −1 — a push and a shove</text>
+
+  <!-- markers stepping together -->
+  <circle r="6" fill="#2e7d32" opacity="0.9">
+    <animate attributeName="cx" values="90;156;222;288;354;420;486;552" dur="6s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="220;193;168.7;146.8;127.1;109.4;93.5;79.1" dur="6s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <circle r="6" fill="#a94442" opacity="0.9">
+    <animate attributeName="cx" values="90;156;222;288;354;420;486;552" dur="6s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="220;253;222.7;255.4;224.9;257.4;226.7;259" dur="6s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- step labels -->
+  <g font-family="monospace" font-size="8" fill="#a8956a" text-anchor="middle">
+    <text x="90" y="312">1</text><text x="156" y="312">2</text><text x="222" y="312">3</text>
+    <text x="288" y="312">4</text><text x="354" y="312">5</text><text x="420" y="312">6</text>
+    <text x="486" y="312">7</text><text x="552" y="312">8</text>
+  </g>
+  <text x="330" y="328" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">step   —   v ← 0.9·v + g,  identical rule for both runs</text>
+
+  <!-- footer -->
+  <rect x="30" y="344" width="660" height="42" rx="6" fill="#ede7d3" stroke="#c9b88a"/>
+  <text x="360" y="360" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#5a4220" font-weight="600">
+    same rule, same gradient SIZE — only the signs differ, and the outcomes are 5.695 against −0.300
+  </text>
+  <text x="360" y="376" text-anchor="middle" font-family="monospace" font-size="9" fill="#8b7355">
+    that is the whole of momentum: it amplifies a direction the gradients agree on, and cancels one they do not
+  </text>
+
+</svg>
