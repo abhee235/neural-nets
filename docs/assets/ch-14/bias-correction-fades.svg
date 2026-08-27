@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">bias correction is a starting-line fix — it fades away on its own</text>
+
+  <!--
+    The factor 1 / (1 − β₁ᵗ) with β₁ = 0.9, plotted for t = 1..50.
+      t=1  ×10.0000     t=2  ×5.2632     t=5  ×2.4419
+      t=10 ×1.5353      t=20 ×1.1384     t=50 ×1.0052
+    px = 90 + 11·t ,  py = 300 − 24·factor   (factor 1 sits at py 276)
+    Nothing is switched off — the formula simply stops doing anything as
+    β₁ᵗ decays toward 0 and the denominator approaches 1.
+  -->
+
+  <!-- axes -->
+  <line x1="70" y1="300" x2="670" y2="300" stroke="#c9b88a" stroke-width="1.5"/>
+  <line x1="70" y1="45"  x2="70"  y2="306" stroke="#c9b88a" stroke-width="1.5"/>
+  <g font-family="monospace" font-size="8.5" fill="#a8956a" text-anchor="end">
+    <text x="64" y="64">×10</text>
+    <text x="64" y="184">×5</text>
+    <text x="64" y="280">×1</text>
+  </g>
+  <text x="30" y="215" fill="#8b7355" font-family="monospace" font-size="9.5" transform="rotate(-90 30 215)">correction factor</text>
+
+  <!-- the "no correction" line -->
+  <line x1="70" y1="276" x2="670" y2="276" stroke="#2e7d32" stroke-width="1" stroke-dasharray="5 4"/>
+  <text x="676" y="280" fill="#2e7d32" font-family="monospace" font-size="8">×1</text>
+
+  <!-- the curve -->
+  <polyline fill="none" stroke="#1e6091" stroke-width="2.75"
+    points="101,60.0 112,173.7 123,211.4 134,230.2 145,241.4 156,248.8 167,254.0 178,257.9 189,260.8 200,263.2 211,265.0 222,266.6 233,267.8 244,268.9 255,269.8 266,270.5 277,271.2 288,271.8 299,272.3 310,272.7 321,273.1 332,273.4 343,273.7 354,273.9 365,274.1 376,274.3 387,274.5 398,274.7 409,274.8 420,274.9 431,275.0 442,275.1 453,275.2 464,275.3 475,275.4 486,275.4 497,275.5 508,275.6 519,275.6 530,275.6 541,275.7 552,275.7 563,275.7 574,275.8 585,275.8 596,275.8 607,275.8 618,275.8 629,275.9 640,275.9"/>
+
+  <!-- marked points -->
+  <g font-family="monospace">
+    <circle cx="101" cy="60.0" r="5" fill="#a94442"/>
+    <text x="112" y="56" font-size="10" font-weight="700" fill="#a94442">t = 1  →  ×10</text>
+    <text x="112" y="69" font-size="8" fill="#8b7355">m̂₁ = 0.1 / 0.1 = 1, a tenfold rescue</text>
+
+    <circle cx="123" cy="211.4" r="4.5" fill="#1e6091"/>
+    <text x="134" y="207" font-size="9" fill="#1e6091">t = 5  →  ×2.44</text>
+
+    <circle cx="200" cy="263.2" r="4.5" fill="#1e6091"/>
+    <text x="211" y="259" font-size="9" fill="#1e6091">t = 10  →  ×1.54</text>
+
+    <circle cx="310" cy="272.7" r="4.5" fill="#1e6091"/>
+    <text x="321" y="269" font-size="9" fill="#1e6091">t = 20  →  ×1.14</text>
+
+    <circle cx="640" cy="275.9" r="4.5" fill="#2e7d32"/>
+    <text x="632" y="293" text-anchor="end" font-size="9" font-weight="700" fill="#2e7d32">t = 50  →  ×1.005, effectively off</text>
+  </g>
+
+  <!-- marker walking the curve -->
+  <circle r="5.5" fill="#1e6091" opacity="0.85">
+    <animate attributeName="cx" values="101;123;145;200;310;450;640" dur="6s" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="60;211.4;241.4;263.2;272.7;275.2;275.9" dur="6s" repeatCount="indefinite"/>
+  </circle>
+
+  <g font-family="monospace" font-size="8.5" fill="#a8956a" text-anchor="middle">
+    <text x="101" y="316">1</text><text x="200" y="316">10</text>
+    <text x="310" y="316">20</text><text x="420" y="316">30</text>
+    <text x="530" y="316">40</text><text x="640" y="316">50</text>
+  </g>
+  <text x="370" y="332" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="9">step t   —   factor = 1 / (1 − 0.9ᵗ)</text>
+
+  <!-- footer -->
+  <rect x="30" y="346" width="660" height="42" rx="6" fill="#ede7d3" stroke="#c9b88a"/>
+  <text x="360" y="362" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#5a4220" font-weight="600">
+    m and v start at zero, so their first averages read far too small — the correction repairs exactly that
+  </text>
+  <text x="360" y="378" text-anchor="middle" font-family="monospace" font-size="9" fill="#8b7355">
+    and nothing turns it off: as 0.9ᵗ decays the denominator approaches 1, so the formula quietly stops mattering
+  </text>
+
+</svg>
