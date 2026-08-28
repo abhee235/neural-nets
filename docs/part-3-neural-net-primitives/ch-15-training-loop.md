@@ -468,6 +468,26 @@ The first four are bugs. The last is a decision.
 
 ---
 
+# Every knob you now control
+
+Géron's chapter closes by collecting the hyperparameters in one place, and it is worth doing here too — because after fifteen chapters this list is finally complete. Every one of these is now something you built, not something a library hides.
+
+| knob | where it lives | what this course established |
+|---|---|---|
+| **depth** — how many layers | how many `Linear`s you stack | one layer cannot do XOR at any width (Ch 11); two can |
+| **width** — units per hidden layer | `new Linear(2, 8)` | 1 never solves it, 2 solves 8/20, 8 solves 20/20 |
+| **activation** between layers | `relu(...)` | Ch 11 — without it the stack collapses back to one line |
+| **output units + final activation** | the last `Linear` | not a choice — the task fixes it, see above |
+| **loss** | `mseLoss`, `crossEntropyFromLogits` | Ch 12 — train on it, report accuracy separately |
+| **optimizer** | `SGD`, `SGDMomentum`, `Adam` | Ch 14 — and plain SGD won here, 30/30 against Adam's 25/30 |
+| **learning rate** | the optimizer's second argument | a cliff, not a slope — the single most destructive knob |
+| **initialisation** | `Linear`'s `init` argument | Ch 13 — zero-init kills a hidden layer permanently |
+| **batch size** | not yet — all four XOR samples go through at once | full-batch training; batching arrives with real datasets |
+
+Two of these are structural (`depth`, `width`), two are fixed by the problem (`output layer`, `loss`), and the rest are training choices. When a network will not learn, the order to suspect them in is the one this chapter's failure table gives: learning rate first, then initialisation, then width — and `zeroGrad()` before any of them.
+
+---
+
 # What to implement
 
 Nothing new — that is the point of this chapter. The exercise file assembles what you have:
