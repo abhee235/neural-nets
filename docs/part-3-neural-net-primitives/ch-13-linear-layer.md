@@ -79,9 +79,7 @@ weight for x₂
 
 and combine them:
 
-```text
-score = w₁·x₁ + w₂·x₂
-```
+$$\text{score} = w_1 x_1 + w_2 x_2$$
 
 For example:
 
@@ -94,9 +92,7 @@ w₂ = 4
 
 Then:
 
-```text
-score = 3·1 + 4·2 = 11
-```
+$$\text{score} = 3 \cdot 1 + 4 \cdot 2 = 11$$
 
 There is nothing new here.
 
@@ -108,9 +104,7 @@ What if the score should be `2` even when the inputs are both zero?
 
 With:
 
-```text
-score = w₁·x₁ + w₂·x₂
-```
+$$\text{score} = w_1 x_1 + w_2 x_2$$
 
 that is impossible.
 
@@ -125,9 +119,7 @@ the score is always zero.
 
 So we give the unit its own adjustable starting point:
 
-```text
-score = w₁·x₁ + w₂·x₂ + b
-```
+$$\text{score} = w_1 x_1 + w_2 x_2 + b$$
 
 The extra number `b` is the **bias**.
 
@@ -147,9 +139,7 @@ b = 2
 
 gives:
 
-```text
-score = 3·1 + 4·2 + 2 = 13
-```
+$$\text{score} = 3 \cdot 1 + 4 \cdot 2 + 2 = 13$$
 
 So one output unit needs:
 
@@ -218,21 +208,15 @@ So let's simply build three units.
 
 ### Unit 1: `sat`
 
-```text
-s_sat  = w₁₁·x₁ + w₁₂·x₂ + b₁
-```
+$$s_{\text{sat}}  = w_{11} x_1 + w_{12} x_2 + b_1$$
 
 ### Unit 2: `ran`
 
-```text
-s_ran  = w₂₁·x₁ + w₂₂·x₂ + b₂
-```
+$$s_{\text{ran}}  = w_{21} x_1 + w_{22} x_2 + b_2$$
 
 ### Unit 3: `flew`
 
-```text
-s_flew = w₃₁·x₁ + w₃₂·x₂ + b₃
-```
+$$s_{\text{flew}} = w_{31} x_1 + w_{32} x_2 + b_3$$
 
 Notice something.
 
@@ -300,21 +284,15 @@ Calculate each output separately.
 
 ### `sat`
 
-```text
-1·1 + 0·2 + 0 = 1
-```
+$$1 \cdot 1 + 0 \cdot 2 + 0 = 1$$
 
 ### `ran`
 
-```text
-0·1 + 1·2 + 0 = 2
-```
+$$0 \cdot 1 + 1 \cdot 2 + 0 = 2$$
 
 ### `flew`
 
-```text
-0.5·1 + 0.5·2 + 1.5 = 3
-```
+$$0.5 \cdot 1 + 0.5 \cdot 2 + 1.5 = 3$$
 
 So the layer produces:
 
@@ -346,13 +324,13 @@ flew  [0.5, 0.5]   count both equally
 
 Look at the three equations again:
 
-```text
-sat  = 1*x₁ + 0*x₂ + 0
-
-ran  = 0*x₁ + 1*x₂ + 0
-
-flew = 0.5*x₁ + 0.5*x₂ + 1.5
-```
+$$
+\begin{aligned}
+s_{\text{sat}}  &= 1 \cdot x_1 + 0 \cdot x_2 + 0 \\[4pt]
+s_{\text{ran}}  &= 0 \cdot x_1 + 1 \cdot x_2 + 0 \\[4pt]
+s_{\text{flew}} &= 0.5 \cdot x_1 + 0.5 \cdot x_2 + 1.5
+\end{aligned}
+$$
 
 There is a lot of repetition.
 
@@ -362,38 +340,26 @@ Each output is doing the same kind of work:
 
 Instead of storing the weights separately, let's put them into a matrix.
 
-```text
-W =
-
-[ 1     0   ]
-[ 0     1   ]
-[ 0.5   0.5 ]
-```
+$$W = \begin{bmatrix} 1 & 0 \\ 0 & 1 \\ 0.5 & 0.5 \end{bmatrix}$$
 
 And put the biases into a vector:
 
-```text
-b = [0, 0, 1.5]
-```
+$$b = \begin{bmatrix} 0 & 0 & 1.5 \end{bmatrix}$$
 
 Now all three calculations can be written together:
 
-```text
-y = x @ Wᵀ + b
-```
+$$y = x W^{T} + b$$
 
 For our example:
 
-```text
-x      = [1, 2]
-
-Wᵀ     = [1   0   0.5
-          0   1   0.5]
-
-x @ Wᵀ = [1, 2, 1.5]
-
-+ b    = [1, 2, 3]
-```
+$$
+\begin{aligned}
+x            &= \begin{bmatrix} 1 & 2 \end{bmatrix} \\[6pt]
+W^{T}        &= \begin{bmatrix} 1 & 0 & 0.5 \\ 0 & 1 & 0.5 \end{bmatrix} \\[6pt]
+x W^{T}      &= \begin{bmatrix} 1 & 2 & 1.5 \end{bmatrix} \\[6pt]
+x W^{T} + b  &= \begin{bmatrix} 1 & 2 & 3 \end{bmatrix}
+\end{aligned}
+$$
 
 One matrix multiplication replaced three separate equations.
 
@@ -456,15 +422,11 @@ This is the convention we'll use throughout the course.
 
 We use:
 
-```text
-y = x @ Wᵀ + b
-```
+$$y = x W^{T} + b$$
 
 rather than:
 
-```text
-y = x @ W + b
-```
+$$y = x W + b$$
 
 because of how we chose to store `W`.
 
@@ -533,9 +495,7 @@ x @ Wᵀ  =  [1, 3]  =  [1, 2, 1.5]          ← a row of three scores
 
 **Same three numbers.** One is standing up, the other lying down. They are transposes of each other, which is exactly the identity:
 
-```text
-(W x)ᵀ  =  xᵀ Wᵀ
-```
+$$(W x)^{T} = x^{T} W^{T}$$
 
 So both forms are correct, and neither is more "true" than the other. The real question hiding underneath is:
 
@@ -586,9 +546,7 @@ x.shape = [10, 2]
 
 The same calculation:
 
-```text
-y = x @ Wᵀ + b
-```
+$$y = x W^{T} + b$$
 
 produces:
 
@@ -643,15 +601,11 @@ Now watch that gradient travel backward through the linear layer.
 
 A unit computes:
 
-```text
-yᵢ = wᵢ · x + bᵢ
-```
+$$y_i = w_i \cdot x + b_i$$
 
 The bias is added directly to the output, so:
 
-```text
-∂yᵢ / ∂bᵢ  =  1
-```
+$$\frac{\partial y_i}{\partial b_i} = 1$$
 
 Therefore the gradient arriving at the output passes straight into the corresponding bias:
 
@@ -670,33 +624,23 @@ So:
 
 Take one weight:
 
-```text
-y = w₁·x₁ + w₂·x₂ + b
-```
+$$y = w_1 x_1 + w_2 x_2 + b$$
 
 The effect of `w₁` on the output is:
 
-```text
-∂y / ∂w₁  =  x₁
-```
+$$\frac{\partial y}{\partial w_1} = x_1$$
 
 and similarly:
 
-```text
-∂y / ∂w₂  =  x₂
-```
+$$\frac{\partial y}{\partial w_2} = x_2$$
 
 The chain rule gives:
 
-```text
-∂L / ∂wᵢ   =   (∂L / ∂y)  ·  (∂y / ∂wᵢ)
-```
+$$\frac{\partial L}{\partial w_i} = \frac{\partial L}{\partial y} \cdot \frac{\partial y}{\partial w_i}$$
 
 so:
 
-```text
-∂L / ∂wᵢ   =   output gradient   ×   xᵢ
-```
+$$\frac{\partial L}{\partial w_i} = (\text{output gradient}) \times x_i$$
 
 For an entire row:
 
@@ -994,9 +938,7 @@ Suppose a layer has 100 inputs.
 
 Each output computes something like:
 
-```text
-w₁·x₁ + w₂·x₂ + … + w₁₀₀·x₁₀₀
-```
+$$w_1 x_1 + w_2 x_2 + \cdots + w_{100} x_{100}$$
 
 If the weights are too large, signals can explode as they travel through layers.
 
@@ -1019,27 +961,19 @@ Suppose an output sums `n` roughly independent terms.
 
 The size of the sum grows roughly like:
 
-```text
-√n
-```
+$$\sqrt{n}$$
 
 So with 100 inputs, the sum naturally tends to grow by roughly:
 
-```text
-√100 = 10
-```
+$$\sqrt{100} = 10$$
 
 To compensate, scale each weight by:
 
-```text
-1 / √n
-```
+$$\frac{1}{\sqrt{n}}$$
 
 giving:
 
-```text
-√( 1 / inputDim )
-```
+$$\sqrt{\frac{1}{\text{inputDim}}}$$
 
 This is the basic idea behind Xavier-style initialization.
 
@@ -1071,9 +1005,7 @@ You will encounter several names for variants of this idea.
 
 ### Xavier
 
-```text
-√( 1 / inputDim )
-```
+$$\sqrt{\frac{1}{\text{inputDim}}}$$
 
 A straightforward scale for keeping the signal stable — exactly the `√n` argument above.
 
@@ -1081,9 +1013,7 @@ A straightforward scale for keeping the signal stable — exactly the `√n` arg
 
 ### He
 
-```text
-√( 2 / inputDim )
-```
+$$\sqrt{\frac{2}{\text{inputDim}}}$$
 
 The factor of two compensates for the fact that ReLU-style activations remove roughly half the signal.
 
@@ -1118,9 +1048,7 @@ bias:   [outputDim] or null
 
 `forward()` computes:
 
-```text
-y = x @ Wᵀ + b
-```
+$$y = x W^{T} + b$$
 
 and `parameters()` returns the tensors the optimizer should update.
 
@@ -1223,9 +1151,7 @@ The exact logits from Chapter 12:
 
 were just the output of:
 
-```text
-x @ Wᵀ + b
-```
+$$x W^{T} + b$$
 
 And the gradient from Chapter 12:
 
@@ -1270,9 +1196,7 @@ Bias starts at zero.
 
 Compute:
 
-```text
-y = x @ Wᵀ + b
-```
+$$y = x W^{T} + b$$
 
 using your existing graph operations.
 
@@ -1308,9 +1232,7 @@ Because we need a systematic way to turn many inputs into many outputs.
 
 It computes:
 
-```text
-w · x + b
-```
+$$w \cdot x + b$$
 
 **Why is `w` called a weight, and `b` a bias?**
 
@@ -1340,9 +1262,7 @@ Because the bias is added directly to the output.
 
 Because:
 
-```text
-∂output / ∂weight  =  input
-```
+$$\frac{\partial\,\text{output}}{\partial\,\text{weight}} = \text{input}$$
 
 **Why do we need `parameters()`?**
 
