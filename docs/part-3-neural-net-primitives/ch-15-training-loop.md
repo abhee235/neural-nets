@@ -79,6 +79,32 @@ The rule underneath: **`zeroGrad()` goes anywhere between one `step()` and the n
 
 Everything so far has been one layer. Ch 13 traced a gradient into a single `Linear`; Ch 14 handed a single layer's parameters to an optimizer. Stacking two of them raises three questions that have never been answered, and they need answering before the loop makes sense.
 
+## But first — what counts as a layer?
+
+The word names two different things, and both usages are standard. It is worth pinning down before counting anything.
+
+<div align="center">
+  <img src="../assets/ch-15/what-is-a-layer.svg" alt="The same three-column network drawn twice. In the upper copy the three columns of circles are ringed with dashed boxes and labelled input layer, hidden layer and output layer, with a count on the right reading: counting circles, 3 layers, noted as the older usage and the one most diagrams use. In the lower copy the circles are identical but the two bundles of connecting arrows are boxed in green instead, labelled layer 1 equals Linear of 2 and 3 holding W-one of shape 3 by 2 and b-one of shape 3, and layer 2 equals Linear of 3 and 1 holding W-two of shape 1 by 3 and b-two of shape 1, with a count on the right reading: counting weights, 2 layers, noted as what the code means and what this book means. A footer states that a circle holds a value which is recomputed for every input and thrown away so it owns nothing, while an arrow holds a weight which is kept between inputs and learned, so the arrows are what an object can be." />
+</div>
+
+Count the **columns of circles** and that network has three layers: input, hidden, output. This is the older usage, and the one most diagrams you have seen will be using.
+
+Count the **weight matrices** and it has two: one carrying the inputs to the hidden column, one carrying the hidden column to the output. This is what the code means, and what "a two-layer network" means in practice. The input column is never counted here — nothing is learned there, it is only where the data arrives.
+
+Both readings describe the same network. They just name it from different ends.
+
+**Why the code counts the arrows.** A layer object has to own something, and the circles own nothing. A circle holds a value that is computed for one input and thrown away for the next — `h` was `2` for this input and will be something else for the next one. The arrows hold `W` and `b`, which persist between inputs and are what the optimizer updates. So the thing worth making an object is the transformation, not the column.
+
+`new Linear(2, 3)` says so outright: *from a column of 2, to a column of 3*. The object **is** the arrow bundle. Its `forward()` **produces** the next column of circles, but it **is** the arrows that made them.
+
+**So why "layer", and not "section"?** Historical accident, honestly. The word came from the neuron picture — the earliest networks were drawn and described as layers of *units*, and a layer was the units. Decades later, when this was written as code, the transformation was the thing that needed a name, and it inherited the existing word instead of getting a new one. Nobody renamed the old usage either, so both are still in use and you have to read from context. "Sections" would have been clearer. It is too late.
+
+The rule that settles any diagram:
+
+> **Count the weight matrices.** `n` weight matrices is an `n`-layer network, and it will have `n + 1` columns of circles.
+
+One caution about the figure below. It uses **one unit per column**, so that every number can be checked by hand — and at width 1 a column and a single circle look identical. `h` there is a hidden *column* that happens to be one circle wide. When the real XOR model appears later in this chapter it is eight circles wide, and the distinction becomes visible again.
+
 Take the smallest two-layer network there is — one input, one hidden unit, one output — with the weights set by hand so every number can be checked:
 
 ```text
