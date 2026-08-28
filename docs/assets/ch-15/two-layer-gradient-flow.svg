@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400">
+
+  <rect width="720" height="400" fill="#faf7f0" rx="12"/>
+
+  <text x="360" y="24" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">two layers, one backward pass — values go right, blame comes back left</text>
+
+  <!--
+    The doc's hand-traced network: 1 → 1 → 1, W₁ = 2, b₁ = 0, W₂ = 3, b₂ = 0,
+    x = 1, target = 0.
+      forward   x=1 → 2 → relu 2 → 6,  loss (6−0)² = 36
+      backward  dL/dy = 12
+                dL/dW₂ = 12·2 = 24    dL/db₂ = 12    dL/dh = 12·3 = 36
+                relu gate open (pre-activation 2 > 0), so 36 passes
+                dL/dW₁ = 36·1 = 36    dL/db₁ = 36
+    Phase 1 (0-50%) forward, phase 2 (50-100%) backward. 8s loop.
+  -->
+
+  <!-- ══════════ the network itself ══════════ -->
+  <!-- edges -->
+  <line x1="138" y1="175" x2="272" y2="175" stroke="#c9b88a" stroke-width="2"/>
+  <line x1="328" y1="175" x2="462" y2="175" stroke="#c9b88a" stroke-width="2"/>
+  <line x1="518" y1="175" x2="596" y2="175" stroke="#c9b88a" stroke-width="2"/>
+
+  <!-- weight labels on the edges -->
+  <rect x="176" y="140" width="58" height="22" rx="5" fill="#e4efe4" stroke="#2e7d32"/>
+  <text x="205" y="155" text-anchor="middle" font-family="monospace" font-size="10" font-weight="700" fill="#2e7d32">W₁ = 2</text>
+  <rect x="366" y="140" width="58" height="22" rx="5" fill="#e4efe4" stroke="#2e7d32"/>
+  <text x="395" y="155" text-anchor="middle" font-family="monospace" font-size="10" font-weight="700" fill="#2e7d32">W₂ = 3</text>
+
+  <!-- nodes -->
+  <circle cx="110" cy="175" r="28" fill="#ede7d3" stroke="#c9b88a" stroke-width="2"/>
+  <text x="110" y="171" text-anchor="middle" font-family="monospace" font-size="10" fill="#8b7355">x</text>
+  <text x="110" y="185" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2c2416">1</text>
+  <text x="110" y="128" text-anchor="middle" font-family="monospace" font-size="9" fill="#8b7355">input</text>
+
+  <circle cx="300" cy="175" r="28" fill="#ede7d3" stroke="#1e6091" stroke-width="2"/>
+  <text x="300" y="171" text-anchor="middle" font-family="monospace" font-size="10" fill="#8b7355">h</text>
+  <text x="300" y="185" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#1e6091">2</text>
+  <text x="300" y="128" text-anchor="middle" font-family="monospace" font-size="9" fill="#8b7355">hidden (after relu)</text>
+
+  <circle cx="490" cy="175" r="28" fill="#ede7d3" stroke="#1e6091" stroke-width="2"/>
+  <text x="490" y="171" text-anchor="middle" font-family="monospace" font-size="10" fill="#8b7355">y</text>
+  <text x="490" y="185" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#1e6091">6</text>
+  <text x="490" y="128" text-anchor="middle" font-family="monospace" font-size="9" fill="#8b7355">output</text>
+
+  <rect x="596" y="153" width="94" height="44" rx="8" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="643" y="170" text-anchor="middle" font-family="monospace" font-size="9" fill="#a94442">loss (6−0)²</text>
+  <text x="643" y="188" text-anchor="middle" font-family="monospace" font-size="14" font-weight="700" fill="#a94442">36</text>
+
+  <!-- ══════════ FORWARD, phase 1 ══════════ -->
+  <g>
+    <animate attributeName="opacity" values="1;0.25" keyTimes="0;0.5" calcMode="discrete" dur="8s" repeatCount="indefinite"/>
+    <text x="205" y="88" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="10" font-weight="700">2·1 + 0 = 2</text>
+    <text x="395" y="88" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="10" font-weight="700">3·2 + 0 = 6</text>
+    <path d="M 150 100 L 660 100" stroke="#2e7d32" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.6"/>
+    <path d="M 660 100 l -10 -5 l 0 10 z" fill="#2e7d32"/>
+    <text x="80" y="104" text-anchor="middle" fill="#2e7d32" font-family="monospace" font-size="10" font-weight="700">FORWARD</text>
+  </g>
+
+  <!-- ══════════ BACKWARD, phase 2 ══════════ -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1" keyTimes="0;0.5" calcMode="discrete" dur="8s" repeatCount="indefinite"/>
+
+    <path d="M 660 250 L 150 250" stroke="#a94442" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.7"/>
+    <path d="M 150 250 l 10 -5 l 0 10 z" fill="#a94442"/>
+    <text x="82" y="254" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="10" font-weight="700">BACKWARD</text>
+
+    <!-- the number arriving at the output -->
+    <text x="545" y="230" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="10" font-weight="700">dL/dy = 12</text>
+
+    <!-- layer 2's share -->
+    <rect x="396" y="268" width="188" height="52" rx="7" fill="#f3e6e4" stroke="#a94442"/>
+    <text x="490" y="284" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#a94442">layer 2 — its input is h = 2</text>
+    <text x="490" y="299" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#2c2416">dL/dW₂ = 12·2 = 24</text>
+    <text x="490" y="313" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#2c2416">dL/db₂ = 12</text>
+    <line x1="490" y1="203" x2="490" y2="266" stroke="#a94442" stroke-width="1.2" stroke-dasharray="3 3"/>
+
+    <!-- the hand-off -->
+    <text x="360" y="230" text-anchor="middle" fill="#a94442" font-family="monospace" font-size="10" font-weight="700">dL/dh = 12·3 = 36</text>
+    <text x="360" y="243" text-anchor="middle" fill="#5a4220" font-family="monospace" font-size="8.5">layer 2's input gradient…</text>
+
+    <!-- relu gate -->
+    <rect x="256" y="212" width="88" height="20" rx="5" fill="#ede7d3" stroke="#8b7355"/>
+    <text x="300" y="226" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#5a4220">relu: 2 &gt; 0, open</text>
+
+    <!-- layer 1's share -->
+    <rect x="136" y="268" width="188" height="52" rx="7" fill="#f3e6e4" stroke="#a94442"/>
+    <text x="230" y="284" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#a94442">layer 1 — its input is x = 1</text>
+    <text x="230" y="299" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#2c2416">dL/dW₁ = 36·1 = 36</text>
+    <text x="230" y="313" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#2c2416">dL/db₁ = 36</text>
+    <line x1="230" y1="203" x2="230" y2="266" stroke="#a94442" stroke-width="1.2" stroke-dasharray="3 3"/>
+    <text x="230" y="243" text-anchor="middle" fill="#5a4220" font-family="monospace" font-size="8.5">…is layer 1's upstream</text>
+  </g>
+
+  <!-- footer -->
+  <rect x="30" y="336" width="660" height="48" rx="6" fill="#ede7d3" stroke="#c9b88a"/>
+  <text x="360" y="353" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#5a4220" font-weight="600">
+    one loss.backward() filled all four: W₁ 36, b₁ 36, W₂ 24, b₂ 12
+  </text>
+  <text x="360" y="368" text-anchor="middle" font-family="monospace" font-size="9" fill="#8b7355">
+    each layer blames its own W and b, then passes what is left to the layer beneath —
+  </text>
+  <text x="360" y="380" text-anchor="middle" font-family="monospace" font-size="9" fill="#8b7355">
+    with n layers it is the same two jobs, n times
+  </text>
+
+</svg>

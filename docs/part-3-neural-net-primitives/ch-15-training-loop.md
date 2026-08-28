@@ -113,6 +113,12 @@ Now one call to `loss.backward()`, and watch what it fills in:
     dL/db₁ = 36                      =   36
 ```
 
+<p align="center">
+  <img src="../assets/ch-15/two-layer-gradient-flow.svg" alt="A two-layer network drawn as circles and connections: an input node holding 1, an edge labelled W-one equals 2, a hidden node holding 2 after relu, an edge labelled W-two equals 3, an output node holding 6, and a loss box showing 36. The animation alternates between two phases. In the forward phase a green arrow runs left to right across the top with the arithmetic on each edge, 2 times 1 plus 0 equals 2, then 3 times 2 plus 0 equals 6. In the backward phase a red arrow runs right to left underneath, starting from dL by dy equals 12 at the output. A box under layer two reads that its input is h equals 2, giving dL by dW-two equals 12 times 2 equals 24 and dL by db-two equals 12. Between the layers, dL by dh equals 12 times 3 equals 36 is labelled as layer two's input gradient becoming layer one's upstream, passing through a relu gate marked open because the pre-activation 2 is positive. A box under layer one reads that its input is x equals 1, giving dL by dW-one equals 36 times 1 equals 36 and dL by db-one equals 36. The footer states that one backward call filled all four parameters, that each layer blames its own weights and passes what is left to the layer beneath, and that with n layers it is the same two jobs n times." />
+</p>
+
+*Figure 1: the same trace, drawn. Forward along the top, backward along the bottom.*
+
 ## The number that connects them
 
 Look at `dL/dh = 36`. That is `x.grad` **of the second layer** — and Chapter 13 mentioned it in passing: *"unused here, but it is how blame reaches the layer below when layers stack."*
@@ -223,6 +229,14 @@ const optimizer = new SGD(params, 0.1);
 **4 tensors, 33 numbers** — shapes `[8,2]`, `[8]`, `[1,8]`, `[1]`. Two weight matrices and two bias vectors, which is every learnable number in the network.
 
 One `backward()` fills all four, and one `step()` moves all four, exactly as in the hand-traced example. The optimizer walks the list without knowing a layer exists.
+
+Drawn out, that is where those 33 numbers sit:
+
+<p align="center">
+  <img src="../assets/ch-15/xor-network.svg" alt="The XOR network drawn as neurons and connections. On the left, two input circles labelled x-one and x-two, annotated as given and not learned. In the middle, a column of eight hidden circles labelled h1 through h8, each with relu, annotated as activations that are computed and not stored. On the right, a single output circle. Sixteen pale edges fan from the two inputs to the eight hidden units, and eight blue edges converge from the hidden units to the output. Three boxes along the bottom account for every learnable number: W-one of shape 8 by 2 is 16, one per edge on the left side, plus b-one of shape 8 is 8, one per hidden unit; W-two of shape 1 by 8 is 8, one per edge on the right side, plus b-two is 1; giving 33 parameters in 4 tensors, one flat list. A note at the far left reads that every edge is a weight." />
+</p>
+
+*Figure 2: every edge is a weight, every hidden unit carries a bias, and the output has one of its own. 16 + 8 + 8 + 1 = 33.*
 
 Then the five lines, in a loop:
 
