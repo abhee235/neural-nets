@@ -99,6 +99,8 @@ Both readings describe the same network. They just name it from different ends.
 
 **So why "layer", and not "section"?** Historical accident, honestly. The word came from the neuron picture — the earliest networks were drawn and described as layers of *units*, and a layer was the units. Decades later, when this was written as code, the transformation was the thing that needed a name, and it inherited the existing word instead of getting a new one. Nobody renamed the old usage either, so both are still in use and you have to read from context. "Sections" would have been clearer. It is too late.
 
+**And the words for the pieces.** A single circle is a **unit** — also called a **neuron**, or a **node**. Three words, one thing, and the textbooks mix them freely. How many of them a column holds is that layer's **width**. So `new Linear(2, 8)` builds a layer of *width 8*: eight units in the hidden column. This book will say **unit** and **width**, but if you read "8 neurons in the hidden layer" elsewhere, that is the same sentence.
+
 The rule that settles any diagram:
 
 > **Count the weight matrices.** `n` weight matrices is an `n`-layer network, and it will have `n + 1` columns of circles.
@@ -246,15 +248,15 @@ Honestly: it is a choice, not a derivation. The input width is fixed by the data
 The floor is set by what the problem needs. Ch 11's exercise E6 built an exact XOR solution with **two** hidden units, so two is the theoretical minimum. Here is what actually happens at each width — 20 random initialisations, SGD at `lr = 0.1`:
 
 ```text
-  hidden   parameters   solved
+  hidden units   parameters   solved
 
-     1          5        0/20
-     2          9        8/20   ████████
-     3         13       14/20   ██████████████
-     4         17       14/20   ██████████████
-     8         33       20/20   ████████████████████
-    16         65       20/20   ████████████████████
-    32        129       19/20   ███████████████████
+       1             5        0/20
+       2             9        8/20   ████████
+       3            13       14/20   ██████████████
+       4            17       14/20   ██████████████
+       8            33       20/20   ████████████████████
+      16            65       20/20   ████████████████████
+      32           129       19/20   ███████████████████
 ```
 
 **One unit cannot do it, ever** — that is Ch 11's impossibility result, and no amount of training changes it. **Two units can, but only 8 times in 20.** A solution exists at that width; gradient descent just does not reliably find it, because losing a single unit to the dying-ReLU problem leaves nothing to work with.
@@ -270,6 +272,13 @@ That is the practical rule, and it is not glamorous:
 ---
 
 # Build it — XOR, with the real classes
+
+> **Is this a "real" neural network?** Yes — what follows is a complete **multi-layer perceptron**: an input, a hidden layer with a nonlinearity, an output layer, trained by gradient descent. That is the classical feed-forward neural network, and every piece of it is now yours.
+>
+> It is *small*, because XOR is the smallest problem that genuinely needs a hidden layer, and small enough that every number can be checked by hand. Width and depth are the only things separating it from a large one.
+>
+> The pieces you may be expecting and have not met yet are not missing — they are later, and each is a chapter: **Embedding** (Ch 18), **LayerNorm and Dropout** (Ch 20), **attention** (Part 5). None of them change the loop below. They are extra layers slotted into the same forward pass, trained by the same five lines.
+
 
 The problem is the one this part of the course opened with. Chapter 11 introduced XOR as the thing a linear model provably cannot solve, and its exercise trained a net on it with a hand-rolled loop, because `Linear`, `mseLoss` and `Adam` did not exist yet.
 
