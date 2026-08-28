@@ -61,6 +61,41 @@ function accuracy(predictions: Float64Array): number {
   return correct / WANT.length;
 }
 
+// ─── E0: a gradient through TWO layers, by hand ──────────────────────────────
+// Every trace so far has been through ONE layer. This is the smallest network
+// with two: 1 → 1 → 1, weights set by hand so every number is checkable.
+//
+//   x=1 ──► [W₁=2, b₁=0] ──► relu ──► [W₂=3, b₂=0] ──► y,  target 0
+stage("E0: how blame travels through two layers", () => {
+  const a = new Linear(1, 1), b = new Linear(1, 1);
+  a.weight.data = createTensor([2], [1, 1]); a.bias!.data = createTensor([0], [1]);
+  b.weight.data = createTensor([3], [1, 1]); b.bias!.data = createTensor([0], [1]);
+
+  const x = new TensorValue(createTensor([1], [1, 1]));
+  const preAct = a.forward(x);
+  const hidden = relu(preAct);
+  const out = b.forward(hidden);
+  const loss = mseLoss(out, createTensor([0], [1, 1]));
+
+  console.log("  forward:  x=1 → layer1 → ", preAct.data.data[0],
+    " → relu → ", hidden.data.data[0], " → layer2 → ", out.data.data[0],
+    "  loss", loss.data.data[0]);
+
+  loss.backward();
+
+  console.log("  backward, from ONE call:");
+  console.log("    dL/dy                  ", out.grad!.data[0], "  = 2(6−0)");
+  console.log("    layer2  dL/dW₂ = 12·h  ", b.weight.grad!.data[0], "   dL/db₂", b.bias!.grad!.data[0]);
+  console.log("    dL/dh   = 12·W₂        ", hidden.grad!.data[0], "  ← this is what travels DOWN");
+  console.log("    relu gate (preAct > 0) ", preAct.grad!.data[0], "  passed through unchanged");
+  console.log("    layer1  dL/dW₁ = 36·x  ", a.weight.grad!.data[0], "   dL/db₁", a.bias!.grad!.data[0]);
+  console.log("  layer2's x.grad IS layer1's upstream. that is the hand-off.");
+
+  const params = [...a.parameters(), ...b.parameters()];
+  console.log("  every parameter now has a gradient:",
+    params.map((p) => p.grad!.data[0]).join(", "), " — four tensors, one backward()");
+});
+
 // ─── E1: the five lines, once ────────────────────────────────────────────────
 stage("E1: one training step, in full", () => {
   const model = makeModel();

@@ -75,6 +75,117 @@ The rule underneath: **`zeroGrad()` goes anywhere between one `step()` and the n
 
 ---
 
+# First: what happens when there is more than one layer
+
+Everything so far has been one layer. Ch 13 traced a gradient into a single `Linear`; Ch 14 handed a single layer's parameters to an optimizer. Stacking two of them raises three questions that have never been answered, and they need answering before the loop makes sense.
+
+Take the smallest two-layer network there is — one input, one hidden unit, one output — with the weights set by hand so every number can be checked:
+
+```text
+  x ──► [ layer1: W₁=2, b₁=0 ] ──► relu ──► [ layer2: W₂=3, b₂=0 ] ──► y
+```
+
+Forward, with `x = 1` and a target of `0`:
+
+```text
+  x                        1
+  layer1:  2·1 + 0    =    2        the pre-activation
+  relu(2)             =    2
+  layer2:  3·2 + 0    =    6        the prediction
+  loss:    (6 − 0)²   =   36
+```
+
+Now one call to `loss.backward()`, and watch what it fills in:
+
+```text
+  dL/dy    at the loss                    12       = 2(6 − 0)
+
+  layer2 — its input is the HIDDEN value, 2:
+    dL/dW₂ = dL/dy · h    = 12 · 2   =   24
+    dL/db₂ = dL/dy                   =   12
+    dL/dh  = dL/dy · W₂   = 12 · 3   =   36   ←  travels DOWN
+
+  relu — the pre-activation was 2, which is positive, so the gate is open:
+    dL/d(pre-activation)             =   36       passed through unchanged
+
+  layer1 — its input is x, and its upstream is that 36:
+    dL/dW₁ = 36 · x       = 36 · 1   =   36
+    dL/db₁ = 36                      =   36
+```
+
+## The number that connects them
+
+Look at `dL/dh = 36`. That is `x.grad` **of the second layer** — and Chapter 13 mentioned it in passing: *"unused here, but it is how blame reaches the layer below when layers stack."*
+
+This is that moment. Layer 2's input is layer 1's output, so layer 2's `x.grad` is exactly layer 1's upstream gradient. The chain hands off there, and `relu` sits in between as a gate deciding whether anything gets through.
+
+Each layer does the same two jobs it always did:
+
+```text
+  blame my own W and b     using whatever came from above
+  pass blame further down   so the layer beneath can do the same
+```
+
+With `n` layers it is that, `n` times. Nothing new appears at three layers, or at ninety-six.
+
+## Parameters are not inputs
+
+Worth stating flatly, because the words invite the mix-up: **a parameter is any number the network learns.** Not the input, and not only the first layer's numbers.
+
+```text
+  x           an INPUT       given to us. never changes. not a parameter.
+  W₁, b₁      parameters     layer 1's, learned
+  W₂, b₂      parameters     layer 2's, learned
+  h           an activation  computed on the way through. not stored, not learned.
+```
+
+Our tiny network has **four** parameters, two per layer. And after that single `backward()`, all four have a gradient:
+
+```text
+  [0]  W₁   value 2    grad 36
+  [1]  b₁   value 0    grad 36
+  [2]  W₂   value 3    grad 24
+  [3]  b₂   value 0    grad 12
+```
+
+That is why the optimizer receives every layer's parameters in one list, and why it updates them **all in the same step**. There is no notion of training layer 1 first and layer 2 afterwards. One forward pass, one backward pass, and every weight in the network moves at once.
+
+The flat list works because each tensor already carries its own gradient. The optimizer walks the list, reads `.grad`, and subtracts — it never needs to know which layer a tensor came from, or that layers exist at all. That is what Chapter 13's `parameters()` contract was for, and this is the first place it is doing real work.
+
+---
+
+# And how wide should the hidden layer be?
+
+The other question the code below raises: `new Linear(2, 8)` — where did the `8` come from?
+
+Honestly: it is a choice, not a derivation. The input width is fixed by the data (two features) and the output width by the task (one number), but **everything in between is yours to pick.** What follows is how to pick it.
+
+The floor is set by what the problem needs. Ch 11's exercise E6 built an exact XOR solution with **two** hidden units, so two is the theoretical minimum. Here is what actually happens at each width — 20 random initialisations, SGD at `lr = 0.1`:
+
+```text
+  hidden   parameters   solved
+
+     1          5        0/20
+     2          9        8/20   ████████
+     3         13       14/20   ██████████████
+     4         17       14/20   ██████████████
+     8         33       20/20   ████████████████████
+    16         65       20/20   ████████████████████
+    32        129       19/20   ███████████████████
+```
+
+**One unit cannot do it, ever** — that is Ch 11's impossibility result, and no amount of training changes it. **Two units can, but only 8 times in 20.** A solution exists at that width; gradient descent just does not reliably find it, because losing a single unit to the dying-ReLU problem leaves nothing to work with.
+
+By eight units it is 20/20. The extra units are not adding expressive power the problem needs — they are **redundancy**. With eight hinges available, a few can die and the rest still cover the job.
+
+That is the practical rule, and it is not glamorous:
+
+> **Wide enough that losing a few units does not matter. Then stop.**
+
+`8` is that for XOR. Going to 32 buys nothing (`19/20`, statistically the same as 20) while quadrupling the parameters. Chapter 30's GPT will use a hidden width of hundreds for the same reason at a different scale — enough capacity, plus slack.
+
+---
+
 # Build it — XOR, with the real classes
 
 The problem is the one this part of the course opened with. Chapter 11 introduced XOR as the thing a linear model provably cannot solve, and its exercise trained a net on it with a hand-rolled loop, because `Linear`, `mseLoss` and `Adam` did not exist yet.
@@ -89,23 +200,29 @@ Now they do. Same problem, real classes:
   [1, 1]      →       0
 ```
 
-The model needs a hidden layer — that is the whole lesson of Ch 11 — so two `Linear` layers with a `relu` between them:
+The model needs a hidden layer — that is the whole lesson of Ch 11 — so two `Linear` layers with a `relu` between them, exactly the shape traced above:
 
 ```typescript
-const layer1 = new Linear(2, 8);
-const layer2 = new Linear(8, 1);
+const layer1 = new Linear(2, 8);   // 2 features in, 8 hidden units
+const layer2 = new Linear(8, 1);   // 8 hidden units in, 1 score out
 
 const forward = (x: TensorValue) => layer2.forward(relu(layer1.forward(x)));
 ```
 
-Collecting the parameters is where Ch 13's contract pays off. Two layers, one flat list:
+The `2` and the `1` are fixed by the problem. The `8` is the choice from the previous section — comfortably above the two-unit minimum, so a dead unit or two costs nothing.
+
+Notice the widths have to meet: `layer1` produces 8 numbers, so `layer2` must expect 8. That is the only constraint between adjacent layers, and getting it wrong is a shape error rather than a silent bug.
+
+Now the parameters — all of them, from both layers, in one list:
 
 ```typescript
 const params = [...layer1.parameters(), ...layer2.parameters()];
 const optimizer = new SGD(params, 0.1);
 ```
 
-That list is **4 tensors and 33 numbers** — shapes `[8,2]`, `[8]`, `[1,8]`, `[1]`. The optimizer walks it without knowing a layer exists, which is exactly what `parameters()` was for.
+**4 tensors, 33 numbers** — shapes `[8,2]`, `[8]`, `[1,8]`, `[1]`. Two weight matrices and two bias vectors, which is every learnable number in the network.
+
+One `backward()` fills all four, and one `step()` moves all four, exactly as in the hand-traced example. The optimizer walks the list without knowing a layer exists.
 
 Then the five lines, in a loop:
 
@@ -247,18 +364,18 @@ You should see the loss reach `0.000000`, predictions of `0, 1, 1, 0`, and — i
 # What you should now be able to explain
 
 1. Why must `backward()` come after the loss and not after the forward pass?
-2. Where can `zeroGrad()` go, and which single position breaks training silently?
-3. What does a loop with no `zeroGrad()` look like from the outside, and why is it mistaken for a learning rate problem?
-4. Two layers produce four parameter tensors. How does the optimizer know what to do with them without knowing what a layer is?
-5. Accuracy reached 100% at step 14 and training ran to step 600. Was that wasted?
-6. Why can you not train on accuracy directly?
-7. `lr = 0.1` solves XOR 30 times out of 30 and `lr = 1.0` zero times out of 30. What is physically happening at the higher rate?
-8. Two runs both end with the network outputting a constant. In one the loss is `0.25` and every prediction is `0.5`; in the other the loss is `217` and every prediction is `-14.2`. What is different about the two failures?
-9. Plain SGD beat Adam on this problem. What does Adam actually buy, and why does XOR not benefit?
+2. In the two-layer trace, `dL/dh` came out as 36. What is that number to layer 2, and what is it to layer 1?
+3. Name every parameter in a `Linear(2,8) → relu → Linear(8,1)` network. Is `x` one of them? Is the hidden activation?
+4. The optimizer gets one flat list of four tensors. How does it know which layer each came from — and why does it not need to?
+5. Where can `zeroGrad()` go, and which single position breaks training silently?
+6. What does a loop with no `zeroGrad()` look like from the outside, and why is it mistaken for a learning rate problem?
+7. Accuracy reaches 100% within the first few dozen steps and training runs to 600. Was the rest wasted?
+8. Why can you not train on accuracy directly?
+9. `lr = 0.1` solves XOR 30 times out of 30 and `lr = 1.0` zero times out of 30. What is physically happening at the higher rate?
+10. Two runs both end with the network outputting a constant. In one the loss is `0.25` and every prediction is `0.5`; in the other the loss is `217` and every prediction is `-14.2`. What is different about the two failures?
+11. Plain SGD beat Adam on this problem. What does Adam actually buy, and why does XOR not benefit?
 
----
-
-# End of Part 3
+---# End of Part 3
 
 You can now build and train a neural network from nothing.
 
