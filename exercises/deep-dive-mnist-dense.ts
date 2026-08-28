@@ -4,7 +4,7 @@
  * Prereq : everything through Ch 15
  * Run    : bun run exercises/deep-dive-mnist-dense.ts
  *
- * REFERENCE: docs/deep-dives/mnist-dense-network.md
+ * REFERENCE: docs/deep-dives/ch-15-mnist-dense-network.md
  *
  * WHY THIS EXISTS: every chapter so far has trained on a toy — four rows of
  * XOR, a thousand points in a circle. This is the test of whether the
