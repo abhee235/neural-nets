@@ -144,6 +144,37 @@ Two `relu` units, and the impossible becomes arithmetic you can verify in your h
 
 Look closely at *why* it works. `h₂` contributes **nothing** for the first three inputs — `relu` zeroes it — and only wakes up at `(1,1)`, where it fires and subtracts. The network has effectively said: *"treat this last case differently from the others."* That is something no line can do, and it is the whole trick.
 
+### The same answer, built the old way
+
+There is a second solution worth seeing, because it is the one the field found *first* — and because of how it fails.
+
+XOR is a logic expression, and logic can be rewritten:
+
+> `A ⊕ B  =  (A ∧ ¬B) ∨ (¬A ∧ B)`
+
+*A or B, but not both* is the same as *A-and-not-B, or B-and-not-A*. Each of those three pieces — two ANDs and an OR — is a single threshold unit, so the whole thing is buildable from the original step-function neurons:
+
+```text
+  h₁ = step( A − B − 0.5 )      "A and not B"
+  h₂ = step( B − A − 0.5 )      "B and not A"
+  y  = step( h₁ + h₂ − 0.5 )    "h₁ or h₂"
+```
+
+Check all four inputs:
+
+| A | B | h₁ | h₂ | y | want |
+|---|---|----|----|---|------|
+| 0 | 0 | 0 | 0 | **0** | 0 ✓ |
+| 0 | 1 | 0 | 1 | **1** | 1 ✓ |
+| 1 | 0 | 1 | 0 | **1** | 1 ✓ |
+| 1 | 1 | 0 | 0 | **0** | 0 ✓ |
+
+Exact, and **also two hidden units** — the same width as the `relu` solution above. That is not a coincidence: two is genuinely what XOR costs.
+
+**So why is this not the end of the chapter?** Because of how those weights got there: *you* worked them out, by hand, from a logic identity. Nobody trained them. And nobody could have — which is precisely what the next section is about. This network is easy to **design** and impossible to **learn**, and the reason is the `step` in every one of those three lines.
+
+That gap — between a solution existing and gradient descent being able to find it — is the entire subject of this chapter.
+
 So the real question of this chapter is not the vague "how do we bend a line". It is sharper:
 
 > **How can a unit make a *decision* — behave one way here and another way there?**
