@@ -267,7 +267,39 @@ That is the practical rule, and it is not glamorous:
 
 > **Wide enough that losing a few units does not matter. Then stop.**
 
+**This is the standard advice, arrived at by measurement.** The usual textbook version — Géron's, among others — is to deliberately pick *more* units than you need and let regularisation trim the model down, rather than hunting for the exact right number. Same conclusion, opposite direction: he starts oversized and shrinks, the table above starts at 1 and grows. Both land on *comfortably more than the minimum*. The reason to measure it here is that the failure at width 2 is visible and explainable — a dead unit and nothing left over — rather than something to take on trust.
+
 `8` is that for XOR. Going to 32 buys nothing (`19/20`, statistically the same as 20) while quadrupling the parameters. Chapter 30's GPT will use a hidden width of hundreds for the same reason at a different scale — enough capacity, plus slack.
+
+---
+
+# And what about the output layer?
+
+The hidden width was a free choice. The **output layer is not** — the task fixes it, and getting it wrong is one of the most common ways a first network fails silently.
+
+| task | output units | final activation | loss |
+|---|---|---|---|
+| regression — predict one number | `1` | none | `mseLoss` |
+| regression — predict `k` numbers | `k` | none | `mseLoss` |
+| classification — `k` mutually exclusive classes | `k` (one per class) | none — emit raw logits | `crossEntropyFromLogits` |
+
+Three things worth stating flatly, because each is a real bug:
+
+**Do not apply `softmax` before `crossEntropyFromLogits`.** It applies the softmax internally — that was the whole point of Ch 12's log-sum-exp trick. A layer that softmaxes first has it applied twice. Measured on the XOR network below, 2000 steps, five runs each:
+
+```text
+  correct   (raw logits into the loss)    final loss  0.0008
+  softmaxed twice                         final loss  0.4018
+  a model that has learned nothing        final loss  0.6931   (= ln 2)
+```
+
+So it does not crash, and it does not sit still — it learns, badly, and stops well short. That is the worst kind of bug: it looks like a network that needs more training. The name says it: *from logits*.
+
+**Binary classification is just `k = 2`.** Many books use one output unit with `sigmoid` and a binary cross-entropy loss. We have not built `binaryCrossEntropy`, and we do not need it — two classes through `softmax` and `crossEntropyFromLogits` is mathematically the same model.
+
+**The output layer has no activation of its own for regression.** A `relu` on the output would make negative predictions impossible; a `sigmoid` would cap them between 0 and 1. Nonlinearity belongs *between* layers, not at the end.
+
+XOR is really a classification problem, and this chapter trains it with `mseLoss` anyway — because it makes the two-layer trace easier to follow, and because it works. The stretch exercise asks you to switch it, and to measure whether the recommended loss actually does better here.
 
 ---
 
