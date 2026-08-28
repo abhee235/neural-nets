@@ -433,9 +433,17 @@ That collapse has a signature you can check for, and it is not the loss value:
 
 ## The optimizer is not a magic switch
 
-Read the table again. **Plain SGD at a sensible learning rate is the most reliable thing on it** — 30/30, beating Adam's 25/30 at the same rate.
+Read the table again, carefully. It is tempting to say SGD wins — `30/30` against Adam's `25/30` at the same rate. But that comparison is rigged: `lr = 0.05` is a *good* rate for SGD and a *poor* one for Adam. Compare each at its own sensible rate and they are level — SGD `30/30`, Adam `29/30`. Re-run at 60 inits to shrink the noise and they stay level:
 
-That is worth sitting with, because the expectation runs the other way. Adam is what transformers train with, and Chapter 14 spent a lot of pages on why. But on a small, clean, well-conditioned problem, plain gradient descent at a sane step size is hard to beat.
+```text
+  SGD          lr 0.1     59/60   98%
+  Adam         lr 0.01    58/60   97%
+  SGDMomentum  lr 0.05    56/60   93%
+```
+
+**So the finding is not that SGD wins. It is that Adam does not help.**
+
+That is worth sitting with, because the expectation runs the other way. Adam is what transformers train with, and Chapter 14 spent a lot of pages on why. But on a small, clean, well-conditioned problem, plain gradient descent at a sane step size matches it — the sophistication buys nothing it can use.
 
 What Adam buys is not speed here — it is a **wider band of learning rates that work**, and per-parameter scaling that matters when different parameters see gradients of wildly different sizes. XOR has neither problem. GPT has both.
 
@@ -479,7 +487,7 @@ Géron's chapter closes by collecting the hyperparameters in one place, and it i
 | **activation** between layers | `relu(...)` | Ch 11 — without it the stack collapses back to one line |
 | **output units + final activation** | the last `Linear` | not a choice — the task fixes it, see above |
 | **loss** | `mseLoss`, `crossEntropyFromLogits` | Ch 12 — train on it, report accuracy separately |
-| **optimizer** | `SGD`, `SGDMomentum`, `Adam` | Ch 14 — and plain SGD won here, 30/30 against Adam's 25/30 |
+| **optimizer** | `SGD`, `SGDMomentum`, `Adam` | Ch 14 — SGD and Adam tie here, each at its own good rate |
 | **learning rate** | the optimizer's second argument | a cliff, not a slope — the single most destructive knob |
 | **initialisation** | `Linear`'s `init` argument | Ch 13 — zero-init kills a hidden layer permanently |
 | **batch size** | not yet — all four XOR samples go through at once | full-batch training; batching arrives with real datasets |
