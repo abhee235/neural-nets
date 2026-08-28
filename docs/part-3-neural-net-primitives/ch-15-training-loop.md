@@ -130,13 +130,25 @@ Now one call to `loss.backward()`. It walks the same path in reverse, four steps
 
 $$\frac{\partial L}{\partial y} = 2(y - t) = 2(6 - 0) = 12$$
 
-**Step 2 — layer 2.** Its input is the hidden value $h = 2$, so by the rule from Ch 13, each weight's blame is the upstream gradient times the input it multiplied:
+**Step 2 — layer 2.** Layer 2 computes $y = W_2 h + b_2$. Three quantities feed it, so before the chain rule can be applied it needs its three **local** derivatives — how $y$ moves when each one moves and the other two are held still:
 
 $$
 \begin{aligned}
-\frac{\partial L}{\partial W_2} &= \frac{\partial L}{\partial y} \cdot h  = 12 \cdot 2 = 24 \\[4pt]
-\frac{\partial L}{\partial b_2} &= \frac{\partial L}{\partial y} = 12 \\[4pt]
-\frac{\partial L}{\partial h}   &= \frac{\partial L}{\partial y} \cdot W_2 = 12 \cdot 3 = 36
+\frac{\partial y}{\partial W_2} &= h = 2 \\[4pt]
+\frac{\partial y}{\partial b_2} &= 1 \\[4pt]
+\frac{\partial y}{\partial h}   &= W_2 = 3
+\end{aligned}
+$$
+
+Each one is read straight off $y = W_2 h + b_2$. Differentiate with respect to $W_2$ and the $b_2$ term is a constant that disappears, leaving $h$ as the coefficient. With respect to $b_2$ the coefficient is $1$. With respect to $h$ it is $W_2$. That is Ch 13's $\partial\,\text{output} / \partial\,\text{weight} = \text{input}$ — derived here rather than quoted.
+
+**Only now** the chain rule, upstream times local:
+
+$$
+\begin{aligned}
+\frac{\partial L}{\partial W_2} &= \frac{\partial L}{\partial y} \cdot \frac{\partial y}{\partial W_2} = 12 \cdot 2 = 24 \\[4pt]
+\frac{\partial L}{\partial b_2} &= \frac{\partial L}{\partial y} \cdot \frac{\partial y}{\partial b_2} = 12 \cdot 1 = 12 \\[4pt]
+\frac{\partial L}{\partial h}   &= \frac{\partial L}{\partial y} \cdot \frac{\partial y}{\partial h}   = 12 \cdot 3 = 36
 \end{aligned}
 $$
 
@@ -144,20 +156,39 @@ That last line is the one to watch:
 
 $$\boxed{\;\frac{\partial L}{\partial h} = 36\;}$$
 
-**Step 3 — the `relu` gate.** The pre-activation was $z_1 = 2$, which is positive, so $\text{relu}'(z_1) = 1$ and the gradient passes through untouched (Ch 11's gate, not a scale):
+**Step 3 — the `relu` gate.** Same two moves. Here $h = \text{relu}(z_1)$, so the local derivative is
 
-$$\frac{\partial L}{\partial z_1} = \frac{\partial L}{\partial h} \cdot \text{relu}'(z_1) = 36 \cdot 1 = 36$$
+$$\frac{\partial h}{\partial z_1} = \text{relu}'(z_1) = 1 \qquad \text{since } z_1 = 2 > 0$$
+
+and the chain rule gives
+
+$$\frac{\partial L}{\partial z_1} = \frac{\partial L}{\partial h} \cdot \frac{\partial h}{\partial z_1} = 36 \cdot 1 = 36$$
+
+The gradient passes through untouched — Ch 11's gate, not a scale.
 
 Had $z_1$ been negative, this would be $36 \cdot 0 = 0$ — and layer 1 would have received nothing at all. That is the dying ReLU, seen from the inside.
 
-**Step 4 — layer 1.** Its input is $x = 1$, and its upstream is that $36$:
+**Step 4 — layer 1.** Same two moves once more. Layer 1 computes $z_1 = W_1 x + b_1$, so its local derivatives are
 
 $$
 \begin{aligned}
-\frac{\partial L}{\partial W_1} &= \frac{\partial L}{\partial z_1} \cdot x = 36 \cdot 1 = 36 \\[4pt]
-\frac{\partial L}{\partial b_1} &= \frac{\partial L}{\partial z_1} = 36
+\frac{\partial z_1}{\partial W_1} &= x = 1 \\[4pt]
+\frac{\partial z_1}{\partial b_1} &= 1
 \end{aligned}
 $$
+
+and its upstream is the $36$ that survived the gate:
+
+$$
+\begin{aligned}
+\frac{\partial L}{\partial W_1} &= \frac{\partial L}{\partial z_1} \cdot \frac{\partial z_1}{\partial W_1} = 36 \cdot 1 = 36 \\[4pt]
+\frac{\partial L}{\partial b_1} &= \frac{\partial L}{\partial z_1} \cdot \frac{\partial z_1}{\partial b_1} = 36 \cdot 1 = 36
+\end{aligned}
+$$
+
+There is no $\partial L / \partial x$ line. Layer 1 *could* compute it — $\partial z_1/\partial x = W_1 = 2$, giving $36 \cdot 2 = 72$ — but $x$ is the data, not a parameter, and there is no layer below to hand it to. It is computed and dropped.
+
+Notice that all four steps had the same two moves: **write the local derivative, then multiply by what came from above.** That is the entire backward pass. Step 3 looked different only because a `relu` has one input instead of three.
 
 <p align="center">
   <img src="../assets/ch-15/two-layer-gradient-flow.svg" alt="A two-layer network drawn as circles and connections: an input node holding 1, an edge labelled W-one equals 2, a hidden node holding 2 after relu, an edge labelled W-two equals 3, an output node holding 6, and a loss box showing 36. The animation alternates between two phases. In the forward phase a green arrow runs left to right across the top with the arithmetic on each edge, 2 times 1 plus 0 equals 2, then 3 times 2 plus 0 equals 6. In the backward phase a red arrow runs right to left underneath, starting from dL by dy equals 12 at the output. A box under layer two reads that its input is h equals 2, giving dL by dW-two equals 12 times 2 equals 24 and dL by db-two equals 12. Between the layers, dL by dh equals 12 times 3 equals 36 is labelled as layer two's input gradient becoming layer one's upstream, passing through a relu gate marked open because the pre-activation 2 is positive. A box under layer one reads that its input is x equals 1, giving dL by dW-one equals 36 times 1 equals 36 and dL by db-one equals 36. The footer states that one backward call filled all four parameters, that each layer blames its own weights and passes what is left to the layer beneath, and that with n layers it is the same two jobs n times." />
