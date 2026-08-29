@@ -156,19 +156,61 @@ Three words that get used together and mean different things.
   <img src="../assets/deep-dives/ch-15-shuffling-batching.svg" alt="An animated diagram of shuffling and batching using 24 stand-in images coloured by digit. The top row shows the images sorted, marked never do this, grouped into four dashed batches, with a note that every batch is one or two digits so each step pulls one way. Below, a shuffled row alternates between two different random orders labelled epoch 1 and epoch 2, with a note that every batch is a mixture so the step is an average. A footer gives the arithmetic: one batch is 64 images giving one forward, one backward and one optimizer step; one epoch is 31 batches, every image seen once, 2000 divided by 64 is 31 remainder 16; 30 epochs is 930 optimizer steps and the order is redrawn every epoch. It notes the leftover 16 are dropped each epoch but shuffling means they are different 16 every time." />
 </div>
 
-**A batch** is how many images go through *together* before the weights move. Here, 64. Not 1, because a single image gives a noisy, unrepresentative gradient. Not all 2,000, because then the whole dataset must be processed for a single step and training crawls. Sixty-four rows go in as `[64, 784]`, one loss comes out — Ch 12's mean over the batch — and one `optimizer.step()` follows.
+### A batch: how many images vote on each step
 
-**An epoch** is one pass through the whole training set:
+Training is a loop of *look, compare, adjust*. Each **adjust** is one small nudge to the weights — one `optimizer.step()`. And before you can nudge, you have to decide which way to nudge.
 
-$$\left\lfloor \frac{2000}{64} \right\rfloor = 31 \text{ batches per epoch}, \qquad 2000 - 31 \times 64 = 16 \text{ images left over}$$
+**That direction comes from looking at images. The question is: how many?**
 
-Those 16 are dropped — the loop takes only full batches. That is fine *because of shuffling*: it is a different 16 every epoch.
+Try the two extremes.
 
-**Shuffling** is redrawing the order before every epoch, and it matters more than it sounds. The vendored file is stratified but ordered. Without a shuffle, every batch would be almost entirely one digit, and each step would drag the weights toward "everything is a 3", then "everything is a 4". The gradient of a batch is an *average*, and an average over one class is not a useful direction. Shuffle, and every batch is a mixture.
+**One image at a time.** The network looks at a single `3`, works out "I should lean more toward 3", and nudges. Then it sees a single `7` and nudges toward 7s — partly undoing what it just did. It lurches, because every step follows the opinion of exactly one image, and one image is not a fair sample of what digits look like.
 
-$$30 \text{ epochs} \times 31 \text{ batches} = 930 \text{ optimizer steps}$$
+**All 2,000 at once.** Now the direction is excellent — it accounts for every image. But you only get to nudge *once* per pass through the data. Over 30 passes that is **30 nudges in the entire run**. The direction is perfect and the network barely moves.
 
-930 steps, on 111,146 parameters, in about 83 seconds.
+So it is a trade, and the table is the whole argument:
+
+| images per step | steps per pass | each step follows |
+|---|---|---|
+| 1 | 2,000 | one image's opinion — jerky and unreliable |
+| **64** | **31** | **the average of 64 opinions — steady, and still plenty of steps** |
+| 2,000 (all) | 1 | everything at once — but only 30 steps in the whole run |
+
+**A batch is that middle choice: how many images vote before each nudge.** Here, 64.
+
+Mechanically, 64 images go in together as one `[64, 784]` block. Ten scores come out for each, and the loss for the batch is **the average of the 64 individual losses** — that is the `mean` Ch 12 built into every loss function. One average loss, one `backward()`, one `step()`.
+
+> Averaging 64 opinions does not make the direction *correct*, just far less erratic than one. That is all a bigger batch buys you.
+
+### An epoch: one pass through all the images
+
+Once the batch size is settled, an **epoch** is simply "keep taking batches until every image has been used once".
+
+```text
+  2000 images ÷ 64 per batch  =  31 batches, with 16 images left over
+```
+
+So one epoch is **31 nudges**, and we run 30 epochs:
+
+```text
+  30 epochs × 31 batches = 930 nudges in the whole run
+```
+
+930 steps, adjusting 111,146 numbers, in about 83 seconds.
+
+**And those 16 leftovers?** The loop only takes full batches of 64, so each epoch ignores 16 images. That sounds careless — until you see the next idea.
+
+### Shuffling: why the order must change every time
+
+The file is neatly organised: all 200 zeros, then all 200 ones, then all the twos. Tidy, and **disastrous if you leave it that way.**
+
+Cut that order into batches of 64 and look at what the first batch contains: **64 zeros.** Nothing else. Asked "which way should I nudge?", the honest answer for that batch is *"predict zero, always"* — because for these 64 images, that is correct every single time. The next batch is another 64 zeros, pushing the same way again.
+
+Then the ones arrive and the network is dragged toward "always predict one", undoing it. Then the twos. Each step is confidently pulling in a direction that is right for one digit and wrong for the other nine.
+
+**Shuffling fixes it by dealing the images into a new random order before every epoch.** Now each batch of 64 holds a mixture of all ten digits, so the average direction has to satisfy all of them at once — and that is the direction you actually want.
+
+It also rescues the 16 leftovers. Because the order is redrawn every epoch, **it is a different 16 that get skipped each time**. Over 30 epochs no image is systematically ignored. With a fixed order, the same 16 images would never be trained on at all.
 
 ---
 
