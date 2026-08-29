@@ -118,6 +118,8 @@ $$784 \;\rightarrow\; 128 \;\rightarrow\; 64 \;\rightarrow\; 32 \;\rightarrow\; 
 
 That is the intuition. Be honest that it is an intuition: the widths `128, 64, 32` are conventional, not derived. Ch 15's rule still applies — wide enough that losing a few units does not matter, then stop.
 
+> **If "hidden layer" is still a fuzzy phrase, read [What a hidden layer actually does](ch-15-what-hidden-layers-do.md) first.** It takes the question apart from the beginning — why `relu` on its own bends nothing, why one unit is exactly one bend, why a layer's *width* is simply how many bends you get, and why these widths shrink here while XOR's expand. It also measures how many layers are worth having, and finds the answer is different for a plain curve than for images.
+
 **Where the parameters are is not intuitive at all.** A layer's parameter count is $(\text{in} \times \text{out}) + \text{out}$:
 
 | layer | shape | weights | biases | total | share |
@@ -277,6 +279,7 @@ The course goes to attention rather than convolution, because attention is what 
 
 ## Further reading
 
+- [What a hidden layer actually does](ch-15-what-hidden-layers-do.md) — the companion to this dive: one unit is one bend, how many units and how many layers to use, expanding versus contracting, and counting parameters
 - `docs/part-3-neural-net-primitives/ch-15-training-loop.md` — the loop this reuses unchanged
 - `docs/deep-dives/ch-09-one-rule-many-layers.md` — why one `backward()` suffices for four layers
 - `docs/deep-dives/ch-05-why-subtract-the-max.md` — the numerical care inside the softmax used here

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 428" width="720" height="428">
+  <rect width="720" height="428" fill="#faf7f0" rx="12"/>
+  <text x="360" y="26" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">counting the parameters of one layer</text>
+  <text x="360" y="44" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="8.5">a small case first: Linear(3, 2) &#8212; three numbers in, two out</text>
+  <text x="165" y="92" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#1e6091">W is [2, 3]</text>
+  <text x="165" y="184" text-anchor="middle" font-family="monospace" font-size="8" fill="#8b7355">one row per output, one column per input</text>
+  <rect x="120" y="108" width="30" height="30" fill="#dde8f0" stroke="#1e6091"/>
+<text x="135" y="127" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#2c2416">w11</text>
+<rect x="150" y="108" width="30" height="30" fill="#dde8f0" stroke="#1e6091"/>
+<text x="165" y="127" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#2c2416">w12</text>
+<rect x="180" y="108" width="30" height="30" fill="#dde8f0" stroke="#1e6091"/>
+<text x="195" y="127" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#2c2416">w13</text>
+<rect x="120" y="138" width="30" height="30" fill="#dde8f0" stroke="#1e6091"/>
+<text x="135" y="157" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#2c2416">w21</text>
+<rect x="150" y="138" width="30" height="30" fill="#dde8f0" stroke="#1e6091"/>
+<text x="165" y="157" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#2c2416">w22</text>
+<rect x="180" y="138" width="30" height="30" fill="#dde8f0" stroke="#1e6091"/>
+<text x="195" y="157" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#2c2416">w23</text>
+  <text x="325" y="142" text-anchor="middle" font-family="monospace" font-size="14" fill="#5a4220">+</text>
+  <text x="385" y="92" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#2e7d32">b is [2]</text>
+  <text x="385" y="184" text-anchor="middle" font-family="monospace" font-size="8" fill="#8b7355">one per output</text>
+  <rect x="370" y="108" width="30" height="30" fill="#e4efe4" stroke="#2e7d32"/>
+<text x="385" y="127" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#2c2416">b1</text>
+<rect x="370" y="138" width="30" height="30" fill="#e4efe4" stroke="#2e7d32"/>
+<text x="385" y="157" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#2c2416">b2</text>
+  <text x="540" y="136" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#a94442">6 + 2 = 8</text>
+  <text x="540" y="152" text-anchor="middle" font-family="monospace" font-size="8" fill="#8b7355">parameters</text>
+  <rect x="60" y="208" width="600" height="34" rx="6" fill="#ede7d3" stroke="#c9b88a"/>
+  <text x="360" y="230" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#5a4220">parameters = (inputs &#215; outputs) + outputs</text>
+  <text x="60" y="278" font-family="monospace" font-size="9" font-weight="700" fill="#5a4220">layer</text>
+  <text x="230" y="278" font-family="monospace" font-size="9" font-weight="700" fill="#5a4220">shape</text>
+  <text x="400" y="278" font-family="monospace" font-size="9" font-weight="700" fill="#5a4220">arithmetic</text>
+  <text x="660" y="278" text-anchor="end" font-family="monospace" font-size="9" font-weight="700" fill="#5a4220">total</text>
+  <line x1="60" y1="284" x2="660" y2="284" stroke="#c9b88a"/>
+  <text x="60" y="300" font-family="monospace" font-size="9" fill="#5a4220">XOR hidden</text>
+<text x="230" y="300" font-family="monospace" font-size="9" fill="#8b7355">Linear(2, 8)</text>
+<text x="400" y="300" font-family="monospace" font-size="9" fill="#8b7355">2&#215;8 + 8</text>
+<text x="660" y="300" text-anchor="end" font-family="monospace" font-size="9" font-weight="700" fill="#a94442">24</text>
+<text x="60" y="326" font-family="monospace" font-size="9" fill="#5a4220">XOR output</text>
+<text x="230" y="326" font-family="monospace" font-size="9" fill="#8b7355">Linear(8, 1)</text>
+<text x="400" y="326" font-family="monospace" font-size="9" fill="#8b7355">8&#215;1 + 1</text>
+<text x="660" y="326" text-anchor="end" font-family="monospace" font-size="9" font-weight="700" fill="#a94442">9</text>
+<text x="60" y="352" font-family="monospace" font-size="9" fill="#5a4220">MNIST layer 1</text>
+<text x="230" y="352" font-family="monospace" font-size="9" fill="#8b7355">Linear(784, 128)</text>
+<text x="400" y="352" font-family="monospace" font-size="9" fill="#8b7355">784&#215;128 + 128</text>
+<text x="660" y="352" text-anchor="end" font-family="monospace" font-size="9" font-weight="700" fill="#a94442">100,480</text>
+<text x="60" y="378" font-family="monospace" font-size="9" fill="#5a4220">MNIST layer 4</text>
+<text x="230" y="378" font-family="monospace" font-size="9" fill="#8b7355">Linear(32, 10)</text>
+<text x="400" y="378" font-family="monospace" font-size="9" fill="#8b7355">32&#215;10 + 10</text>
+<text x="660" y="378" text-anchor="end" font-family="monospace" font-size="9" font-weight="700" fill="#a94442">330</text>
+  <text x="360" y="418" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#5a4220">the product dominates: a layer costs what the two widths it sits between multiply to.</text>
+</svg>
