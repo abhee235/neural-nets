@@ -212,6 +212,42 @@ Then the ones arrive and the network is dragged toward "always predict one", und
 
 It also rescues the 16 leftovers. Because the order is redrawn every epoch, **it is a different 16 that get skipped each time**. Over 30 epochs no image is systematically ignored. With a fixed order, the same 16 images would never be trained on at all.
 
+### "But if the images keep changing, how does anything add up?"
+
+This is the right question to ask here, and it comes from having understood the earlier chapters properly.
+
+In Chapter 15, XOR had four rows and **all four went through on every single step**. The input never changed. So training looked like: *one fixed input, weights improving over many steps.* That picture was completely correct — for XOR.
+
+Now the input appears to change constantly: 64 images, then a different 64, then a reshuffle. If the network is looking at something different every time, what stops each step from undoing the last?
+
+**The answer is that the weights are the only thing that persists, and that is enough.**
+
+There is exactly one weight matrix per layer, and it is never rebuilt. Data flows *through* it and is discarded; the weights stay. So the nudges accumulate in the most literal way possible — by addition:
+
+```text
+  start        W₀
+  after step 1 W₁ = W₀ − lr · g₁
+  after step 2 W₂ = W₁ − lr · g₂  =  W₀ − lr · (g₁ + g₂)
+  after step 3 W₃ = W₂ − lr · g₃  =  W₀ − lr · (g₁ + g₂ + g₃)
+```
+
+**The weight matrix *is* the running total.** Nothing else needs to remember anything, which is why `zeroGrad()` clearing `.grad` every step is harmless — `.grad` is scratch space for one step, while `W` is the accumulated result of all of them.
+
+**And the batches are not pulling in different directions.** The real goal is to lower the loss across *all 2,000 images* — that single number is what training is minimising. No batch can measure it without looking at everything, so each batch of 64 produces an **estimate** of it. Different batches give slightly different estimates *of the same quantity*, and estimates that scatter around the truth average out over many steps.
+
+> Ask "how tall is the average person in this city?" You could measure all million residents once — exact, and enormously slow. Or measure 64 people, get a close answer, measure another 64, get another close answer. The samples differ; they are not disagreeing about different cities.
+
+**And your instinct to just feed everything in does work — it is simply a worse deal.** Here is that exact experiment: the same images, the same 30 passes over them, and near-identical total computation. The only difference is how often the weights are allowed to move.
+
+```text
+  batch 64, 30 epochs      930 nudges   59,520 image-passes   train 100.0%   test 90.4%   81 s
+  ALL 2000, 30 epochs       30 nudges   60,000 image-passes   train  89.6%   test 83.0%   24 s
+```
+
+All-at-once is the XOR setup, applied here unchanged. It is not broken — it learned, reaching 83%. It is *behind*, because 30 nudges is simply not many, however good each one is. It was even faster in wall-clock time, and still lost by seven points.
+
+**That is the whole trade.** A perfect direction you can only follow 30 times beats nothing — but it loses to a rough direction you can follow 930 times.
+
 ---
 
 ## The loop, unchanged
