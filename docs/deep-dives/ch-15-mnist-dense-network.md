@@ -156,104 +156,22 @@ Three words that get used together and mean different things.
   <img src="../assets/deep-dives/ch-15-shuffling-batching.svg" alt="An animated diagram of shuffling and batching using 24 stand-in images coloured by digit. The top row shows the images sorted, marked never do this, grouped into four dashed batches, with a note that every batch is one or two digits so each step pulls one way. Below, a shuffled row alternates between two different random orders labelled epoch 1 and epoch 2, with a note that every batch is a mixture so the step is an average. A footer gives the arithmetic: one batch is 64 images giving one forward, one backward and one optimizer step; one epoch is 31 batches, every image seen once, 2000 divided by 64 is 31 remainder 16; 30 epochs is 930 optimizer steps and the order is redrawn every epoch. It notes the leftover 16 are dropped each epoch but shuffling means they are different 16 every time." />
 </div>
 
-### A batch: how many images vote on each step
+**A batch** is how many images go through *together* before the weights move. Here, 64. Not 1, because a single image gives a noisy, unrepresentative gradient. Not all 2,000, because then the whole dataset must be processed for a single step and training crawls. Sixty-four rows go in as `[64, 784]`, one loss comes out — Ch 12's mean over the batch — and one `optimizer.step()` follows.
 
-Training is a loop of *look, compare, adjust*. Each **adjust** is one small nudge to the weights. Before you can nudge, you have to decide which way — and that direction comes from looking at images. **How many?**
-
-**One at a time** and the network lurches: it sees a `3`, leans toward 3s, then sees a `7` and partly undoes it. One image is not a fair sample of what digits look like.
-
-**All 2,000 at once** and the direction is excellent — but you only nudge once per pass, so 30 passes gives **30 nudges in the whole run**.
-
-| images per step | steps per pass | each step follows |
-|---|---|---|
-| 1 | 2,000 | one image's opinion — jerky |
-| **64** | **31** | **the average of 64 — steady, and still plenty of steps** |
-| 2,000 | 1 | everything at once — but 30 steps total |
-
-**A batch is that middle choice.** Here, 64: they go in as one `[64, 784]` block, and the loss is **the average of the 64 individual losses** — the `mean` Ch 12 built into every loss function. One average loss, one `backward()`, one `step()`.
-
-> Averaging 64 opinions does not make the direction *correct*, only far less erratic than one. That is all a bigger batch buys.
-
-### An epoch: one pass through all the images
-
-An **epoch** is just "keep taking batches until every image has been used once".
+**An epoch** is one pass through the whole training set:
 
 ```text
-  2000 images ÷ 64 per batch  =  31 batches, with 16 left over
-  30 epochs × 31 batches      =  930 nudges in the whole run
+  2000 images ÷ 64 per batch  =  31 batches per epoch, 16 images left over
+  30 epochs × 31 batches      =  930 optimizer steps in the whole run
 ```
 
-930 nudges, adjusting 111,146 numbers, in about 83 seconds. Those 16 leftovers are skipped — the loop takes only full batches. Hold that thought.
+Those 16 are dropped — the loop takes only full batches. That is fine *because of shuffling*: it is a different 16 every epoch.
 
-### Shuffling: why the order must change every time
+**Shuffling** is redrawing the order before every epoch, and it matters more than it sounds. The vendored file is stratified but ordered. Without a shuffle, every batch would be almost entirely one digit, and each step would drag the weights toward "everything is a 3", then "everything is a 4". The gradient of a batch is an *average*, and an average over one class is not a useful direction. Shuffle, and every batch is a mixture.
 
-The file is tidy: all 200 zeros, then all the ones, then the twos. **And tidy is disastrous.**
+930 steps, on 111,146 parameters, in about 83 seconds. No single step achieves much; the loss falls from 2.4 to 0.002 across all of them.
 
-Cut it into batches of 64 and the first batch is **64 zeros, nothing else**. Asked which way to nudge, the honest answer for that batch is *"predict zero, always"* — for those 64 images it is right every time. Then the ones arrive and drag the network the other way. Every step pulls confidently in a direction that suits one digit and ruins the other nine.
-
-**Shuffling deals the images into a new random order before every epoch**, so each batch holds a mixture of all ten digits and the direction has to satisfy all of them at once.
-
-It also rescues the leftovers: because the order is redrawn, **it is a different 16 that get skipped each epoch**. With a fixed order, the same 16 would never be trained on at all.
-
-### Does a changing input break the accumulation?
-
-This is the question worth pausing on, and it comes from having understood XOR properly. There, all four rows went through on *every* step — the input never changed, and training was simply "fixed input, weights improve". Here the input is different every step. What stops each nudge undoing the last?
-
-**Nothing needs to stop it, because a bad direction is self-correcting.** In the worst case one batch pushes somewhere unhelpful; the next batch, and the pass after that, pull back. What survives across many steps is what the batches *agree* on — and they agree on whatever lowers the loss over all 2,000 images, because that is the one thing they are all samples of. The loss converges either way. **Whether the input changes is not the deciding factor.**
-
-The reason that works is that **the weights are the only thing that persists.** There is one weight matrix per layer, never rebuilt, and — worth saying plainly — **one set shared by every image**, not a set per image. Data flows through and is discarded; the weights stay, and each nudge lands on the number the last nudge produced.
-
-Here is that, made literal. One number out of 111,146 — `W1[406]`, carrying the centre pixel into the first hidden unit — followed across two whole epochs:
-
-```text
-  epoch 1  batch  1   loss 2.3759   W1[406]  0.000163 -> -0.000837   digits: 5,2,9,5,1,0
-  epoch 1  batch  2   loss 2.2613   W1[406] -0.000837 -> -0.001383   digits: 3,8,1,2,4,2
-  epoch 1  batch  3   loss 2.2789   W1[406] -0.001383 -> -0.002124   digits: 1,9,1,3,1,1
-   ...
-  epoch 1  batch 31   loss 1.0760   W1[406] -0.001874 -> -0.001935   digits: 4,4,1,1,1,7
-  ── epoch 1 done: 31 batches, 31 updates, 16 images skipped ──
-  epoch 2  batch  1   loss 0.8912   W1[406] -0.001935 -> -0.002144   digits: 8,1,3,7,8,5
-  epoch 2  batch 31   loss 0.3163   W1[406]  0.006300 ->  0.006541   digits: 3,3,0,2,7,5
-```
-
-**Batch 1 ends at `−0.000837` and batch 2 starts at `−0.000837`.** Never reset, never averaged with anything. And the epoch boundary changes nothing either — epoch 1 leaves it at `−0.001935` and epoch 2 picks it up there. An epoch is a *counting* convention; the weights do not know one ended.
-
-Two honest details in that trace. The loss **does not fall every step** — batch 30 scored `0.9223` and batch 31 `1.0760`, because those are different images and one set was harder. And each batch shows mixed digits, `5,2,9,5,1,0`, which is the shuffle working; unshuffled it would read `0,0,0,0,0,0`.
-
-**So could you just feed everything in at once, XOR-style?** Yes — it works, and it is a worse deal. Same images, same 30 passes, near-identical computation:
-
-```text
-  batch 64, 30 epochs      930 nudges   train 100.0%   test 90.4%   81 s
-  ALL 2000, 30 epochs       30 nudges   train  89.6%   test 83.0%   24 s
-```
-
-Not broken — it reached 83%, and faster in wall-clock. Just behind, because 30 nudges is not many however good each one is. **A perfect direction you can follow 30 times loses to a rough one you can follow 930.**
-
-### Three details, for when you want them
-
-**Is 930 nudges many?** More than you would guess. XOR took **600** steps on four rows; this takes **930**. Every step moves all 111,146 weights in both cases — the only row that differs is how often each *image* is looked at (600 vs 30), and that is the row that matters least. XOR revisits its four rows because it has nothing else to look at.
-
-**Steps or epochs?** Measured, since both numbers invite fixation:
-
-```text
-  ours                       batch  64    30 epochs   930 steps   91.0%    81 s
-  same EPOCHS, fewer steps   batch 256    30 epochs   210 steps   90.2%    33 s
-  same STEPS, more epochs    batch 256   133 epochs   931 steps   91.4%   142 s
-```
-
-Step count tracks the result, not epoch count — 931 steps matched 930 while passing over the data four times as often. But 210 steps still reached 90.2%, because each used 256 images and was better aimed. It is **steps × how well-aimed each one is**, and they trade off. Either way, 930 is comfortable rather than marginal.
-
-**Why backprop cannot be short-cut.** The chain `W₃ = W₀ − lr(g₁ + g₂ + g₃)` is true as bookkeeping and misleading as a recipe: `g₂` is the gradient at `W₁`, and does not exist until step 1 has been taken. Measured on one fixed batch of 64 images, with only the weights moving underneath it:
-
-```text
-  after 10 steps    cosine against the original direction   0.1619
-  after 300 steps                                          -0.0430
-  after 900 steps                                          -0.0240   (length 4% of the original)
-```
-
-**After ten steps the direction is already nearly perpendicular.** That is why `backward()` runs again from scratch every step — last time's answer describes a network that no longer exists. And by step 900 that batch has gone quiet: its gradient is 4% of its original size, because the network now gets those 64 images right and they have nothing left to ask for.
-
-> One more oddity, free of charge: `W1[0]`, the weight from the top-left corner pixel, has a gradient of exactly `0.000000` forever. Blame is *upstream × input*, and that corner is blank in every image. **145 of the 784 pixels are blank across all 2,000 training images**, so about 18% of the first layer's weights never move at all.
+> **Why not just feed all 2,000 in at once, as XOR did?** You can. Same images, same 30 passes, near-identical compute — it reaches **83.0%** against **90.4%**, because 30 nudges is not many however good each one is.
 
 ---
 
