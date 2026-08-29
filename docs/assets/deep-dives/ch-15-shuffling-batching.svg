@@ -193,8 +193,8 @@
   <text x="640" y="177" font-family="monospace" font-size="8.5" fill="#2e7d32">is an average</text>
 
   <rect x="40" y="212" width="640" height="72" rx="6" fill="#ede7d3" stroke="#c9b88a"/>
-  <text x="52" y="230" font-family="monospace" font-size="9" fill="#5a4220"><tspan font-weight="700">one batch</tspan>  = 64 images &#8594; one forward, one backward, one optimizer step</text>
+  <text x="52" y="230" font-family="monospace" font-size="9" fill="#5a4220"><tspan font-weight="700">one batch</tspan>  = 64 images &#8594; one forward, one backward, one <tspan font-weight="700">small nudge</tspan> to every weight</text>
   <text x="52" y="246" font-family="monospace" font-size="9" fill="#5a4220"><tspan font-weight="700">one epoch</tspan>  = 31 batches = every image seen once (2000 &#247; 64 = 31 remainder 16)</text>
-  <text x="52" y="262" font-family="monospace" font-size="9" fill="#5a4220"><tspan font-weight="700">30 epochs</tspan> = 930 optimizer steps, and the order is redrawn every epoch</text>
+  <text x="52" y="262" font-family="monospace" font-size="9" fill="#5a4220"><tspan font-weight="700">30 epochs</tspan> = 930 nudges. no single one achieves much; the loss falls 2.4 &#8594; 0.002 across all of them</text>
   <text x="52" y="277" font-family="monospace" font-size="8.5" fill="#a94442">the leftover 16 are dropped each epoch &#8212; but shuffling means they are different 16 every time</text>
 </svg>

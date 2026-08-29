@@ -198,6 +198,23 @@ So one epoch is **31 nudges**, and we run 30 epochs:
 
 930 steps, adjusting 111,146 numbers, in about 83 seconds.
 
+**Is 930 nudges even many?** It sounds small next to the size of the dataset, so compare it to somewhere you have already been:
+
+| | XOR (Ch 15) | MNIST (here) |
+|---|---|---|
+| steps taken | 600 | **930** |
+| weights moved **per step** | all of them | **all 111,146** |
+| times each **weight** moves | 600 | **930** |
+| times each **image** is looked at | 600 | 30 |
+
+Only the last row differs, and it is the row that matters least. **The weights are what has to travel from random to useful, and they get 930 moves here against XOR's 600.** Nothing is being short-changed.
+
+What changed is *why* you revisit data. XOR has four rows in total, so the only way to take 600 steps is to look at those same four rows 600 times — repetition forced by having nothing else to look at. With 2,000 images you can take 930 steps while showing each image only 30 times.
+
+> **One set of weights, shared by everything.** It is worth saying plainly: there is not a weight matrix per image. The same 111,146 numbers process image 1, image 500 and image 2000. Each image's only influence is the nudge it helped vote for.
+
+And no single step accomplishes anything on its own — the loss falls from `2.4` to `0.002` across all 930 together, never in one.
+
 **And those 16 leftovers?** The loop only takes full batches of 64, so each epoch ignores 16 images. That sounds careless — until you see the next idea.
 
 ### Shuffling: why the order must change every time
@@ -294,6 +311,25 @@ Five things are visible in that trace, and together they are the whole mechanism
 **5. Each batch is a mixture of digits.** `5,2,9,5,1,0` then `3,8,1,2,4,2` — that is the shuffle working. Without it, batch 1 would have read `0,0,0,0,0,0`.
 
 So your mental model from XOR was right all along. **The weights improve steadily over many steps** — exactly as before. The only thing that changed is that each step now looks at a different 64 images instead of the same 4 rows, and those different views are all estimates of the same target.
+
+### So is it the steps that matter, or the epochs?
+
+Worth testing rather than assuming, because "930" and "30" are both easy to fixate on. Three runs, same network, same data:
+
+```text
+                                batch   epochs   steps    test
+  ours                             64       30     930   91.0%    81 s
+  same EPOCHS, fewer steps        256       30     210   90.2%    33 s
+  same STEPS, more epochs         256      133     931   91.4%   142 s
+```
+
+**Row 3 says the step count is what tracks the result.** It matched our run — `91.4%` against `91.0%` — while passing over the data 133 times instead of 30. Quadrupling the epochs changed almost nothing once the step count was held fixed.
+
+**Row 2 says that is not the whole story.** With only 210 steps it still reached `90.2%`, less than a point behind, in a third of the time. Those steps each averaged 256 images instead of 64, so each nudge was better aimed. **Fewer, better-informed steps traded off against more, noisier ones**, and the trade came out close to even.
+
+So neither number is magic. What matters is roughly *steps × how well-aimed each one is*, and `batch 64 × 930 steps` is a reasonable balance rather than a required recipe.
+
+It also settles the worry that started this section. **210 nudges was nearly enough** to train 111,146 parameters to 90%. 930 is comfortable, not marginal.
 
 > **A footnote worth knowing.** `W1[0]` — the weight from the *top-left corner pixel* — has a gradient of exactly `0.000000` at every step, forever. That corner is blank in every image, and blame is *upstream × input*, so an input of zero passes no blame back. In this dataset **145 of the 784 pixels are blank in all 2,000 training images**, which means about 18% of the first layer's 100,352 weights are dead on arrival and never move. Nothing is wrong; there is simply nothing there to learn from.
 
