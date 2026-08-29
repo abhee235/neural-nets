@@ -1,7 +1,9 @@
 # Deep Dive — A three-hidden-layer network on MNIST
 
 **Extends:** Chapter 15 (The Training Loop)
-**Run it:** `bun run exercises/deep-dive-mnist-dense.ts`
+**Build it:** `exercises/deep-dive-mnist-dense.ts` — seven stubs to fill in, then `bun run exercises/deep-dive-mnist-dense.ts`
+
+> Every number in this document was produced by a correct implementation of that file, so it doubles as the answer key: if your run lands near 91% test accuracy with 100% train accuracy, you have it right.
 
 Every chapter so far has trained on a toy. XOR is four rows. The circle from the Ch 15 exercise is a thousand points in two dimensions. Both were chosen because you can hold them in your head.
 
