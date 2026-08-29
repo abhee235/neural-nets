@@ -217,7 +217,9 @@ This is the picture Ch 12 promised: **the loss is what you optimise, not what yo
   <img src="../assets/deep-dives/ch-15-confusion.svg" alt="A ten by ten confusion matrix heatmap for 500 test images, 50 of each digit. Rows are the true digit and columns are the network's prediction; the diagonal is shaded green for correct and off-diagonal cells shaded red in proportion to their count. Per-digit recall is listed down the right side. Digit 6 is the weakest at 86 percent. A caption notes that every off-diagonal cell is a pair the network finds genuinely similar, and that a single accuracy number would have hidden all of this." />
 </div>
 
-91.4% means 43 mistakes out of 500. A single number cannot tell you whether those are spread evenly or concentrated — the matrix can. The weakest digit is **6, at 86% recall**, and the confusions are not random: they are pairs that genuinely share strokes.
+91.4% means 43 wrong out of 500 — but not *which* 43. That is what a **confusion matrix** shows: a 10×10 grid where the **row is the digit the image really was** and the **column is what the network said**. Anything on the diagonal is correct, because row and column agree; anything off it is a mistake, and its position names the mistake.
+
+Read across row 6 and its fifty images do not all land in column 6 — seven scatter elsewhere. Getting 43 of 50 right is that digit's **recall**: 86%, the weakest of the ten. The confusions are not random; they are pairs that genuinely share strokes.
 
 ### Confidently wrong
 
