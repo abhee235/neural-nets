@@ -261,6 +261,42 @@ That last row is worth its own moment: by step 900 the gradient's *length* has f
 
 So it is a **path**, not a sum. The order matters, and no term in it can be known early.
 
+### Watch it happen, one weight at a time
+
+All of that in the plainest possible form. Pick **one single number** out of the 111,146 — call it `W1[406]`, the weight carrying the centre pixel of the image into the first hidden unit — and follow it.
+
+```text
+  epoch 1  batch  1   loss 2.3759   W1[406]  0.000163 -> -0.000837   digits in batch: 5,2,9,5,1,0
+  epoch 1  batch  2   loss 2.2613   W1[406] -0.000837 -> -0.001383   digits in batch: 3,8,1,2,4,2
+  epoch 1  batch  3   loss 2.2789   W1[406] -0.001383 -> -0.002124   digits in batch: 1,9,1,3,1,1
+   ...
+  epoch 1  batch 30   loss 0.9223   W1[406] -0.001938 -> -0.001874   digits in batch: 0,5,6,9,7,1
+  epoch 1  batch 31   loss 1.0760   W1[406] -0.001874 -> -0.001935   digits in batch: 4,4,1,1,1,7
+  ── epoch 1 done: 31 batches, 31 weight updates, 16 images skipped ──
+
+  epoch 2  batch  1   loss 0.8912   W1[406] -0.001935 -> -0.002144   digits in batch: 8,1,3,7,8,5
+  epoch 2  batch  2   loss 0.8208   W1[406] -0.002144 -> -0.002499   digits in batch: 3,6,3,4,4,7
+   ...
+  epoch 2  batch 31   loss 0.3163   W1[406]  0.006300 ->  0.006541   digits in batch: 3,3,0,2,7,5
+  ── epoch 2 done: 31 more updates, running total 62 ──
+```
+
+Five things are visible in that trace, and together they are the whole mechanism.
+
+**1. Each batch does the full five lines.** 64 images in, one loss out, one `backward()`, one `step()`. Then the next 64.
+
+**2. The weight continues from where the last batch left it.** Batch 1 ends at `-0.000837`; batch 2 *starts* at `-0.000837`. It is never reset, never rebuilt, never averaged with anything. The new nudge is applied to the number the previous nudge produced. **That is the accumulation, made visible.**
+
+**3. The epoch boundary changes nothing.** Epoch 1's last batch leaves the weight at `-0.001935`, and epoch 2's first batch picks it up at `-0.001935`. An epoch is a *counting* convention — "every image has now been used once" — not an event in the network. The weights do not know an epoch ended.
+
+**4. The loss falls, but not every single step.** Batch 30 scored `0.9223` and batch 31 scored `1.0760` — worse. Nothing went wrong: those are two different sets of 64 images, and one happened to be harder. The trend over 930 steps is down; individual steps wobble.
+
+**5. Each batch is a mixture of digits.** `5,2,9,5,1,0` then `3,8,1,2,4,2` — that is the shuffle working. Without it, batch 1 would have read `0,0,0,0,0,0`.
+
+So your mental model from XOR was right all along. **The weights improve steadily over many steps** — exactly as before. The only thing that changed is that each step now looks at a different 64 images instead of the same 4 rows, and those different views are all estimates of the same target.
+
+> **A footnote worth knowing.** `W1[0]` — the weight from the *top-left corner pixel* — has a gradient of exactly `0.000000` at every step, forever. That corner is blank in every image, and blame is *upstream × input*, so an input of zero passes no blame back. In this dataset **145 of the 784 pixels are blank in all 2,000 training images**, which means about 18% of the first layer's 100,352 weights are dead on arrival and never move. Nothing is wrong; there is simply nothing there to learn from.
+
 **And the batches are not pulling in different directions.** The real goal is to lower the loss across *all 2,000 images* — that single number is what training is minimising. No batch can measure it without looking at everything, so each batch of 64 produces an **estimate** of it. Different batches give slightly different estimates *of the same quantity*, and estimates that scatter around the truth average out over many steps.
 
 > Ask "how tall is the average person in this city?" You could measure all million residents once — exact, and enormously slow. Or measure 64 people, get a close answer, measure another 64, get another close answer. The samples differ; they are not disagreeing about different cities.
