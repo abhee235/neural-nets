@@ -233,6 +233,34 @@ There is exactly one weight matrix per layer, and it is never rebuilt. Data flow
 
 **The weight matrix *is* the running total.** Nothing else needs to remember anything, which is why `zeroGrad()` clearing `.grad` every step is harmless — `.grad` is scratch space for one step, while `W` is the accumulated result of all of them.
 
+**But do not read that chain as an equation you could solve.** It is correct as bookkeeping and misleading as a recipe, because of *where each gradient is measured*:
+
+```text
+  g₁ is the gradient at W₀     ← the weights before any step
+  g₂ is the gradient at W₁     ← NOT at W₀
+  g₃ is the gradient at W₂     ← NOT at W₀
+```
+
+You could not compute all three up front and add them. `g₂` does not exist until step 1 has been taken, because it is a property of the weights *after* that step. **Backpropagation runs again from scratch every step for exactly this reason** — not from inefficiency, but because the answer it computed last time is about a network that no longer exists.
+
+How stale does it get? Here is the gradient of **one fixed batch of 64 images**, measured repeatedly as training moves the weights underneath it. The images never change. A cosine of `1.00` would mean the direction never moved:
+
+```text
+  after step   cosine against the gradient at step 0   length
+          10                                  0.1619    0.86
+          50                                  0.0366    1.60
+         300                                 -0.0430    0.87
+         900                                 -0.0240    0.04
+```
+
+**After ten steps the direction is already almost perpendicular to what it was.** By step 300 it is slightly *opposed*. Same 64 images throughout — only the weights moved. A gradient computed at `W₀` and applied at `W₁₀` would be pushing somewhere close to sideways.
+
+That last row is worth its own moment: by step 900 the gradient's *length* has fallen to 4% of where it started. The network now classifies those 64 images correctly, so they have almost nothing left to ask for. **A batch stops pulling once it is satisfied** — which is what a loss reaching zero looks like from the inside.
+
+> Walking downhill in fog. Your total displacement is the sum of your steps, so the addition is real. But you could not have planned the route from the start: each step's direction only becomes visible once you are standing where the previous step left you.
+
+So it is a **path**, not a sum. The order matters, and no term in it can be known early.
+
 **And the batches are not pulling in different directions.** The real goal is to lower the loss across *all 2,000 images* — that single number is what training is minimising. No batch can measure it without looking at everything, so each batch of 64 produces an **estimate** of it. Different batches give slightly different estimates *of the same quantity*, and estimates that scatter around the truth average out over many steps.
 
 > Ask "how tall is the average person in this city?" You could measure all million residents once — exact, and enormously slow. Or measure 64 people, get a close answer, measure another 64, get another close answer. The samples differ; they are not disagreeing about different cities.
