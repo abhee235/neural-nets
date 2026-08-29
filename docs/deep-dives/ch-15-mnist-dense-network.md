@@ -25,44 +25,82 @@ MNIST is 70,000 handwritten digits, 28×28 pixels, greyscale. Before a single we
   <img src="../assets/deep-dives/ch-15-what-a-digit-is.svg" alt="A real MNIST test image of the digit 7 rendered as a 28 by 28 grid of grey squares, labelled 784 pixels, with a note that it is flattened row-major into one row of 784 numbers giving shape 1 by 784. Beside it a 6 by 6 patch from the middle of the image is blown up, each cell showing the actual stored byte value between 0 and 255, with 0 meaning paper and 255 meaning ink. A panel explains scaling: stored values 0 to 255 become used values 0.0 to 1.0, because Ch 13 chose the initialisation scale assuming inputs near 1, and feeding raw bytes makes the first pre-activations about 255 times too large, straight into the flat tail of everything after." />
 </div>
 
-There is no image. There is a **row of 784 numbers**, laid out row-major exactly as Ch 01 defined it: pixel `(row, col)` lives at index `row × 28 + col`. The network never learns that pixel 400 is directly below pixel 372 — that fact is thrown away by flattening, and the network has to rediscover any of it that matters from the data alone.
+You look at that picture and see a seven. The network never sees a picture at all.
 
-That is a genuine weakness of a *dense* network, and it is why convolutions exist. Worth knowing now, so the accuracy ceiling later makes sense.
+**A digital image is a grid of dots.** Each dot stores one number: how dark it is. `0` is blank paper, `255` is solid ink, and everything between is a shade of grey. That is all a "pixel" is — one number, for one dot.
 
-### 2. Sampling — why 200 of each digit, not the first 2,000
+These digits are **28 dots across and 28 dots down**, so one image is
 
-The full training set is 54 MB and has no business in a course repository, so the vendored subset takes **200 training and 50 test images per digit**. Two hundred *per class*, not two thousand off the top.
+$$28 \times 28 = 784 \text{ numbers.}$$
 
-Taking the first 2,000 rows would be simpler and wrong. MNIST is close to balanced but not exactly, and a skewed subset makes accuracy hard to reason about: if 30% of your test set were the digit `1`, a model that only ever guessed `1` would score 30% and look like it had learned something. A **stratified** sample removes that ambiguity — every digit appears exactly as often as every other:
+But our `Tensor` holds a straight *row* of numbers, not a grid. So we flatten the grid: read the top row of dots left to right, then the next row, then the next, until all 28 rows are laid end to end in one line of 784. That is the row-major layout from Ch 01, and now it is doing real work.
+
+**Flattening throws something away, and it is worth knowing what.** In the grid, a dot and the dot directly beneath it are touching. Once flattened they sit 28 places apart in a long line, with nothing marking them as related — and nobody ever tells the network they were neighbours. Any of that it needs, it has to work out for itself, from examples alone.
+
+> Think of a page of text retyped as one enormous line, with no line breaks. Every word is still there. The layout that made it readable is gone.
+
+This is the honest limitation of the kind of network we are building — a **dense** network, meaning every unit connects to every unit, with no notion of which inputs are near which. There is a different design (a *convolutional* network) that builds the grid relationship in from the start. We are not building one, and this course goes toward attention instead. But it is why the accuracy here has a ceiling, and it is better to know that now than to be puzzled by it at the end.
+
+### 2. Sampling — choosing which images to use
+
+**"Sampling" just means picking a smaller set when you cannot use everything.** That is the whole word.
+
+The full MNIST collection is 70,000 images and 54 MB, which is too big to keep inside a course repository. So we keep a smaller set — 2,000 for training, 500 for testing. The question is *which* 2,000, and the obvious answer is wrong.
+
+**The obvious answer:** take the first 2,000 in the file. Simple, and it introduces a problem that is hard to spot later.
+
+The digits are not evenly spread through the file. Suppose the slice you grabbed happened to be heavy on the digit `1` — say 150 of your 500 test images were `1`s. Now build a network that ignores the picture completely and answers `"1"` every single time. It scores **30%**. Three times better than guessing, from a model that never looked at the input.
+
+That is the trap: **the score is no longer trustworthy**, because you cannot tell a network that learned something from one that noticed which answer is most common.
+
+**The fix is to take the same number of each digit.** Two hundred of each for training, fifty of each for testing:
 
 ```text
   training images per digit
   0:200  1:200  2:200  3:200  4:200  5:200  6:200  7:200  8:200  9:200
 ```
 
-so chance is exactly 10%, and any score above it is real signal. `scripts/make_mnist_subset.py` does the drawing and documents the file format.
+Now every digit is equally likely, so pure guessing scores exactly **1 in 10 = 10%**, and anything above 10% is something the network actually learned. The score means what you want it to mean again.
+
+> The technical word for "take the same amount from each group" is **stratified**. You will see it in dataset documentation; it is not more complicated than the line above.
+
+`scripts/make_mnist_subset.py` does the picking and documents the file format.
 
 ### 3. Scaling — why every pixel is divided by 255
 
-Pixels arrive as bytes, `0` to `255`. They are used as floats, `0.0` to `1.0`:
+Each pixel is stored as a whole number from `0` to `255`. Before the network sees it, we divide by 255 so it becomes a decimal between `0.0` and `1.0`:
 
 $$x_{\text{used}} = \frac{x_{\text{stored}}}{255}$$
 
-This is not tidying. Chapter 13 derived the `he` initialisation scale $\sqrt{2 / \text{inputDim}}$ **on the assumption that inputs are roughly unit-sized** — that argument was about keeping the variance of a sum of 784 terms under control. Feed raw bytes instead and every term in that sum is up to 255× larger, so the first pre-activations are enormous, and every layer after the first spends its time in the saturated tail. The network does not crash. It just learns badly, for a reason that is invisible unless you know to look.
+A dot storing `255` becomes `1.0`. A dot storing `128` becomes about `0.5`. Nothing about the picture changes — the same dots are still the same relative darkness. Only the size of the numbers changes.
 
-**One line, and it is load-bearing.**
+**And that turns out to matter a great deal.** Here is why, without the algebra.
+
+The first layer's job is to multiply 784 input numbers by 784 weights and add them all up. Chapter 13 chose the starting size of those weights *on the assumption that the inputs would be around 1*. That was the whole point of the `he` formula $\sqrt{2 / \text{inputDim}}$ — pick weights small enough that adding up 784 of these products gives a sensible-sized answer rather than an enormous one.
+
+Now feed in raw values of up to `255` instead. Every one of those 784 products is up to 255 times bigger than the weights were designed for, so the sum is wildly too large. Chapter 11 already showed what happens to a unit fed a huge number: it lands far out on the flat part of the curve, where the gradient is nearly zero and learning stalls.
+
+**The network will not crash.** It will train, slowly and badly, and nothing in the output will tell you why. One line of code, and it is holding up everything above it.
 
 ### 4. One-hot targets — why `[500, 10]` and not `[500]`
 
-The label of an image is a single digit, `7`. The loss does not want a `7`; it wants a row of ten numbers with a `1` in column 7:
+The correct answer for an image is a single digit — say `7`. But the network does not output a digit. It outputs **ten numbers**, one score per possible answer, and the biggest score is its guess.
+
+So the correct answer has to be written in that same shape before the two can be compared. Ten numbers, a `1` in the position of the right answer and `0` everywhere else:
 
 ```text
   label 7  →  [0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+                                    ↑
+                             position 7 (counting from 0)
 ```
 
-That is the convention `crossEntropyFromLogits` was built around in Ch 12 — the mask has to be the same shape as the logits so the true-class logit can be selected with `mul` and `sum` and **stay in the graph**. Ch 12's instructive bug was reading that logit's *value* out instead, which severed it and turned the gradient `p − y` into plain `p`.
+That is called **one-hot** — one position is "hot", the rest are cold. It is not a clever trick; it is just the answer, rewritten so it lines up with the output.
 
-So targets are shape `[count, 10]`, matching the model's output exactly.
+Because both sides are now ten numbers wide, the loss can compare them position by position. That is exactly what `crossEntropyFromLogits` expects, and Ch 12 built it around this shape on purpose: with the answer as a row of ten, picking out the score of the *right* digit is a `mul` and a `sum`, both of which autograd already knows how to differentiate.
+
+> **The pitfall Ch 12 already caught.** It is tempting to skip the one-hot and just read the right digit's score straight out of the data. It gives the identical loss value — and a wrong gradient, because reaching into `.data` takes the number *out of the graph*, so `backward()` can no longer trace it. The loss looks correct and the network never learns properly.
+
+So targets have shape `[count, 10]`, matching the model's output exactly.
 
 ---
 
