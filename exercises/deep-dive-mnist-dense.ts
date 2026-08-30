@@ -280,36 +280,91 @@ function loadMnistDataset(): { train: Split; test: Split } {
  * dropped 30 times — see the note in train().
  */
 function shuffledIndices(count: number, random: () => number): Uint32Array {
-  throw new Error("Not implemented — read the chapter doc first");
+  const indices = new Uint32Array(count);
+  for (let i = 0; i < count; i++) indices[i] = i;
+  for (let i = count - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    const tmp = indices[i]!;
+    indices[i] = indices[j]!;
+    indices[j] = tmp;
+  }
+  return indices;
 }
-
 /**
  * Copy `size` rows out of a [n, width] tensor into a fresh [size, width] one,
  * taking row numbers from `rows[from]` … `rows[from + size - 1]`.
  *
+ * ── A WORKED EXAMPLE, SMALL ENOUGH TO SEE ──────────────────────────────────
+ * Pretend the dataset is 5 images of 3 pixels each. That is a [5, 3] tensor,
+ * and its `.data` is one flat run of 15 numbers (Ch 01's row-major layout):
+ *
+ *     as a grid                    as .data actually is
+ *     row 0   10 11 12
+ *     row 1   20 21 22             [ 10 11 12 | 20 21 22 | 30 31 32 |
+ *     row 2   30 31 32               40 41 42 | 50 51 52 ]
+ *     row 3   40 41 42                 ↑
+ *     row 4   50 51 52               row 3 starts at index 3 * 3 = 9
+ *
+ * Now shuffledIndices has handed you a permutation, and the batch size is 2:
+ *
+ *     rows  = [ 3, 0, 4, 1, 2 ]        width = 3     size = 2
+ *               └──┘  └──┘  ↑
+ *             batch 1  batch 2   (row 2 is the leftover, dropped)
+ *
+ * BATCH 1 is `from = 0`. You want source rows 3 and 0, in that order:
+ *
+ *     out row 0  ←  source row 3      src = 3 * 3 = 9    dst = 0 * 3 = 0
+ *     out row 1  ←  source row 0      src = 0 * 3 = 0    dst = 1 * 3 = 3
+ *
+ *     result [2, 3], .data = [ 40 41 42 | 10 11 12 ]
+ *
+ * BATCH 2 is `from = 2`. Same code, different window into `rows`:
+ *
+ *     out row 0  ←  source row 4      src = 4 * 3 = 12   dst = 0
+ *     out row 1  ←  source row 1      src = 1 * 3 = 3    dst = 3
+ *
+ *     result [2, 3], .data = [ 50 51 52 | 20 21 22 ]
+ *
+ * ── THE RULE, LIFTED OUT OF THAT ───────────────────────────────────────────
+ *     for each output row r in 0 … size-1
+ *         src = rows[from + r] * width     where that row starts in source
+ *         dst = r * width                  where you are writing it
+ *         copy `width` numbers from src to dst
+ *
+ * `from` advances by `size` for each batch — 0, 64, 128 … — which is what
+ * walks you through the epoch.
+ *
+ * ── THE REAL SIZES ─────────────────────────────────────────────────────────
+ * Identical code, two very different shapes, which is why `width` is read
+ * off `source.shape[1]` instead of being passed in:
+ *
+ *     images    source [2000, 784]  →  out [64, 784]     width = 784
+ *     one-hot   source [2000,  10]  →  out [64,  10]     width =  10
+ *
  * ── WHY A GATHER AND NOT A SLICE ───────────────────────────────────────────
- * After shuffling, the rows you want are scattered: batch 1 might be rows
- * 1832, 45, 1201, … A slice takes a contiguous run, which is exactly what
- * shuffling was meant to prevent. So copy row by row.
- *
- * ── THE INDEXING — Ch 01's row-major layout, doing real work ───────────────
- * Row r of the OUTPUT comes from row rows[from + r] of the SOURCE:
- *
- *     src = rows[from + r] * width        start of that row in source.data
- *     dst = r * width                     start of the row you are writing
- *     copy `width` numbers from src to dst
- *
- * Used for both images (width 784) and one-hot targets (width 10), which is
- * why width is read off source.shape[1] rather than passed in.
+ * Look at batch 1 above: rows 3 and 0. They are not next to each other, so
+ * `source.data.slice(...)` cannot reach them — a slice takes a contiguous
+ * run, which is exactly what the shuffle set out to prevent. Hence copying
+ * row by row.
  *
  * ── PITFALL: the same permutation for both ─────────────────────────────────
- * You will call this twice per batch — once for images, once for targets —
- * and BOTH must use the same `rows` and the same `from`. Different orders
- * and you train image i against label j, which produces a network that
- * learns nothing while looking completely healthy.
+ * You call this twice per batch, once for images and once for targets, and
+ * BOTH must use the same `rows` and the same `from`. Use `[3, 0]` for the
+ * images and `[0, 3]` for the labels and you train image 3 against label 0 —
+ * the shapes are right, nothing throws, and the network learns nothing while
+ * looking perfectly healthy.
  */
 function gatherRows(source: Tensor, rows: Uint32Array, from: number, size: number): Tensor {
-  throw new Error("Not implemented — read the chapter doc first");
+  const width = source.shape[1]!;
+  const out = new Float64Array(size * width);
+  for (let r = 0; r < size; r++) {
+    const srcRow = rows[from + r]! * width;
+    const dstRow = r * width;
+    for (let c = 0; c < width; c++) {
+      out[dstRow + c] = source.data[srcRow + c]!;
+    }
+  }
+  return { data: out, shape: [size, width], ndim: 2, size: out.length };
 }
 
 /**
@@ -353,7 +408,55 @@ function makeModel(): {
   forward: (x: TensorValue) => TensorValue;
   parameters: () => TensorValue[];
 } {
-  throw new Error("Not implemented — read the chapter doc first");
+  // One entry per layer boundary: 784 in, 10 out, the three hidden widths
+  // between. Adding a layer means adding a number here and nothing else.
+  //  const layer1 = new Linear(PIXELS, 128);
+  //  const layer2 = new Linear(128, 64);
+  //  const layer3 = new Linear(64, 32);
+  //  const layer4 = new Linear(32, CLASSES);
+
+  //  return {
+  //    forward: (x: TensorValue) => {
+  //      let out = layer1.forward(x);
+  //      out = relu(out);
+  //      out = layer2.forward(out);
+  //      out = relu(out);
+  //      out = layer3.forward(out);
+  //      out = relu(out);
+  //      out = layer4.forward(out);
+  //      return out;
+  //    },
+  //    parameters: () => [
+  //      ...layer1.parameters(),
+  //      ...layer2.parameters(),
+  //      ...layer3.parameters(),
+  //      ...layer4.parameters(),
+  //    ],
+  //  };
+
+  // --------------------------OR--------------------------
+  
+  const dimensions = [PIXELS, 128, 64, 32, CLASSES];
+
+  const layers: Linear[] = [];
+  for (let i = 0; i < dimensions.length - 1; i++) {
+    layers.push(new Linear(dimensions[i]!, dimensions[i + 1]!));
+  }
+
+  return {
+    forward: (x: TensorValue) => {
+      let out = x;
+      // relu between each PAIR of layers, so every layer EXCEPT the last
+      for (let i = 0; i < layers.length - 1; i++) {
+        out = relu(layers[i]!.forward(out));
+      }
+      // the last layer emits bare logits — crossEntropyFromLogits softmaxes
+      return layers[layers.length - 1]!.forward(out);
+    },
+    // Ch 13's contract: one flat list, and the optimizer never learns that
+    // layers exist. Verify: 8 tensors, 111,146 numbers.
+    parameters: () => layers.flatMap((layer) => layer.parameters()),
+  };
 }
 
 /**
@@ -372,7 +475,14 @@ function makeModel(): {
  * falling by another factor of seven. Train on the loss, report this.
  */
 function accuracy(logits: Tensor, labels: Uint8Array): number {
-  throw new Error("Not implemented — read the chapter doc first");
+  const predicted = argmax(logits, 1);
+  let correct = 0;
+  for (let i = 0; i < predicted.size; i++) {
+    if (predicted.data[i]! === labels[i]!) {
+      correct++;
+    }
+  }
+  return correct / predicted.size;
 }
 
 /**
@@ -390,7 +500,13 @@ function accuracy(logits: Tensor, labels: Uint8Array): number {
  * [actual][predicted] and not the transpose.
  */
 function confusion(logits: Tensor, labels: Uint8Array): number[][] {
-  throw new Error("Not implemented — read the chapter doc first");
+  const predicted = argmax(logits, 1);
+  const counts: number[][] = Array.from({ length: CLASSES }, () =>
+    new Array<number>(CLASSES).fill(0));
+  for (let i = 0; i < predicted.size; i++) {
+    counts[labels[i]!]![predicted.data[i]!]! += 1;
+  }
+  return counts;
 }
 
 /**
@@ -448,7 +564,46 @@ function train(
   test: Split,
   random: () => number,
 ): number {
-  throw new Error("Not implemented — read the chapter doc first");
+  let meanLoss = 0;
+
+  for (let epoch = 1; epoch <= EPOCHS; epoch++) {
+    // ONE continuing stream, not a fresh generator per epoch: seeding an LCG
+    // with 1, 2, 3 ... starts adjacent states and gives correlated shuffles.
+    const indices = shuffledIndices(train_.count, random);
+    let lossSum = 0;
+    let batchCount = 0;
+
+    for (let start = 0; start + BATCH <= train_.count; start += BATCH) {
+      // SAME indices and SAME start for both, or image i trains against label j
+      const xBatch = gatherRows(train_.images, indices, start, BATCH);
+      const yBatch = gatherRows(train_.oneHot, indices, start, BATCH);
+
+      optimizer.zeroGrad();                                   // 1. forget
+      const logits = model.forward(new TensorValue(xBatch));  // 2. guess
+      const loss = crossEntropyFromLogits(logits, yBatch);    // 3. score
+      loss.backward();                                        // 4. blame
+      optimizer.step();                                       // 5. move
+
+      // .data is the Tensor, .data.data is its Float64Array — two hops.
+      lossSum += loss.data.data[0]!;
+      batchCount++;
+    }
+    meanLoss = lossSum / batchCount;
+
+    // epoch 1 as well as every fifth: the largest drop happens first, and
+    // missing it hides how fast the network moves at the start.
+    if (epoch === 1 || epoch % 5 === 0) {
+      // Accuracy only. The epoch's loss is already summed above for free —
+      // recomputing it here would build a whole graph just to throw it away.
+      const trainAcc = accuracy(model.forward(new TensorValue(train_.images)).data, train_.labels);
+      const testAcc = accuracy(model.forward(new TensorValue(test.images)).data, test.labels);
+      console.log(
+        `  ${String(epoch).padStart(5)}   ${meanLoss.toFixed(4)}     ` +
+          `${(trainAcc * 100).toFixed(1)}%      ${(testAcc * 100).toFixed(1)}%`,
+      );
+    }
+  }
+  return meanLoss;
 }
 
 // ═══ RUN ════════════════════════════════════════════════════════════════════
@@ -463,6 +618,7 @@ try {
   console.log(`  shapes: ${params.map((p) => `[${p.data.shape}]`).join(" ")}\n`);
 
   const optimizer = new Adam(params, 1e-3);
+  console.log("  epoch     loss   train acc   test acc");
   const started = performance.now();
   train(model, optimizer, trainSplit, test, makeRandom(7));
   console.log(`\n  trained in ${((performance.now() - started) / 1000).toFixed(1)} s\n`);
