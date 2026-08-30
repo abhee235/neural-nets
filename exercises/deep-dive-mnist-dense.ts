@@ -83,6 +83,7 @@ import { Adam } from "../src/optim/adam.ts";
 import { TensorValue } from "../src/autograd/grad.ts";
 import { createTensor, type Tensor } from "../src/tensor/types.ts";
 import { argmax } from "../src/tensor/reduce.ts";
+import { readFileSync } from "node:fs";
 
 const PIXELS = 784;
 const CLASSES = 10;
@@ -141,6 +142,16 @@ function printDigit(images: Tensor, index: number): void {
 /**
  * Read data/mnist/subset.bin.gz and return both splits.
  *
+ * ── SKIP THIS ONE ─────────────────────────────────────────────────────────
+ * NONE OF THIS IS MACHINE LEARNING. It is unzipping a file and counting
+ * bytes, and it is written out for you for that reason. A different dataset
+ * would be a different file in a different layout, and none of what you
+ * learn here would carry over — whereas everything below it, from
+ * makeModel onward, is the same for every dataset there will ever be.
+ *
+ * Two parts of it ARE worth your attention, and they are marked below:
+ * the divide by 255, and the one-hot. Those are not file handling.
+ *
  * ── THE FILE FORMAT (documented in scripts/make_mnist_subset.py) ───────────
  * The file is gzipped. After `Bun.gunzipSync` you hold a flat Uint8Array:
  *
@@ -189,8 +200,60 @@ function printDigit(images: Tensor, index: number): void {
  *
  * Returns both splits. Shapes: images [2000, 784], oneHot [2000, 10].
  */
-function load(): { train: Split; test: Split } {
-  throw new Error("Not implemented — read the chapter doc first");
+function loadMnistDataset(): { train: Split; test: Split } {
+  // The file is gzipped: 403,696 bytes on disk, 1,962,512 once unpacked.
+  // Skip the gunzip and every read below is compressed noise.
+  const gz = readFileSync(new URL("../data/mnist/subset.bin.gz", import.meta.url));
+  const blob = Bun.gunzipSync(gz);
+
+  const magic = String.fromCharCode(...blob.subarray(0, 4));
+  if (magic !== "MNSB") {
+    throw new Error(`bad magic "${magic}" — data/mnist/subset.bin.gz is not the expected file`);
+  }
+
+  // The counts are little-endian uint32 — that is what the `true` argument is.
+  // DataView is given byteOffset and byteLength as well, because blob.buffer
+  // may be a larger shared buffer and reading from its start would be wrong.
+  const view = new DataView(blob.buffer, blob.byteOffset, blob.byteLength);
+  const nTrain = view.getUint32(4, true);
+  const nTest = view.getUint32(8, true);
+
+  // Walk a cursor through the four blocks in the order they were written.
+  let at = 12;
+  const cut = (count: number): Split => {
+    const pixels = blob.subarray(at, at + count * PIXELS);
+    at += count * PIXELS;
+    const labels = blob.subarray(at, at + count);
+    at += count;
+
+    // SCALING — 0..255 becomes 0..1. Ch 13 sized the initial weights assuming
+    // inputs near 1, so raw bytes make the first pre-activations ~255x too big.
+    const scaled = new Float64Array(count * PIXELS);
+    for (let i = 0; i < scaled.length; i++) scaled[i] = pixels[i]! / 255;
+
+    // ONE-HOT — exactly one 1 per row, in the column of that image's digit.
+    const oneHot = new Float64Array(count * CLASSES);
+    for (let i = 0; i < count; i++) oneHot[i * CLASSES + labels[i]!] = 1;
+
+    // Built as plain objects rather than via createTensor, which takes a
+    // number[] — routing 1.5M values through an ordinary array is pure waste.
+    return {
+      images: { data: scaled, shape: [count, PIXELS], ndim: 2, size: scaled.length },
+      oneHot: { data: oneHot, shape: [count, CLASSES], ndim: 2, size: oneHot.length },
+      labels: new Uint8Array(labels),
+      count,
+    };
+  };
+
+  const train = cut(nTrain);
+  const test = cut(nTest);
+
+  // If the cursor did not land exactly on the end, a block was mis-stepped and
+  // everything read above is silently wrong rather than an error.
+  if (at !== blob.length) {
+    throw new Error(`parsed to byte ${at}, but the file is ${blob.length} bytes`);
+  }
+  return { train, test };
 }
 
 /**
@@ -391,7 +454,7 @@ function train(
 // ═══ RUN ════════════════════════════════════════════════════════════════════
 
 try {
-  const { train: trainSplit, test } = load();
+  const { train: trainSplit, test } = loadMnistDataset();
   console.log(`  loaded ${trainSplit.count} training and ${test.count} test images, ${PIXELS} pixels each`);
 
   const model = makeModel();
@@ -428,7 +491,7 @@ try {
 } catch (error) {
   if (error instanceof Error && error.message.includes("Not implemented")) {
     console.log("  pending —", error.message);
-    console.log("  fill in the stubs above, in this order: load, shuffledIndices,");
+    console.log("  fill in the stubs above, in this order: shuffledIndices,");
     console.log("  gatherRows, makeModel, accuracy, confusion, train.");
   } else throw error;
 }
@@ -443,7 +506,7 @@ try {
 //         layers collapse to one — so it should match the 87.8% linear
 //         baseline, not beat it.
 //
-// TODO 3: skip the /255 in load() and train again. The failure is quiet:
+// TODO 3: skip the /255 in loadMnistDataset() and train again. The failure is quiet:
 //         watch the first epoch's loss and compare it to 1.6025.
 //
 // TODO 4: shuffle ONCE before epoch 1 instead of every epoch. Accuracy barely
