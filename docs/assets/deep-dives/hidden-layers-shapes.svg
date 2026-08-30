@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 706" width="720" height="706">
+  <rect width="720" height="706" fill="#faf7f0" rx="12"/>
+  <text x="360" y="26" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">expand or contract? four real networks from this course</text>
+  <text x="360" y="44" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="8.5">bar height is a compressed scale so 512 and 2048 share a page. the first and last widths are fixed by the problem; only the middle is chosen.</text>
+  <rect x="128" y="127" width="44" height="42" rx="4" fill="#ede7d3" stroke="#c9b88a" stroke-width="1.6"/>
+<text x="150" y="120" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#2c2416">2</text>
+<line x1="172" y1="148" x2="378" y2="148" stroke="#8b7355" stroke-width="1.1" stroke-dasharray="3 3"/>
+<rect x="378" y="110" width="44" height="76" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.6"/>
+<text x="400" y="103" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#2c2416">8</text>
+<line x1="422" y1="148" x2="628" y2="148" stroke="#8b7355" stroke-width="1.1" stroke-dasharray="3 3"/>
+<rect x="628" y="132" width="44" height="32" rx="4" fill="#e4efe4" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="650" y="125" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#2c2416">1</text>
+<text x="30" y="110" font-family="monospace" font-size="9.5" font-weight="700" fill="#5a4220">XOR (Ch 15)</text>
+<text x="30" y="123" font-family="monospace" font-size="8" fill="#a94442">expands, then contracts</text>
+<rect x="128" y="282" width="44" height="32" rx="4" fill="#ede7d3" stroke="#c9b88a" stroke-width="1.6"/>
+<text x="150" y="275" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#2c2416">2</text>
+<line x1="172" y1="298" x2="378" y2="298" stroke="#8b7355" stroke-width="1.1" stroke-dasharray="3 3"/>
+<rect x="378" y="260" width="44" height="76" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.6"/>
+<text x="400" y="253" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#2c2416">16</text>
+<line x1="422" y1="298" x2="628" y2="298" stroke="#8b7355" stroke-width="1.1" stroke-dasharray="3 3"/>
+<rect x="628" y="286" width="44" height="24" rx="4" fill="#e4efe4" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="650" y="279" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#2c2416">1</text>
+<text x="30" y="260" font-family="monospace" font-size="9.5" font-weight="700" fill="#5a4220">circle (Ch 15 exercise)</text>
+<text x="30" y="273" font-family="monospace" font-size="8" fill="#a94442">expands, then contracts</text>
+<rect x="128" y="410" width="44" height="76" rx="4" fill="#ede7d3" stroke="#c9b88a" stroke-width="1.6"/>
+<text x="150" y="403" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#2c2416">784</text>
+<line x1="172" y1="448" x2="253" y2="448" stroke="#8b7355" stroke-width="1.1" stroke-dasharray="3 3"/>
+<rect x="253" y="430" width="44" height="36" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.6"/>
+<text x="275" y="423" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#2c2416">128</text>
+<line x1="297" y1="448" x2="378" y2="448" stroke="#8b7355" stroke-width="1.1" stroke-dasharray="3 3"/>
+<rect x="378" y="435" width="44" height="27" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.6"/>
+<text x="400" y="428" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#2c2416">64</text>
+<line x1="422" y1="448" x2="503" y2="448" stroke="#8b7355" stroke-width="1.1" stroke-dasharray="3 3"/>
+<rect x="503" y="438" width="44" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.6"/>
+<text x="525" y="431" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#2c2416">32</text>
+<line x1="547" y1="448" x2="628" y2="448" stroke="#8b7355" stroke-width="1.1" stroke-dasharray="3 3"/>
+<rect x="628" y="442" width="44" height="12" rx="4" fill="#e4efe4" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="650" y="435" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#2c2416">10</text>
+<text x="30" y="410" font-family="monospace" font-size="9.5" font-weight="700" fill="#5a4220">MNIST (this deep dive)</text>
+<text x="30" y="423" font-family="monospace" font-size="8" fill="#a94442">contracts all the way</text>
+<rect x="128" y="577" width="44" height="42" rx="4" fill="#ede7d3" stroke="#c9b88a" stroke-width="1.6"/>
+<text x="150" y="570" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#2c2416">512</text>
+<line x1="172" y1="598" x2="378" y2="598" stroke="#8b7355" stroke-width="1.1" stroke-dasharray="3 3"/>
+<rect x="378" y="560" width="44" height="76" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.6"/>
+<text x="400" y="553" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#2c2416">2048</text>
+<line x1="422" y1="598" x2="628" y2="598" stroke="#8b7355" stroke-width="1.1" stroke-dasharray="3 3"/>
+<rect x="628" y="577" width="44" height="42" rx="4" fill="#e4efe4" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="650" y="570" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#2c2416">512</text>
+<text x="30" y="560" font-family="monospace" font-size="9.5" font-weight="700" fill="#5a4220">Transformer FFN (Ch 25)</text>
+<text x="30" y="573" font-family="monospace" font-size="8" fill="#a94442">expands, then contracts</text>
+  <rect x="40" y="650" width="640" height="44" rx="6" fill="#ede7d3" stroke="#c9b88a"/>
+  <text x="360" y="667" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#5a4220">widen when you need more bends than you have inputs &#8212; XOR has 2 inputs and needs about 8 folds</text>
+  <text x="360" y="683" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#5a4220">narrow when the input carries far more numbers than the answer needs &#8212; 784 pixels, 10 digits</text>
+</svg>

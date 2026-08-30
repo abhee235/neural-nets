@@ -190,7 +190,8 @@ stage("E4: how often does each setup actually solve XOR? (10 inits, 2000 steps)"
     const n = solve(make);
     console.log(`  ${name}  ${String(n).padStart(2)}/10  ${"#".repeat(n * 2)}`);
   }
-  console.log("  a cliff, not a slope — and plain SGD at a sane rate is hard to beat here.");
+  console.log("  a cliff, not a slope. note Adam and SGD land close — each at its own");
+  console.log("  good rate they tie. Adam is not better here; it is just harder to break.");
 });
 
 // ─── E5: what a dead network looks like ──────────────────────────────────────
