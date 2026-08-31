@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 372" width="720" height="372">
+  <rect width="720" height="372" fill="#faf7f0" rx="12"/>
+  <text x="360" y="26" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">encodeBatch([&#34;hello&#34;, &#34;world&#34;, &#34;hi&#34;], maxLen = 6)</text>
+  <text x="360" y="44" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="8.5">a tensor must be rectangular, but sentences are not. padding makes them rectangular; the mask records which cells were invented.</text>
+  <text x="150" y="84" font-family="monospace" font-size="9" font-weight="700" fill="#1e6091">ids</text>
+  <text x="190" y="84" font-family="monospace" font-size="9" font-weight="700" fill="#2e7d32">mask sits directly beneath each row</text>
+<text x="136" y="121" text-anchor="end" font-family="monospace" font-size="10" font-weight="700" fill="#2c2416">"hello"</text>
+<text x="136" y="134" text-anchor="end" font-family="monospace" font-size="8" fill="#8b7355">5 chars</text>
+<rect x="150" y="100" width="41" height="30" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="170" y="120" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#2c2416">7</text>
+<rect x="150" y="134" width="41" height="24" rx="4" fill="#e4efe4" stroke="#2e7d32"/>
+<text x="170" y="151" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#2e7d32">1</text>
+<rect x="196" y="100" width="41" height="30" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="216" y="120" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#2c2416">6</text>
+<rect x="196" y="134" width="41" height="24" rx="4" fill="#e4efe4" stroke="#2e7d32"/>
+<text x="216" y="151" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#2e7d32">1</text>
+<rect x="242" y="100" width="41" height="30" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="262" y="120" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#2c2416">8</text>
+<rect x="242" y="134" width="41" height="24" rx="4" fill="#e4efe4" stroke="#2e7d32"/>
+<text x="262" y="151" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#2e7d32">1</text>
+<rect x="288" y="100" width="41" height="30" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="308" y="120" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#2c2416">8</text>
+<rect x="288" y="134" width="41" height="24" rx="4" fill="#e4efe4" stroke="#2e7d32"/>
+<text x="308" y="151" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#2e7d32">1</text>
+<rect x="334" y="100" width="41" height="30" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="354" y="120" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#2c2416">9</text>
+<rect x="334" y="134" width="41" height="24" rx="4" fill="#e4efe4" stroke="#2e7d32"/>
+<text x="354" y="151" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#2e7d32">1</text>
+<rect x="380" y="100" width="41" height="30" rx="4" fill="#f3e6e4" stroke="#a94442"/>
+<text x="400" y="120" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#2c2416">0</text>
+<rect x="380" y="134" width="41" height="24" rx="4" fill="#f3e6e4" stroke="#a94442"/>
+<text x="400" y="151" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#a94442">0</text>
+<text x="434" y="120" font-family="monospace" font-size="8" fill="#a94442">1 &#215; &lt;pad&gt;</text>
+<text x="136" y="197" text-anchor="end" font-family="monospace" font-size="10" font-weight="700" fill="#2c2416">"world"</text>
+<text x="136" y="210" text-anchor="end" font-family="monospace" font-size="8" fill="#8b7355">5 chars</text>
+<rect x="150" y="176" width="41" height="30" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="170" y="196" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#2c2416">11</text>
+<rect x="150" y="210" width="41" height="24" rx="4" fill="#e4efe4" stroke="#2e7d32"/>
+<text x="170" y="227" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#2e7d32">1</text>
+<rect x="196" y="176" width="41" height="30" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="216" y="196" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#2c2416">9</text>
+<rect x="196" y="210" width="41" height="24" rx="4" fill="#e4efe4" stroke="#2e7d32"/>
+<text x="216" y="227" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#2e7d32">1</text>
+<rect x="242" y="176" width="41" height="30" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="262" y="196" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#2c2416">10</text>
+<rect x="242" y="210" width="41" height="24" rx="4" fill="#e4efe4" stroke="#2e7d32"/>
+<text x="262" y="227" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#2e7d32">1</text>
+<rect x="288" y="176" width="41" height="30" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="308" y="196" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#2c2416">8</text>
+<rect x="288" y="210" width="41" height="24" rx="4" fill="#e4efe4" stroke="#2e7d32"/>
+<text x="308" y="227" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#2e7d32">1</text>
+<rect x="334" y="176" width="41" height="30" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="354" y="196" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#2c2416">5</text>
+<rect x="334" y="210" width="41" height="24" rx="4" fill="#e4efe4" stroke="#2e7d32"/>
+<text x="354" y="227" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#2e7d32">1</text>
+<rect x="380" y="176" width="41" height="30" rx="4" fill="#f3e6e4" stroke="#a94442"/>
+<text x="400" y="196" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#2c2416">0</text>
+<rect x="380" y="210" width="41" height="24" rx="4" fill="#f3e6e4" stroke="#a94442"/>
+<text x="400" y="227" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#a94442">0</text>
+<text x="434" y="196" font-family="monospace" font-size="8" fill="#a94442">1 &#215; &lt;pad&gt;</text>
+<text x="136" y="273" text-anchor="end" font-family="monospace" font-size="10" font-weight="700" fill="#2c2416">"hi"</text>
+<text x="136" y="286" text-anchor="end" font-family="monospace" font-size="8" fill="#8b7355">2 chars</text>
+<rect x="150" y="252" width="41" height="30" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="170" y="272" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#2c2416">7</text>
+<rect x="150" y="286" width="41" height="24" rx="4" fill="#e4efe4" stroke="#2e7d32"/>
+<text x="170" y="303" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#2e7d32">1</text>
+<rect x="196" y="252" width="41" height="30" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="216" y="272" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#2c2416">1</text>
+<rect x="196" y="286" width="41" height="24" rx="4" fill="#e4efe4" stroke="#2e7d32"/>
+<text x="216" y="303" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#2e7d32">1</text>
+<rect x="242" y="252" width="41" height="30" rx="4" fill="#f3e6e4" stroke="#a94442"/>
+<text x="262" y="272" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#2c2416">0</text>
+<rect x="242" y="286" width="41" height="24" rx="4" fill="#f3e6e4" stroke="#a94442"/>
+<text x="262" y="303" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#a94442">0</text>
+<rect x="288" y="252" width="41" height="30" rx="4" fill="#f3e6e4" stroke="#a94442"/>
+<text x="308" y="272" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#2c2416">0</text>
+<rect x="288" y="286" width="41" height="24" rx="4" fill="#f3e6e4" stroke="#a94442"/>
+<text x="308" y="303" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#a94442">0</text>
+<rect x="334" y="252" width="41" height="30" rx="4" fill="#f3e6e4" stroke="#a94442"/>
+<text x="354" y="272" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#2c2416">0</text>
+<rect x="334" y="286" width="41" height="24" rx="4" fill="#f3e6e4" stroke="#a94442"/>
+<text x="354" y="303" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#a94442">0</text>
+<rect x="380" y="252" width="41" height="30" rx="4" fill="#f3e6e4" stroke="#a94442"/>
+<text x="400" y="272" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#2c2416">0</text>
+<rect x="380" y="286" width="41" height="24" rx="4" fill="#f3e6e4" stroke="#a94442"/>
+<text x="400" y="303" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#a94442">0</text>
+<text x="434" y="272" font-family="monospace" font-size="8" fill="#a94442">4 &#215; &lt;pad&gt;</text>
+<text x="150" y="322" font-family="monospace" font-size="8" fill="#a94442">&#8593; &#8216;i&#8217; is not in the vocabulary, so it becomes &lt;unk&gt; = 1</text>
+  <rect x="40" y="322" width="640" height="42" rx="6" fill="#ede7d3" stroke="#c9b88a"/>
+  <text x="360" y="339" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#5a4220">both tensors are [3, 6] &#8212; one holds the data, one holds &#8220;is this cell real?&#8221;</text>
+  <text x="360" y="355" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#8b7355">without the mask, attention in Part 5 would happily learn from the padding</text>
+</svg>
