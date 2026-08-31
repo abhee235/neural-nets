@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 390" width="720" height="390">
+  <rect width="720" height="390" fill="#faf7f0" rx="12"/>
+  <text x="360" y="26" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="11" font-weight="600">building a vocabulary from the text &#8220;hello world&#8221;</text>
+  <text x="360" y="44" text-anchor="middle" fill="#8b7355" font-family="monospace" font-size="8.5">a vocabulary is a lookup table: every character the model can see, and the number standing for it</text>
+<rect x="60" y="84" width="26" height="26" rx="4" fill="#ede7d3" stroke="#c9b88a"/>
+<text x="73" y="103" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">h</text>
+<rect x="90" y="84" width="26" height="26" rx="4" fill="#ede7d3" stroke="#c9b88a"/>
+<text x="103" y="103" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">e</text>
+<rect x="120" y="84" width="26" height="26" rx="4" fill="#ede7d3" stroke="#c9b88a"/>
+<text x="133" y="103" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">l</text>
+<rect x="150" y="84" width="26" height="26" rx="4" fill="#ede7d3" stroke="#c9b88a"/>
+<text x="163" y="103" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">l</text>
+<rect x="180" y="84" width="26" height="26" rx="4" fill="#ede7d3" stroke="#c9b88a"/>
+<text x="193" y="103" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">o</text>
+<rect x="210" y="84" width="26" height="26" rx="4" fill="#ede7d3" stroke="#c9b88a"/>
+<text x="223" y="103" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">&#9251;</text>
+<rect x="240" y="84" width="26" height="26" rx="4" fill="#ede7d3" stroke="#c9b88a"/>
+<text x="253" y="103" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">w</text>
+<rect x="270" y="84" width="26" height="26" rx="4" fill="#ede7d3" stroke="#c9b88a"/>
+<text x="283" y="103" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">o</text>
+<rect x="300" y="84" width="26" height="26" rx="4" fill="#ede7d3" stroke="#c9b88a"/>
+<text x="313" y="103" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">r</text>
+<rect x="330" y="84" width="26" height="26" rx="4" fill="#ede7d3" stroke="#c9b88a"/>
+<text x="343" y="103" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">l</text>
+<rect x="360" y="84" width="26" height="26" rx="4" fill="#ede7d3" stroke="#c9b88a"/>
+<text x="373" y="103" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">d</text>
+<text x="30" y="76" font-family="monospace" font-size="9" font-weight="700" fill="#5a4220">1. the text</text>
+<text x="404" y="103" font-family="monospace" font-size="9" fill="#8b7355">11 characters</text>
+<text x="30" y="152" font-family="monospace" font-size="9" font-weight="700" fill="#5a4220">2. keep each one once, then sort</text>
+<rect x="60" y="160" width="26" height="26" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="73" y="179" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">&#9251;</text>
+<rect x="90" y="160" width="26" height="26" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="103" y="179" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">d</text>
+<rect x="120" y="160" width="26" height="26" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="133" y="179" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">e</text>
+<rect x="150" y="160" width="26" height="26" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="163" y="179" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">h</text>
+<rect x="180" y="160" width="26" height="26" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="193" y="179" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">l</text>
+<rect x="210" y="160" width="26" height="26" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="223" y="179" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">o</text>
+<rect x="240" y="160" width="26" height="26" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="253" y="179" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">r</text>
+<rect x="270" y="160" width="26" height="26" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="283" y="179" text-anchor="middle" font-family="monospace" font-size="13" fill="#2c2416">w</text>
+<text x="314" y="179" font-family="monospace" font-size="9" fill="#8b7355">8 unique</text>
+<text x="30" y="200" font-family="monospace" font-size="8" fill="#8b7355">sorting is what makes the same text always produce the same IDs</text>
+<text x="30" y="240" font-family="monospace" font-size="9" font-weight="700" fill="#5a4220">3. hand out the numbers &#8212; but 0 to 3 are reserved before any character gets one</text>
+<rect x="60" y="250" width="86" height="32" rx="4" fill="#f3e6e4" stroke="#a94442"/>
+<text x="103" y="264" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#a94442">0</text>
+<text x="103" y="276" text-anchor="middle" font-family="monospace" font-size="9" fill="#5a4220">&lt;pad&gt;</text>
+<rect x="156" y="250" width="86" height="32" rx="4" fill="#f3e6e4" stroke="#a94442"/>
+<text x="199" y="264" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#a94442">1</text>
+<text x="199" y="276" text-anchor="middle" font-family="monospace" font-size="9" fill="#5a4220">&lt;unk&gt;</text>
+<rect x="252" y="250" width="86" height="32" rx="4" fill="#f3e6e4" stroke="#a94442"/>
+<text x="295" y="264" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#a94442">2</text>
+<text x="295" y="276" text-anchor="middle" font-family="monospace" font-size="9" fill="#5a4220">&lt;bos&gt;</text>
+<rect x="348" y="250" width="86" height="32" rx="4" fill="#f3e6e4" stroke="#a94442"/>
+<text x="391" y="264" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#a94442">3</text>
+<text x="391" y="276" text-anchor="middle" font-family="monospace" font-size="9" fill="#5a4220">&lt;eos&gt;</text>
+<text x="452" y="270" font-family="monospace" font-size="8.5" fill="#a94442">four slots, spent before we start</text>
+<rect x="60" y="296" width="66" height="32" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="93" y="310" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#1e6091">4</text>
+<text x="93" y="322" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#2c2416">&#9251; space</text>
+<rect x="136" y="296" width="66" height="32" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="169" y="310" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#1e6091">5</text>
+<text x="169" y="322" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#2c2416">"d"</text>
+<rect x="212" y="296" width="66" height="32" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="245" y="310" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#1e6091">6</text>
+<text x="245" y="322" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#2c2416">"e"</text>
+<rect x="288" y="296" width="66" height="32" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="321" y="310" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#1e6091">7</text>
+<text x="321" y="322" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#2c2416">"h"</text>
+<rect x="364" y="296" width="66" height="32" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="397" y="310" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#1e6091">8</text>
+<text x="397" y="322" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#2c2416">"l"</text>
+<rect x="440" y="296" width="66" height="32" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="473" y="310" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#1e6091">9</text>
+<text x="473" y="322" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#2c2416">"o"</text>
+<rect x="516" y="296" width="66" height="32" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="549" y="310" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#1e6091">10</text>
+<text x="549" y="322" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#2c2416">"r"</text>
+<rect x="592" y="296" width="66" height="32" rx="4" fill="#dde8f0" stroke="#1e6091"/>
+<text x="625" y="310" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#1e6091">11</text>
+<text x="625" y="322" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#2c2416">"w"</text>
+  <rect x="40" y="344" width="640" height="36" rx="6" fill="#ede7d3" stroke="#c9b88a"/>
+  <text x="360" y="359" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#5a4220">vocabSize = 8 unique characters + 4 special tokens = 12</text>
+  <text x="360" y="373" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#8b7355">any character not in this table becomes &lt;unk&gt;, which is the whole reason id 1 exists</text>
+</svg>
