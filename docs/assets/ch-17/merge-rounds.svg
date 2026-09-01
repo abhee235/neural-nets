@@ -1,0 +1,323 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 330" width="720" height="330">
+  <rect width="720" height="330" fill="#faf7f0" rx="12"/>
+  <text x="360" y="26" text-anchor="middle" font-family="monospace" font-size="11" font-weight="600" fill="#8b7355">BPE training, one merge at a time</text>
+  <text x="360" y="44" text-anchor="middle" font-family="monospace" font-size="8.5" font-weight="400" fill="#8b7355">corpus: low &#215;5, lower &#215;2, newest &#215;3, widest &#215;2 &#8212; four of them shown. the new token each round is outlined in red.</text>
+<g opacity="1">
+  <animate attributeName="opacity" values="1;0;0;0;0;0;0;0;0;1" keyTimes="0.0000;0.1111;0.2222;0.3333;0.4444;0.5556;0.6667;0.7778;0.8889;1.0000" calcMode="discrete" dur="22.5s" repeatCount="indefinite"/>
+  <text x="360" y="72" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#5a4220">before any merge &#8212; every word is single characters</text>
+  <text x="162" y="116" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">low</text>
+  <rect x="178" y="96" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="193.0" y="120" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">l</text>
+  <rect x="214" y="96" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="229.0" y="120" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">o</text>
+  <rect x="250" y="96" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="265.0" y="120" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">w</text>
+  <text x="162" y="162" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">lower</text>
+  <rect x="178" y="142" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="193.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">l</text>
+  <rect x="214" y="142" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="229.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">o</text>
+  <rect x="250" y="142" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="265.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">w</text>
+  <rect x="286" y="142" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="301.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">e</text>
+  <rect x="322" y="142" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="337.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">r</text>
+  <text x="162" y="208" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">newest</text>
+  <rect x="178" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="193.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">n</text>
+  <rect x="214" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="229.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">e</text>
+  <rect x="250" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="265.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">w</text>
+  <rect x="286" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="301.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">e</text>
+  <rect x="322" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="337.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">s</text>
+  <rect x="358" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="373.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">t</text>
+  <text x="162" y="254" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">widest</text>
+  <rect x="178" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="193.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">w</text>
+  <rect x="214" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="229.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">i</text>
+  <rect x="250" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="265.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">d</text>
+  <rect x="286" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="301.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">e</text>
+  <rect x="322" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="337.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">s</text>
+  <rect x="358" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="373.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">t</text>
+  <text x="360" y="306" text-anchor="middle" font-family="monospace" font-size="10" font-weight="700" fill="#2e7d32">55 tokens across the whole corpus</text>
+</g>
+<g opacity="0">
+  <animate attributeName="opacity" values="0;1;0;0;0;0;0;0;0;0" keyTimes="0.0000;0.1111;0.2222;0.3333;0.4444;0.5556;0.6667;0.7778;0.8889;1.0000" calcMode="discrete" dur="22.5s" repeatCount="indefinite"/>
+  <text x="360" y="72" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#a94442">merge 1: (&#8220;l&#8221;, &#8220;o&#8221;) &#8594; &#8220;lo&#8221;</text>
+  <text x="162" y="116" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">low</text>
+  <rect x="178" y="96" width="42" height="30" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="199.0" y="120" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2c2416">lo</text>
+  <rect x="226" y="96" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="241.0" y="120" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">w</text>
+  <text x="162" y="162" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">lower</text>
+  <rect x="178" y="142" width="42" height="30" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="199.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2c2416">lo</text>
+  <rect x="226" y="142" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="241.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">w</text>
+  <rect x="262" y="142" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="277.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">e</text>
+  <rect x="298" y="142" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="313.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">r</text>
+  <text x="162" y="208" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">newest</text>
+  <rect x="178" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="193.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">n</text>
+  <rect x="214" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="229.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">e</text>
+  <rect x="250" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="265.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">w</text>
+  <rect x="286" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="301.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">e</text>
+  <rect x="322" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="337.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">s</text>
+  <rect x="358" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="373.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">t</text>
+  <text x="162" y="254" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">widest</text>
+  <rect x="178" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="193.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">w</text>
+  <rect x="214" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="229.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">i</text>
+  <rect x="250" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="265.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">d</text>
+  <rect x="286" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="301.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">e</text>
+  <rect x="322" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="337.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">s</text>
+  <rect x="358" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="373.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">t</text>
+  <text x="360" y="306" text-anchor="middle" font-family="monospace" font-size="10" font-weight="700" fill="#2e7d32">48 tokens across the whole corpus</text>
+</g>
+<g opacity="0">
+  <animate attributeName="opacity" values="0;0;1;0;0;0;0;0;0;0" keyTimes="0.0000;0.1111;0.2222;0.3333;0.4444;0.5556;0.6667;0.7778;0.8889;1.0000" calcMode="discrete" dur="22.5s" repeatCount="indefinite"/>
+  <text x="360" y="72" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#a94442">merge 2: (&#8220;lo&#8221;, &#8220;w&#8221;) &#8594; &#8220;low&#8221;</text>
+  <text x="162" y="116" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">low</text>
+  <rect x="178" y="96" width="55" height="30" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="205.5" y="120" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2c2416">low</text>
+  <text x="162" y="162" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">lower</text>
+  <rect x="178" y="142" width="55" height="30" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="205.5" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2c2416">low</text>
+  <rect x="239" y="142" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="254.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">e</text>
+  <rect x="275" y="142" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="290.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">r</text>
+  <text x="162" y="208" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">newest</text>
+  <rect x="178" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="193.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">n</text>
+  <rect x="214" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="229.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">e</text>
+  <rect x="250" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="265.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">w</text>
+  <rect x="286" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="301.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">e</text>
+  <rect x="322" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="337.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">s</text>
+  <rect x="358" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="373.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">t</text>
+  <text x="162" y="254" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">widest</text>
+  <rect x="178" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="193.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">w</text>
+  <rect x="214" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="229.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">i</text>
+  <rect x="250" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="265.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">d</text>
+  <rect x="286" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="301.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">e</text>
+  <rect x="322" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="337.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">s</text>
+  <rect x="358" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="373.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">t</text>
+  <text x="360" y="306" text-anchor="middle" font-family="monospace" font-size="10" font-weight="700" fill="#2e7d32">41 tokens across the whole corpus</text>
+</g>
+<g opacity="0">
+  <animate attributeName="opacity" values="0;0;0;1;0;0;0;0;0;0" keyTimes="0.0000;0.1111;0.2222;0.3333;0.4444;0.5556;0.6667;0.7778;0.8889;1.0000" calcMode="discrete" dur="22.5s" repeatCount="indefinite"/>
+  <text x="360" y="72" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#a94442">merge 3: (&#8220;e&#8221;, &#8220;s&#8221;) &#8594; &#8220;es&#8221;</text>
+  <text x="162" y="116" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">low</text>
+  <rect x="178" y="96" width="55" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="205.5" y="120" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">low</text>
+  <text x="162" y="162" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">lower</text>
+  <rect x="178" y="142" width="55" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="205.5" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">low</text>
+  <rect x="239" y="142" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="254.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">e</text>
+  <rect x="275" y="142" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="290.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">r</text>
+  <text x="162" y="208" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">newest</text>
+  <rect x="178" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="193.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">n</text>
+  <rect x="214" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="229.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">e</text>
+  <rect x="250" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="265.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">w</text>
+  <rect x="286" y="188" width="42" height="30" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="307.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2c2416">es</text>
+  <rect x="334" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="349.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">t</text>
+  <text x="162" y="254" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">widest</text>
+  <rect x="178" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="193.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">w</text>
+  <rect x="214" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="229.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">i</text>
+  <rect x="250" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="265.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">d</text>
+  <rect x="286" y="234" width="42" height="30" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="307.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2c2416">es</text>
+  <rect x="334" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="349.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">t</text>
+  <text x="360" y="306" text-anchor="middle" font-family="monospace" font-size="10" font-weight="700" fill="#2e7d32">36 tokens across the whole corpus</text>
+</g>
+<g opacity="0">
+  <animate attributeName="opacity" values="0;0;0;0;1;0;0;0;0;0" keyTimes="0.0000;0.1111;0.2222;0.3333;0.4444;0.5556;0.6667;0.7778;0.8889;1.0000" calcMode="discrete" dur="22.5s" repeatCount="indefinite"/>
+  <text x="360" y="72" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#a94442">merge 4: (&#8220;es&#8221;, &#8220;t&#8221;) &#8594; &#8220;est&#8221;</text>
+  <text x="162" y="116" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">low</text>
+  <rect x="178" y="96" width="55" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="205.5" y="120" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">low</text>
+  <text x="162" y="162" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">lower</text>
+  <rect x="178" y="142" width="55" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="205.5" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">low</text>
+  <rect x="239" y="142" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="254.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">e</text>
+  <rect x="275" y="142" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="290.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">r</text>
+  <text x="162" y="208" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">newest</text>
+  <rect x="178" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="193.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">n</text>
+  <rect x="214" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="229.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">e</text>
+  <rect x="250" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="265.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">w</text>
+  <rect x="286" y="188" width="55" height="30" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="313.5" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2c2416">est</text>
+  <text x="162" y="254" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">widest</text>
+  <rect x="178" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="193.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">w</text>
+  <rect x="214" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="229.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">i</text>
+  <rect x="250" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="265.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">d</text>
+  <rect x="286" y="234" width="55" height="30" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="313.5" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2c2416">est</text>
+  <text x="360" y="306" text-anchor="middle" font-family="monospace" font-size="10" font-weight="700" fill="#2e7d32">31 tokens across the whole corpus</text>
+</g>
+<g opacity="0">
+  <animate attributeName="opacity" values="0;0;0;0;0;1;0;0;0;0" keyTimes="0.0000;0.1111;0.2222;0.3333;0.4444;0.5556;0.6667;0.7778;0.8889;1.0000" calcMode="discrete" dur="22.5s" repeatCount="indefinite"/>
+  <text x="360" y="72" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#a94442">merge 5: (&#8220;n&#8221;, &#8220;e&#8221;) &#8594; &#8220;ne&#8221;</text>
+  <text x="162" y="116" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">low</text>
+  <rect x="178" y="96" width="55" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="205.5" y="120" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">low</text>
+  <text x="162" y="162" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">lower</text>
+  <rect x="178" y="142" width="55" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="205.5" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">low</text>
+  <rect x="239" y="142" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="254.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">e</text>
+  <rect x="275" y="142" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="290.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">r</text>
+  <text x="162" y="208" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">newest</text>
+  <rect x="178" y="188" width="42" height="30" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="199.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2c2416">ne</text>
+  <rect x="226" y="188" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="241.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">w</text>
+  <rect x="262" y="188" width="55" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="289.5" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">est</text>
+  <text x="162" y="254" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">widest</text>
+  <rect x="178" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="193.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">w</text>
+  <rect x="214" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="229.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">i</text>
+  <rect x="250" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="265.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">d</text>
+  <rect x="286" y="234" width="55" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="313.5" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">est</text>
+  <text x="360" y="306" text-anchor="middle" font-family="monospace" font-size="10" font-weight="700" fill="#2e7d32">28 tokens across the whole corpus</text>
+</g>
+<g opacity="0">
+  <animate attributeName="opacity" values="0;0;0;0;0;0;1;0;0;0" keyTimes="0.0000;0.1111;0.2222;0.3333;0.4444;0.5556;0.6667;0.7778;0.8889;1.0000" calcMode="discrete" dur="22.5s" repeatCount="indefinite"/>
+  <text x="360" y="72" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#a94442">merge 6: (&#8220;ne&#8221;, &#8220;w&#8221;) &#8594; &#8220;new&#8221;</text>
+  <text x="162" y="116" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">low</text>
+  <rect x="178" y="96" width="55" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="205.5" y="120" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">low</text>
+  <text x="162" y="162" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">lower</text>
+  <rect x="178" y="142" width="55" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="205.5" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">low</text>
+  <rect x="239" y="142" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="254.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">e</text>
+  <rect x="275" y="142" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="290.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">r</text>
+  <text x="162" y="208" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">newest</text>
+  <rect x="178" y="188" width="55" height="30" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="205.5" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2c2416">new</text>
+  <rect x="239" y="188" width="55" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="266.5" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">est</text>
+  <text x="162" y="254" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">widest</text>
+  <rect x="178" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="193.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">w</text>
+  <rect x="214" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="229.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">i</text>
+  <rect x="250" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="265.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">d</text>
+  <rect x="286" y="234" width="55" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="313.5" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">est</text>
+  <text x="360" y="306" text-anchor="middle" font-family="monospace" font-size="10" font-weight="700" fill="#2e7d32">25 tokens across the whole corpus</text>
+</g>
+<g opacity="0">
+  <animate attributeName="opacity" values="0;0;0;0;0;0;0;1;0;0" keyTimes="0.0000;0.1111;0.2222;0.3333;0.4444;0.5556;0.6667;0.7778;0.8889;1.0000" calcMode="discrete" dur="22.5s" repeatCount="indefinite"/>
+  <text x="360" y="72" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#a94442">merge 7: (&#8220;new&#8221;, &#8220;est&#8221;) &#8594; &#8220;newest&#8221;</text>
+  <text x="162" y="116" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">low</text>
+  <rect x="178" y="96" width="55" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="205.5" y="120" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">low</text>
+  <text x="162" y="162" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">lower</text>
+  <rect x="178" y="142" width="55" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="205.5" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">low</text>
+  <rect x="239" y="142" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="254.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">e</text>
+  <rect x="275" y="142" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="290.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">r</text>
+  <text x="162" y="208" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">newest</text>
+  <rect x="178" y="188" width="94" height="30" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="225.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2c2416">newest</text>
+  <text x="162" y="254" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">widest</text>
+  <rect x="178" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="193.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">w</text>
+  <rect x="214" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="229.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">i</text>
+  <rect x="250" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="265.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">d</text>
+  <rect x="286" y="234" width="55" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="313.5" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">est</text>
+  <text x="360" y="306" text-anchor="middle" font-family="monospace" font-size="10" font-weight="700" fill="#2e7d32">22 tokens across the whole corpus</text>
+</g>
+<g opacity="0">
+  <animate attributeName="opacity" values="0;0;0;0;0;0;0;0;1;0" keyTimes="0.0000;0.1111;0.2222;0.3333;0.4444;0.5556;0.6667;0.7778;0.8889;1.0000" calcMode="discrete" dur="22.5s" repeatCount="indefinite"/>
+  <text x="360" y="72" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#a94442">merge 8: (&#8220;low&#8221;, &#8220;e&#8221;) &#8594; &#8220;lowe&#8221;</text>
+  <text x="162" y="116" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">low</text>
+  <rect x="178" y="96" width="55" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="205.5" y="120" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">low</text>
+  <text x="162" y="162" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">lower</text>
+  <rect x="178" y="142" width="68" height="30" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="212.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2c2416">lowe</text>
+  <rect x="252" y="142" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="267.0" y="166" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">r</text>
+  <text x="162" y="208" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">newest</text>
+  <rect x="178" y="188" width="94" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="225.0" y="212" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">newest</text>
+  <text x="162" y="254" text-anchor="end" font-family="monospace" font-size="10" font-weight="400" fill="#8b7355">widest</text>
+  <rect x="178" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="193.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">w</text>
+  <rect x="214" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="229.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">i</text>
+  <rect x="250" y="234" width="30" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="265.0" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">d</text>
+  <rect x="286" y="234" width="55" height="30" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="313.5" y="258" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">est</text>
+  <text x="360" y="306" text-anchor="middle" font-family="monospace" font-size="10" font-weight="700" fill="#2e7d32">20 tokens across the whole corpus</text>
+</g>
+  <text x="360" y="318" text-anchor="middle" font-family="monospace" font-size="8.5" font-weight="400" fill="#8b7355">each merge replaces a pair everywhere at once, so the corpus shortens and the next round counts different pairs</text>
+</svg>
