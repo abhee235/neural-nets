@@ -95,7 +95,14 @@ export type MergeRule = [string, string];
  * survive that without reading past the end.
  */
 export function countPairs(corpus: Corpus): Map<string, number> {
-  throw new Error("Not implemented — read the chapter doc first");
+  const counts = new Map<string, number>();          // will hold  "l o" -> 7,  "o w" -> 7, ...
+  for (const seq of corpus) {                        // seq is ONE word: ["l","o","w"]
+    for (let i = 0; i < seq.length - 1; i++) {       // stops at length-1: 3 tokens -> 2 pairs
+      const pair = `${seq[i]} ${seq[i + 1]}`;        // i=0 -> "l o";  i=1 -> "o w"
+      counts.set(pair, (counts.get(pair) ?? 0) + 1); // first sighting -> 1, seen again -> 2, ...
+    }
+  }
+  return counts;
 }
 
 /**
@@ -129,7 +136,24 @@ export function countPairs(corpus: Corpus): Map<string, number> {
  * a loop and reassigns, and tests check the input is untouched.
  */
 export function mergePair(corpus: Corpus, pair: MergeRule): Corpus {
-  throw new Error("Not implemented — read the chapter doc first");
+  const [a, b] = pair;                                  // ("l","o")  ->  a = "l",  b = "o"
+  const newToken = a + b;                               // "l" + "o" = "lo"
+  const newCorpus: Corpus = [];                         // built fresh — the input is never mutated
+  for (const seq of corpus) {                           // seq = ["l","o","w","e","r"]
+    const newSeq: string[] = [];
+    let i = 0;
+    while (i < seq.length) {
+      if (i < seq.length - 1 && seq[i] === a && seq[i + 1] === b) {
+        newSeq.push(newToken);                          // i=0: "l","o" match  ->  push "lo"
+        i += 2;                                         // jump OVER the "o": i goes 0 -> 2, not 0 -> 1.
+      } else {                                          //   i++ here would re-read "o" and turn
+        newSeq.push(seq[i]!);                           //   "banana" into "bannanna".
+        i++;                                            // i=2 "w",  i=3 "e",  i=4 "r"
+      }
+    }
+    newCorpus.push(newSeq);                             // ["lo","w","e","r"]
+  }
+  return newCorpus;
 }
 
 /**
@@ -220,7 +244,42 @@ export class BPETokenizer {
    * it is deterministic on purpose rather than by luck.
    */
   train(text: string, vocabSize: number): void {
-    throw new Error("Not implemented — read the chapter doc first");
+    // The base vocabulary is built from the RAW text, so the space is in it.
+    // Building it from the split words instead drops " ", and encode() then has
+    // no id to put between words.
+    const characters = [...new Set(text)].sort();     // -> [" ","d","e","i","l","n","o","r","s","t","w"]  (11)
+    let nextId = SPECIAL_TOKEN_COUNT;                 // 4 — ids 0..3 are <pad> <unk> <bos> <eos>
+    for (const char of characters) {
+      this.stoi.set(char, nextId);                    // " "->4, "d"->5, "e"->6, ... "w"->14
+      this.itos.set(nextId, char);                    // and the reverse map, which decode uses
+      nextId++;
+    }
+    this.vocabSize = nextId;                          // 4 specials + 11 characters = 15, BEFORE any merge
+
+    // "low lower"  ->  [ ["l","o","w"], ["l","o","w","e","r"] ]
+    let corpus: Corpus = text.split(" ").map((word) => [...word]);
+
+    while (this.vocabSize < vocabSize) {              // 15 < 23  ->  room for 8 more entries
+      const counts = countPairs(corpus);              // round 1: {"l o"->7, "o w"->7, "w e"->5, ...}
+
+      let bestPair: MergeRule | null = null;
+      let bestCount = 1;                              // starts at 1, so a pair seen ONCE can never win
+      for (const [key, count] of counts) {            // a Map iterates in insertion order, and
+        if (count > bestCount) {                      // `>` keeps the FIRST of a tie — so the 7-7 tie
+          bestCount = count;                          // between (l o) and (o w) breaks the same way
+          bestPair = key.split(" ") as MergeRule;      // on every run. "l o" -> ["l","o"]
+        }
+      }
+      if (bestPair === null) break;                   // nothing repeats any more -> stop early
+
+      corpus = mergePair(corpus, bestPair);           // round 1: every ["l","o",...] becomes ["lo",...]
+      this.merges.push(bestPair);                     // record ("l","o") — the ORDER is what encode replays
+      const newToken = bestPair[0] + bestPair[1];     // "lo"
+      this.stoi.set(newToken, nextId);                // "lo"->15, then "low"->16, "es"->17, ... "lowe"->22
+      this.itos.set(nextId, newToken);
+      nextId++;
+      this.vocabSize++;                               // 15 -> 16; loop re-checks against vocabSize
+    }
   }
 
   /**
@@ -263,7 +322,22 @@ export class BPETokenizer {
    * follows Ch 16.
    */
   encodeWord(word: string): string[] {
-    throw new Error("Not implemented — read the chapter doc first");
+    let tokens = [...word];                           // "lowest" -> ["l","o","w","e","s","t"]
+    for (const merge of this.merges) {                // every rule is tried, IN LEARNED ORDER
+      const newTokens: string[] = [];
+      let i = 0;
+      while (i < tokens.length) {
+        if (i < tokens.length - 1 && tokens[i] === merge[0] && tokens[i + 1] === merge[1]) {
+          newTokens.push(merge[0] + merge[1]);        // rule ("l","o") fires -> ["lo","w","e","s","t"]
+          i += 2;                                     // skip both halves, same as mergePair
+        } else {
+          newTokens.push(tokens[i]!);
+          i++;
+        }
+      }
+      tokens = newTokens;                             // feed this round's result into the next rule
+    }
+    return tokens;                                    // after all 8 rules: ["low","est"]
   }
 
   /**
@@ -293,7 +367,16 @@ export class BPETokenizer {
    * here but not gone; see decode.
    */
   encode(text: string): number[] {
-    throw new Error("Not implemented — read the chapter doc first");
+    const words = text.split(" ");                    // "low lower" -> ["low","lower"]
+    const ids: number[] = [];                         // "low  lower" -> ["low","","lower"] (empty middle)
+    for (let i = 0; i < words.length; i++) {
+      if (i > 0) ids.push(this.stoi.get(" ") ?? UNK_ID);  // one space token BETWEEN words -> 4
+      for (const token of this.encodeWord(words[i]!)) {   // "lower" -> ["lowe","r"]
+        // encodeWord returns token STRINGS; each still has to be looked up.
+        ids.push(this.stoi.get(token) ?? UNK_ID);      // "lowe"->22, "r"->11;  never-seen char -> 1
+      }
+    }
+    return ids;                                       // "low lower" -> [16, 4, 22, 11]
   }
 
   /**
@@ -334,6 +417,11 @@ export class BPETokenizer {
    * characters, which is the same algorithm with a smaller alphabet.
    */
   decode(ids: number[]): string {
-    throw new Error("Not implemented — read the chapter doc first");
+    let text = "";
+    for (const id of ids) {
+      if (id < SPECIAL_TOKEN_COUNT) continue;         // drop <pad>/<unk>/<bos>/<eos> rather than
+      text += this.itos.get(id) ?? "";                // printing them: [16,0,0,0] -> "low", not "low<pad>..."
+    }
+    return text;                                      // [16,4,22,11] -> "low" + " " + "lowe" + "r"
   }
 }
