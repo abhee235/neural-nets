@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" width="720" height="340">
+  <rect width="720" height="340" fill="#faf7f0" rx="12"/>
+  <text x="360" y="26" text-anchor="middle" font-family="monospace" font-size="11" font-weight="600" fill="#8b7355">merges compose &#8212; each new token is built from tokens earlier merges made</text>
+  <text x="360" y="43" text-anchor="middle" font-family="monospace" font-size="8.5" font-weight="400" fill="#8b7355">read bottom-up: characters at the base, the token a merge produced above the pair it consumed</text>
+  <line x1="252" y1="62" x2="252" y2="308" stroke="#e0d5c0" stroke-width="1.5"/>
+  <rect x="62" y="268" width="34" height="24" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="79.0" y="286" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">l</text>
+  <rect x="120" y="268" width="34" height="24" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="137.0" y="286" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">o</text>
+  <rect x="178" y="268" width="34" height="24" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="195.0" y="286" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">w</text>
+  <path d="M 79 268 L 79 242 L 108.0 242" fill="none" stroke="#1e6091" stroke-width="1.4" opacity="0.6"/>
+  <path d="M 137 268 L 137 242 L 108.0 242" fill="none" stroke="#1e6091" stroke-width="1.4" opacity="0.6"/>
+  <line x1="108.0" y1="242" x2="108.0" y2="232" stroke="#a94442" stroke-width="1.4" opacity="0.65"/>
+  <rect x="87.0" y="208" width="42" height="24" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="108.0" y="226" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2c2416">lo</text>
+  <text x="136.0" y="224" text-anchor="start" font-family="monospace" font-size="8.5" font-weight="400" fill="#8b7355">merge 1</text>
+  <path d="M 108.0 208 L 108.0 186 L 151.5 186" fill="none" stroke="#1e6091" stroke-width="1.4" opacity="0.6"/>
+  <path d="M 195 268 L 195 186 L 151.5 186" fill="none" stroke="#1e6091" stroke-width="1.4" opacity="0.6"/>
+  <line x1="151.5" y1="186" x2="151.5" y2="176" stroke="#a94442" stroke-width="1.4" opacity="0.65"/>
+  <rect x="124.0" y="152" width="55" height="24" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="151.5" y="170" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2c2416">low</text>
+  <text x="186.0" y="168" text-anchor="start" font-family="monospace" font-size="8.5" font-weight="400" fill="#8b7355">merge 2</text>
+  <rect x="300" y="268" width="34" height="24" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="317.0" y="286" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">n</text>
+  <rect x="356" y="268" width="34" height="24" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="373.0" y="286" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">e</text>
+  <rect x="412" y="268" width="34" height="24" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="429.0" y="286" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">w</text>
+  <rect x="468" y="268" width="34" height="24" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="485.0" y="286" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">e</text>
+  <rect x="524" y="268" width="34" height="24" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="541.0" y="286" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">s</text>
+  <rect x="580" y="268" width="34" height="24" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="597.0" y="286" text-anchor="middle" font-family="monospace" font-size="13" font-weight="400" fill="#2c2416">t</text>
+  <path d="M 485 268 L 485 242 L 513.0 242" fill="none" stroke="#1e6091" stroke-width="1.4" opacity="0.6"/>
+  <path d="M 541 268 L 541 242 L 513.0 242" fill="none" stroke="#1e6091" stroke-width="1.4" opacity="0.6"/>
+  <line x1="513.0" y1="242" x2="513.0" y2="232" stroke="#a94442" stroke-width="1.4" opacity="0.65"/>
+  <rect x="492.0" y="208" width="42" height="24" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="513.0" y="226" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2c2416">es</text>
+  <text x="541.0" y="224" text-anchor="start" font-family="monospace" font-size="8.5" font-weight="400" fill="#8b7355">merge 3</text>
+  <path d="M 513.0 208 L 513.0 186 L 555.0 186" fill="none" stroke="#1e6091" stroke-width="1.4" opacity="0.6"/>
+  <path d="M 597 268 L 597 186 L 555.0 186" fill="none" stroke="#1e6091" stroke-width="1.4" opacity="0.6"/>
+  <line x1="555.0" y1="186" x2="555.0" y2="176" stroke="#a94442" stroke-width="1.4" opacity="0.65"/>
+  <rect x="527.5" y="152" width="55" height="24" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="555.0" y="170" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2c2416">est</text>
+  <text x="589.5" y="168" text-anchor="start" font-family="monospace" font-size="8.5" font-weight="400" fill="#8b7355">merge 4</text>
+  <path d="M 317 268 L 317 242 L 345.0 242" fill="none" stroke="#1e6091" stroke-width="1.4" opacity="0.6"/>
+  <path d="M 373 268 L 373 242 L 345.0 242" fill="none" stroke="#1e6091" stroke-width="1.4" opacity="0.6"/>
+  <line x1="345.0" y1="242" x2="345.0" y2="232" stroke="#a94442" stroke-width="1.4" opacity="0.65"/>
+  <rect x="324.0" y="208" width="42" height="24" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="345.0" y="226" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2c2416">ne</text>
+  <text x="373.0" y="224" text-anchor="start" font-family="monospace" font-size="8.5" font-weight="400" fill="#8b7355">merge 5</text>
+  <path d="M 345.0 208 L 345.0 186 L 387.0 186" fill="none" stroke="#1e6091" stroke-width="1.4" opacity="0.6"/>
+  <path d="M 429 268 L 429 186 L 387.0 186" fill="none" stroke="#1e6091" stroke-width="1.4" opacity="0.6"/>
+  <line x1="387.0" y1="186" x2="387.0" y2="176" stroke="#a94442" stroke-width="1.4" opacity="0.65"/>
+  <rect x="359.5" y="152" width="55" height="24" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="387.0" y="170" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2c2416">new</text>
+  <text x="421.5" y="168" text-anchor="start" font-family="monospace" font-size="8.5" font-weight="400" fill="#8b7355">merge 6</text>
+  <path d="M 387.0 152 L 387.0 130 L 471.0 130" fill="none" stroke="#1e6091" stroke-width="1.4" opacity="0.6"/>
+  <path d="M 555.0 152 L 555.0 130 L 471.0 130" fill="none" stroke="#1e6091" stroke-width="1.4" opacity="0.6"/>
+  <line x1="471.0" y1="130" x2="471.0" y2="120" stroke="#a94442" stroke-width="1.4" opacity="0.65"/>
+  <rect x="424.0" y="96" width="94" height="24" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="471.0" y="114" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#2c2416">newest</text>
+  <text x="525.0" y="112" text-anchor="start" font-family="monospace" font-size="8.5" font-weight="400" fill="#8b7355">merge 7</text>
+  <text x="360" y="328" text-anchor="middle" font-family="monospace" font-size="9" font-weight="400" fill="#8b7355">&#8220;est&#8221; is a real English suffix. nothing told the algorithm about suffixes &#8212; it counted pairs.</text>
+</svg>

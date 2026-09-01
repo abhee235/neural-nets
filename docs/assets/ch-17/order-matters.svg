@@ -1,0 +1,205 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 401" width="780" height="401">
+  <rect width="780" height="401" fill="#faf7f0" rx="12"/>
+  <text x="390" y="26" text-anchor="middle" font-family="monospace" font-size="11" font-weight="600" fill="#8b7355">the same eight rules, applied in two different orders</text>
+  <text x="390" y="43" text-anchor="middle" font-family="monospace" font-size="8.5" font-weight="400" fill="#8b7355">encoding the word &#8220;lowest&#8221; &#8212; a rule marked &#8594; changed the sequence, a rule marked &#183; found nothing to merge</text>
+  <line x1="390" y1="60" x2="390" y2="359" stroke="#e0d5c0" stroke-width="1.5"/>
+  <text x="195" y="62" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#2c2416">training order</text>
+  <text x="195" y="78" text-anchor="middle" font-family="monospace" font-size="9" font-weight="600" fill="#2e7d32">correct</text>
+  <text x="120" y="110" text-anchor="end" font-family="monospace" font-size="9" font-weight="400" fill="#8b7355">start</text>
+  <text x="130" y="110" text-anchor="start" font-family="monospace" font-size="10" font-weight="400" fill="#c9bfa8">&#183;</text>
+  <rect x="146" y="96" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="157.0" y="110" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">l</text>
+  <rect x="172" y="96" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="183.0" y="110" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">o</text>
+  <rect x="198" y="96" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="209.0" y="110" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">w</text>
+  <rect x="224" y="96" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="235.0" y="110" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">e</text>
+  <rect x="250" y="96" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="261.0" y="110" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">s</text>
+  <rect x="276" y="96" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="287.0" y="110" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">t</text>
+  <text x="120" y="137" text-anchor="end" font-family="monospace" font-size="9" font-weight="700" fill="#2c2416">(&#8220;l&#8221;,&#8220;o&#8221;)</text>
+  <text x="130" y="137" text-anchor="start" font-family="monospace" font-size="10" font-weight="400" fill="#a94442">&#8594;</text>
+  <rect x="146" y="123" width="28" height="20" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="160.0" y="137" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#2c2416">lo</text>
+  <rect x="178" y="123" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="189.0" y="137" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">w</text>
+  <rect x="204" y="123" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="215.0" y="137" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">e</text>
+  <rect x="230" y="123" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="241.0" y="137" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">s</text>
+  <rect x="256" y="123" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="267.0" y="137" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">t</text>
+  <text x="120" y="164" text-anchor="end" font-family="monospace" font-size="9" font-weight="700" fill="#2c2416">(&#8220;lo&#8221;,&#8220;w&#8221;)</text>
+  <text x="130" y="164" text-anchor="start" font-family="monospace" font-size="10" font-weight="400" fill="#a94442">&#8594;</text>
+  <rect x="146" y="150" width="36" height="20" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="164.0" y="164" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#2c2416">low</text>
+  <rect x="186" y="150" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="197.0" y="164" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">e</text>
+  <rect x="212" y="150" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="223.0" y="164" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">s</text>
+  <rect x="238" y="150" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="249.0" y="164" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">t</text>
+  <text x="120" y="191" text-anchor="end" font-family="monospace" font-size="9" font-weight="700" fill="#2c2416">(&#8220;e&#8221;,&#8220;s&#8221;)</text>
+  <text x="130" y="191" text-anchor="start" font-family="monospace" font-size="10" font-weight="400" fill="#a94442">&#8594;</text>
+  <rect x="146" y="177" width="36" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="164.0" y="191" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">low</text>
+  <rect x="186" y="177" width="28" height="20" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="200.0" y="191" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#2c2416">es</text>
+  <rect x="218" y="177" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="229.0" y="191" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">t</text>
+  <text x="120" y="218" text-anchor="end" font-family="monospace" font-size="9" font-weight="700" fill="#2c2416">(&#8220;es&#8221;,&#8220;t&#8221;)</text>
+  <text x="130" y="218" text-anchor="start" font-family="monospace" font-size="10" font-weight="400" fill="#a94442">&#8594;</text>
+  <rect x="146" y="204" width="36" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="164.0" y="218" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">low</text>
+  <rect x="186" y="204" width="36" height="20" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="204.0" y="218" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#2c2416">est</text>
+  <text x="120" y="245" text-anchor="end" font-family="monospace" font-size="9" font-weight="400" fill="#8b7355">(&#8220;n&#8221;,&#8220;e&#8221;)</text>
+  <text x="130" y="245" text-anchor="start" font-family="monospace" font-size="10" font-weight="400" fill="#c9bfa8">&#183;</text>
+  <rect x="146" y="231" width="36" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="164.0" y="245" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">low</text>
+  <rect x="186" y="231" width="36" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="204.0" y="245" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">est</text>
+  <text x="120" y="272" text-anchor="end" font-family="monospace" font-size="9" font-weight="400" fill="#8b7355">(&#8220;ne&#8221;,&#8220;w&#8221;)</text>
+  <text x="130" y="272" text-anchor="start" font-family="monospace" font-size="10" font-weight="400" fill="#c9bfa8">&#183;</text>
+  <rect x="146" y="258" width="36" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="164.0" y="272" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">low</text>
+  <rect x="186" y="258" width="36" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="204.0" y="272" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">est</text>
+  <text x="120" y="299" text-anchor="end" font-family="monospace" font-size="9" font-weight="400" fill="#8b7355">(&#8220;new&#8221;,&#8220;est&#8221;)</text>
+  <text x="130" y="299" text-anchor="start" font-family="monospace" font-size="10" font-weight="400" fill="#c9bfa8">&#183;</text>
+  <rect x="146" y="285" width="36" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="164.0" y="299" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">low</text>
+  <rect x="186" y="285" width="36" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="204.0" y="299" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">est</text>
+  <text x="120" y="326" text-anchor="end" font-family="monospace" font-size="9" font-weight="400" fill="#8b7355">(&#8220;low&#8221;,&#8220;e&#8221;)</text>
+  <text x="130" y="326" text-anchor="start" font-family="monospace" font-size="10" font-weight="400" fill="#c9bfa8">&#183;</text>
+  <rect x="146" y="312" width="36" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="164.0" y="326" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">low</text>
+  <rect x="186" y="312" width="36" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="204.0" y="326" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">est</text>
+  <text x="195" y="361" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#2e7d32">result: 2 tokens</text>
+  <text x="577" y="62" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#2c2416">reversed</text>
+  <text x="577" y="78" text-anchor="middle" font-family="monospace" font-size="9" font-weight="600" fill="#a94442">same rules, wrong order</text>
+  <text x="502" y="110" text-anchor="end" font-family="monospace" font-size="9" font-weight="400" fill="#8b7355">start</text>
+  <text x="512" y="110" text-anchor="start" font-family="monospace" font-size="10" font-weight="400" fill="#c9bfa8">&#183;</text>
+  <rect x="528" y="96" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="539.0" y="110" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">l</text>
+  <rect x="554" y="96" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="565.0" y="110" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">o</text>
+  <rect x="580" y="96" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="591.0" y="110" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">w</text>
+  <rect x="606" y="96" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="617.0" y="110" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">e</text>
+  <rect x="632" y="96" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="643.0" y="110" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">s</text>
+  <rect x="658" y="96" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="669.0" y="110" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">t</text>
+  <text x="502" y="137" text-anchor="end" font-family="monospace" font-size="9" font-weight="400" fill="#8b7355">(&#8220;low&#8221;,&#8220;e&#8221;)</text>
+  <text x="512" y="137" text-anchor="start" font-family="monospace" font-size="10" font-weight="400" fill="#c9bfa8">&#183;</text>
+  <rect x="528" y="123" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="539.0" y="137" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">l</text>
+  <rect x="554" y="123" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="565.0" y="137" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">o</text>
+  <rect x="580" y="123" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="591.0" y="137" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">w</text>
+  <rect x="606" y="123" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="617.0" y="137" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">e</text>
+  <rect x="632" y="123" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="643.0" y="137" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">s</text>
+  <rect x="658" y="123" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="669.0" y="137" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">t</text>
+  <text x="502" y="164" text-anchor="end" font-family="monospace" font-size="9" font-weight="400" fill="#8b7355">(&#8220;new&#8221;,&#8220;est&#8221;)</text>
+  <text x="512" y="164" text-anchor="start" font-family="monospace" font-size="10" font-weight="400" fill="#c9bfa8">&#183;</text>
+  <rect x="528" y="150" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="539.0" y="164" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">l</text>
+  <rect x="554" y="150" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="565.0" y="164" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">o</text>
+  <rect x="580" y="150" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="591.0" y="164" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">w</text>
+  <rect x="606" y="150" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="617.0" y="164" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">e</text>
+  <rect x="632" y="150" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="643.0" y="164" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">s</text>
+  <rect x="658" y="150" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="669.0" y="164" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">t</text>
+  <text x="502" y="191" text-anchor="end" font-family="monospace" font-size="9" font-weight="400" fill="#8b7355">(&#8220;ne&#8221;,&#8220;w&#8221;)</text>
+  <text x="512" y="191" text-anchor="start" font-family="monospace" font-size="10" font-weight="400" fill="#c9bfa8">&#183;</text>
+  <rect x="528" y="177" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="539.0" y="191" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">l</text>
+  <rect x="554" y="177" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="565.0" y="191" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">o</text>
+  <rect x="580" y="177" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="591.0" y="191" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">w</text>
+  <rect x="606" y="177" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="617.0" y="191" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">e</text>
+  <rect x="632" y="177" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="643.0" y="191" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">s</text>
+  <rect x="658" y="177" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="669.0" y="191" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">t</text>
+  <text x="502" y="218" text-anchor="end" font-family="monospace" font-size="9" font-weight="400" fill="#8b7355">(&#8220;n&#8221;,&#8220;e&#8221;)</text>
+  <text x="512" y="218" text-anchor="start" font-family="monospace" font-size="10" font-weight="400" fill="#c9bfa8">&#183;</text>
+  <rect x="528" y="204" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="539.0" y="218" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">l</text>
+  <rect x="554" y="204" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="565.0" y="218" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">o</text>
+  <rect x="580" y="204" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="591.0" y="218" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">w</text>
+  <rect x="606" y="204" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="617.0" y="218" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">e</text>
+  <rect x="632" y="204" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="643.0" y="218" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">s</text>
+  <rect x="658" y="204" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="669.0" y="218" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">t</text>
+  <text x="502" y="245" text-anchor="end" font-family="monospace" font-size="9" font-weight="400" fill="#8b7355">(&#8220;es&#8221;,&#8220;t&#8221;)</text>
+  <text x="512" y="245" text-anchor="start" font-family="monospace" font-size="10" font-weight="400" fill="#c9bfa8">&#183;</text>
+  <rect x="528" y="231" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="539.0" y="245" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">l</text>
+  <rect x="554" y="231" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="565.0" y="245" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">o</text>
+  <rect x="580" y="231" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="591.0" y="245" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">w</text>
+  <rect x="606" y="231" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="617.0" y="245" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">e</text>
+  <rect x="632" y="231" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="643.0" y="245" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">s</text>
+  <rect x="658" y="231" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="669.0" y="245" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">t</text>
+  <text x="502" y="272" text-anchor="end" font-family="monospace" font-size="9" font-weight="700" fill="#2c2416">(&#8220;e&#8221;,&#8220;s&#8221;)</text>
+  <text x="512" y="272" text-anchor="start" font-family="monospace" font-size="10" font-weight="400" fill="#a94442">&#8594;</text>
+  <rect x="528" y="258" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="539.0" y="272" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">l</text>
+  <rect x="554" y="258" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="565.0" y="272" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">o</text>
+  <rect x="580" y="258" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="591.0" y="272" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">w</text>
+  <rect x="606" y="258" width="28" height="20" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="620.0" y="272" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#2c2416">es</text>
+  <rect x="638" y="258" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="649.0" y="272" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">t</text>
+  <text x="502" y="299" text-anchor="end" font-family="monospace" font-size="9" font-weight="400" fill="#8b7355">(&#8220;lo&#8221;,&#8220;w&#8221;)</text>
+  <text x="512" y="299" text-anchor="start" font-family="monospace" font-size="10" font-weight="400" fill="#c9bfa8">&#183;</text>
+  <rect x="528" y="285" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="539.0" y="299" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">l</text>
+  <rect x="554" y="285" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="565.0" y="299" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">o</text>
+  <rect x="580" y="285" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="591.0" y="299" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">w</text>
+  <rect x="606" y="285" width="28" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="620.0" y="299" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">es</text>
+  <rect x="638" y="285" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="649.0" y="299" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">t</text>
+  <text x="502" y="326" text-anchor="end" font-family="monospace" font-size="9" font-weight="700" fill="#2c2416">(&#8220;l&#8221;,&#8220;o&#8221;)</text>
+  <text x="512" y="326" text-anchor="start" font-family="monospace" font-size="10" font-weight="400" fill="#a94442">&#8594;</text>
+  <rect x="528" y="312" width="28" height="20" rx="4" fill="#f3e6e4" stroke="#a94442" stroke-width="2"/>
+  <text x="542.0" y="326" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#2c2416">lo</text>
+  <rect x="560" y="312" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="571.0" y="326" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">w</text>
+  <rect x="586" y="312" width="28" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="600.0" y="326" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">es</text>
+  <rect x="618" y="312" width="22" height="20" rx="4" fill="#dde8f0" stroke="#1e6091" stroke-width="1.3"/>
+  <text x="629.0" y="326" text-anchor="middle" font-family="monospace" font-size="11" font-weight="400" fill="#2c2416">t</text>
+  <text x="577" y="361" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#a94442">result: 4 tokens</text>
+  <text x="390" y="383" text-anchor="middle" font-family="monospace" font-size="9" font-weight="400" fill="#8b7355">(&#8220;lo&#8221;,&#8220;w&#8221;) can only fire after (&#8220;l&#8221;,&#8220;o&#8221;) has created &#8220;lo&#8221; &#8212; a rule consumes what an earlier rule produced</text>
+</svg>
